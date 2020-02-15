@@ -75,7 +75,7 @@ static void mark_construction(int x, int y, int size, int terrain, int absolute_
     }
 }
 
-static int place_houses(int measure_only, int x_start, int y_start, int x_end, int y_end)
+int place_houses(int measure_only, int x_start, int y_start, int x_end, int y_end)
 {
     int x_min, x_max, y_min, y_max;
     map_grid_start_end_to_area(x_start, y_start, x_end, y_end, &x_min, &y_min, &x_max, &y_max);

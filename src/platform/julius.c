@@ -20,6 +20,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+//#include "annealing/annealing.h"
+#include "annealing/tsp.h"
+
 #ifdef __SWITCH__
 #include "platform/switch/switch_input.h"
 #include "platform/switch/switch_touch.h"
@@ -507,6 +510,9 @@ static void teardown(void)
 
 int main(int argc, char **argv)
 {
+//    printf("in the annealing julius\n");
+//    tsp_main();
+    
     julius_args args;
     platform_parse_arguments(argc, argv, &args);
 

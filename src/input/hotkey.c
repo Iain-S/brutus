@@ -1,6 +1,7 @@
 #include "hotkey.h"
 
 #include "building/type.h"
+#include "building/construction.h"
 #include "city/finance.h"
 #include "city/victory.h"
 #include "city/view.h"
@@ -24,6 +25,8 @@
 #include "window/popup_dialog.h"
 #include "window/city.h"
 #include "window/editor/empire.h"
+
+#include "annealing/annealing_api.h"
 
 static struct {
     int is_cheating;
@@ -215,7 +218,10 @@ void hotkey_character(int c, int with_ctrl, int with_alt)
             show_overlay(OVERLAY_CRIME);
             break;
         case 't':
-            show_overlay(OVERLAY_PROBLEMS);
+//            I don't know what "problems" are exactly
+//            show_overlay(OVERLAY_PROBLEMS);
+//            place_houses(0, 156, 149, 156, 149);
+            api_place_random_3_by_3();
             break;
         case 'w':
             show_overlay(OVERLAY_WATER);

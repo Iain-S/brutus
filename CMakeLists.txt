@@ -195,6 +195,13 @@ set(CORE_FILES
     ${PROJECT_SOURCE_DIR}/src/core/zip.c
 )
 
+set(ANNEALING_FILES
+    ${PROJECT_SOURCE_DIR}/src/annealing/annealing.c
+    ${PROJECT_SOURCE_DIR}/src/annealing/tsp.c
+    ${PROJECT_SOURCE_DIR}/src/annealing/random.c
+    ${PROJECT_SOURCE_DIR}/src/annealing/annealing_api.c
+)
+
 set(BUILDING_FILES
     ${PROJECT_SOURCE_DIR}/src/building/animation.c
     ${PROJECT_SOURCE_DIR}/src/building/barracks.c
@@ -514,6 +521,7 @@ endif()
 
 add_executable(julius
     WIN32
+    ${ANNEALING_FILES}
     ${PLATFORM_FILES}
     ${CORE_FILES}
     ${BUILDING_FILES}

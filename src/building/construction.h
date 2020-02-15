@@ -34,4 +34,6 @@ void building_construction_get_view_position(int *view_x, int *view_y);
 void building_construction_reset_draw_as_constructing(void);
 int building_construction_draw_as_constructing(void);
 
+int place_houses(int measure_only, int x_start, int y_start, int x_end, int y_end);
+
 #endif // BUILDING_CONSTRUCTION_H
