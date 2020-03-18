@@ -200,6 +200,7 @@ set(ANNEALING_FILES
     ${PROJECT_SOURCE_DIR}/src/annealing/tsp.c
     ${PROJECT_SOURCE_DIR}/src/annealing/random.c
     ${PROJECT_SOURCE_DIR}/src/annealing/annealing_api.c
+    ${PROJECT_SOURCE_DIR}/src/annealing/gsl_siman_trivial.c
 )
 
 set(BUILDING_FILES
@@ -744,7 +745,7 @@ else()
     if (UNIX AND NOT APPLE AND (CMAKE_COMPILER_IS_GNUCC OR CMAKE_C_COMPILER_ID STREQUAL "Clang"))
         target_link_libraries(${SHORT_NAME} m)
     endif()
-    target_link_libraries (${SHORT_NAME} ${SDL2_LIBRARY} ${SDL2_MIXER_LIBRARY})
+    target_link_libraries (${SHORT_NAME} ${SDL2_LIBRARY} ${SDL2_MIXER_LIBRARY} "gsl" "gslcblas")
     if(NOT APPLE)
         install(TARGETS ${SHORT_NAME} RUNTIME DESTINATION bin)
     endif()

@@ -1,5 +1,10 @@
+# build the program
 mkdir debug
 cd debug
 cmake -DCMAKE_BUILD_TYPE=Debug ..
 make
+# tell the linker where to find the gsl library
+LD_LIBRARY_PATH=/usr/local/lib/
+export LD_LIBRARY_PATH
+# run the program
 ./julius

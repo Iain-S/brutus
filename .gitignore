@@ -12,3 +12,4 @@ res/julius.icns
 out/
 ext/SDL2/*/
 .vscode
+nbproject

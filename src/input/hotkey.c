@@ -27,6 +27,7 @@
 #include "window/editor/empire.h"
 
 #include "annealing/annealing_api.h"
+#include "annealing/gsl_siman_trivial.h"
 
 static struct {
     int is_cheating;
@@ -196,6 +197,9 @@ void hotkey_character(int c, int with_ctrl, int with_alt)
     }
 
     switch (c) {
+        case 'a':
+            // gsl simulated annealing
+            gsl_siman_main();
         case '[':
             change_game_speed(1);
             break;
@@ -210,18 +214,21 @@ void hotkey_character(int c, int with_ctrl, int with_alt)
             break;
         case 'f':
             show_overlay(OVERLAY_FIRE);
+           
             break;
         case 'd':
             show_overlay(OVERLAY_DAMAGE);
             break;
         case 'c':
             show_overlay(OVERLAY_CRIME);
+//            api_score_random_3_by_3();
             break;
         case 't':
 //            I don't know what "problems" are exactly
-//            show_overlay(OVERLAY_PROBLEMS);
+            show_overlay(OVERLAY_PROBLEMS);
 //            place_houses(0, 156, 149, 156, 149);
-            api_place_random_3_by_3();
+//            api_init_random_3_by_3();
+//            api_run_for_some_time();
             break;
         case 'w':
             show_overlay(OVERLAY_WATER);

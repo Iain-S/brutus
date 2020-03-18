@@ -19,9 +19,10 @@ extern "C" {
 #endif
 
     //void api_place_house(int x, int y);
-    void api_place_random_3_by_3(void);
-
-
+    void api_init_random_3_by_3(void);
+    int api_score_random_3_by_3(void);
+    void api_change_a_square(void);
+    
 #ifdef __cplusplus
 }
 #endif
