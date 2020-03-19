@@ -21,7 +21,9 @@
 #include <stdlib.h>
 
 //#include "annealing/annealing.h"
-#include "annealing/tsp.h"
+//#include "annealing/tsp.h"
+#include "annealing/gsl_siman_trivial.h"
+#include "game/file.h"
 
 #ifdef __SWITCH__
 #include "platform/switch/switch_input.h"
@@ -327,6 +329,7 @@ static void main_loop(void)
     run_and_draw();
     int active = 1;
     int quit = 0;
+    load_next_loop=0;
     while (!quit) {
         SDL_Event event;
         /* Process event queue */
@@ -344,8 +347,12 @@ static void main_loop(void)
         while (switch_poll_event(&event)) {
 #else
         while (SDL_PollEvent(&event)) {
-#endif
+#endif      
             handle_event(&event, &active, &quit);
+        }
+        if (load_next_loop == 1) {
+            game_file_load_saved_game("S1 01.sav");
+            load_next_loop = 0;
         }
         if (!quit) {
             if (active) {
@@ -509,10 +516,7 @@ static void teardown(void)
 }
 
 int main(int argc, char **argv)
-{
-//    printf("in the annealing julius\n");
-//    tsp_main();
-    
+{    
     julius_args args;
     platform_parse_arguments(argc, argv, &args);
 

@@ -226,6 +226,7 @@ void hotkey_character(int c, int with_ctrl, int with_alt)
         case 't':
 //            I don't know what "problems" are exactly
             show_overlay(OVERLAY_PROBLEMS);
+            load_next_loop = 1;
 //            place_houses(0, 156, 149, 156, 149);
 //            api_init_random_3_by_3();
 //            api_run_for_some_time();

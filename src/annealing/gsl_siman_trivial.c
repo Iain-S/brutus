@@ -24,11 +24,13 @@
 #define MU_T 1.003
 #define T_MIN 2.0e-6
 
+/* These control a run of gsl_siman_solve(). */
 gsl_siman_params_t params
   = {N_TRIES, ITERS_FIXED_T, STEP_SIZE,
      K, T_INITIAL, MU_T, T_MIN};
 
-/* now some functions to test in one dimension */
+/* This function type should return the energy of a 
+ * configuration xp */
 double E1(void *xp)
 {
   double x = * ((double *) xp);
@@ -36,6 +38,8 @@ double E1(void *xp)
   return exp(-pow((x-1.0),2.0))*sin(8*x);
 }
 
+/* This function should return the distance between two 
+ configurations, xp and yp. */
 double M1(void *xp, void *yp)
 {
   double x = *((double *) xp);
@@ -44,6 +48,9 @@ double M1(void *xp, void *yp)
   return fabs(x - y);
 }
 
+/* This function should modify the config, xp, using a random
+ step taken from the generator, r, up to a max distance of 
+ step size. */
 void S1(const gsl_rng * r, void *xp, double step_size)
 {
   double old_x = *((double *) xp);
@@ -55,6 +62,8 @@ void S1(const gsl_rng * r, void *xp, double step_size)
   memcpy(xp, &new_x, sizeof(new_x));
 }
 
+/* This function should print the content of the 
+ * configuration, xp. */
 void P1(void *xp)
 {
   printf ("%12g", *((double *) xp));

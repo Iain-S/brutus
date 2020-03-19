@@ -60,6 +60,7 @@ void sound_device_close(void)
         for (int i = 0; i < MAX_CHANNELS; i++) {
             sound_device_stop_channel(i);
         }
+        // disable this?
         Mix_CloseAudio();
         initialized = 0;
     }
