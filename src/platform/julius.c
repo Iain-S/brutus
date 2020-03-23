@@ -329,7 +329,7 @@ static void main_loop(void)
     run_and_draw();
     int active = 1;
     int quit = 0;
-    load_next_loop=0;
+    anneal_next_loop=0;
     while (!quit) {
         SDL_Event event;
         /* Process event queue */
@@ -350,9 +350,10 @@ static void main_loop(void)
 #endif      
             handle_event(&event, &active, &quit);
         }
-        if (load_next_loop == 1) {
+        if (anneal_next_loop == 1) {
+            
             game_file_load_saved_game("S1 01.sav");
-            load_next_loop = 0;
+            anneal_next_loop = 0;
         }
         if (!quit) {
             if (active) {

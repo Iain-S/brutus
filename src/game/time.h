@@ -38,6 +38,8 @@ int game_time_day(void);
  */
 int game_time_tick(void);
 
+/* For simulated annealing. */
+int game_time_total_days(void);
 
 /**
  * Increases tick

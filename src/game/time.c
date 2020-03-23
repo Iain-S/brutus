@@ -8,6 +8,10 @@ static struct {
     int total_days;
 } data;
 
+int game_time_total_days(void){
+    return data.total_days;
+}
+
 void game_time_init(int year)
 {
     data.tick = 0;

@@ -5,26 +5,25 @@
  */
 
 /* 
- * File:   gsl_siman_trivial.h
+ * File:   julius.h
  * Author: iain
  *
- * Created on 18 March 2020, 13:09
+ * Created on 22 March 2020, 16:01
  */
 
-#ifndef GSL_SIMAN_TRIVIAL_H
-#define GSL_SIMAN_TRIVIAL_H
+#ifndef JULIUS_H
+#define JULIUS_H
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-    int gsl_siman_main(void);
-    int anneal_next_loop;
+
 
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif /* GSL_SIMAN_TRIVIAL_H */
+#endif /* JULIUS_H */
 

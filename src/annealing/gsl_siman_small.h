@@ -19,7 +19,7 @@ extern "C" {
 #endif
 
     int gsl_siman_main(void);
-    int anneal_next_loop;
+    int load_next_loop;
 
 
 #ifdef __cplusplus
