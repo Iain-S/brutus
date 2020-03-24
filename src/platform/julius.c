@@ -330,6 +330,7 @@ static void main_loop(void)
     int active = 1;
     int quit = 0;
     anneal_next_loop=0;
+//    game_file_load_saved_game("S1 01.sav");
     while (!quit) {
         SDL_Event event;
         /* Process event queue */
@@ -350,11 +351,11 @@ static void main_loop(void)
 #endif      
             handle_event(&event, &active, &quit);
         }
-        if (anneal_next_loop == 1) {
-            
-            game_file_load_saved_game("S1 01.sav");
+//        if (anneal_next_loop == 1) {
+            gsl_siman_main();
+            //game_file_load_saved_game("S1 01.sav");
             anneal_next_loop = 0;
-        }
+//        }
         if (!quit) {
             if (active) {
                 run_and_draw();

@@ -1,13 +1,14 @@
 #include <stdlib.h>
 #include <assert.h>
 
-#include "annealing_api.h"
 #include "building/construction.h"
 #include "building/construction_routed.h"
 #include "building/construction_building.h"
 #include "building/type.h"
 #include "building/building.h"
 #include "building/model.h"
+#include "gsl_siman_small.h"
+#include "annealing/annealing_api.h"
 
 
 void api_place_house(int x, int y){
@@ -38,6 +39,16 @@ void api_place_nothing(int x, int y){
     // pass
 }
 
+void api_place_well(int x, int y){
+    int placed = building_construction_place_building(BUILDING_WELL, x, y);
+    assert(placed == 1);
+}
+
+void api_place_garden(int x, int y){
+    int placed = place_garden(x, y, x, y); //building_construction_place_building(BUILDING_GARDENS, x, y);
+    assert(placed == 1);
+}
+
 void build_buildings(void* xp){
     return;
 }
@@ -48,16 +59,20 @@ place_building_func place_building_funcs[5] = {
     &api_place_nothing,
     &api_place_house, 
     &api_place_road, 
-    &api_place_engineer, 
-    &api_place_prefecture
+//    &api_place_engineer, 
+//    &api_place_prefecture,
+    &api_place_garden,
+    &api_place_well
 }; 
 
 char* place_building_names[5] = {
     "empty land"
     "house",
     "road",
-    "engineer's post",
-    "prefecture",
+//    "engineer's post",
+//    "prefecture",
+    "garden",
+    "well"
 };
 
 void api_init_random_3_by_3(){
@@ -69,7 +84,7 @@ void api_init_random_3_by_3(){
     // For each tile in our 3 x 3, place a building
     for(int x=0; x < 3; x++){
         for(int y=0; y < 3; y++){
-            int random_index = rand() % 5;
+            int random_index = rand() % (sizeof(place_building_names) / sizeof(place_building_names[0]));
             place_building_funcs[random_index](x + 7, y + 7);
 //            buildings_placed[x * 3 + y] = place_building_funcs[random_index];
         }
@@ -93,7 +108,8 @@ int api_score_random_3_by_3(){
 
 
 void api_build_buildings(void* xp){
-    int** squares = (int**) xp;
+//    int squares[ANNEAL_DIM][ANNEAL_DIM] = (int[ANNEAL_DIM][ANNEAL_DIM]) xp;
+    int (*squares)[ANNEAL_DIM] = (int(*)[ANNEAL_DIM])xp;
     for (int x = 0; x < 3; x++){
         for (int y = 0; y < 3; y++){
             place_building_funcs[squares[x][y]](x + 7, y + 7);
@@ -109,7 +125,7 @@ void api_change_a_square(){
 
 void api_modify_elements(void* xp, int num_elements){
     // Modify up to num_elements of xp, in place
-    int** squares = (int**)xp;
+    int (*squares)[ANNEAL_DIM] = (int(*)[ANNEAL_DIM])xp;
     //int number_of_squares = (sizeof(squares)/sizeof(squares[0])) * (sizeof(squares[0]) / sizeof(squares[0][0]));
     
     for(int i = 0; i < num_elements; i++){
@@ -117,7 +133,7 @@ void api_modify_elements(void* xp, int num_elements){
         int x = square_index / 3;
         int y = square_index % 3;
         
-        int new_building_type = rand() % 5;
+        int new_building_type = rand() % (sizeof(place_building_funcs) / sizeof(place_building_funcs[0]));
         squares[x][y] = new_building_type;
     } 
     return;

@@ -254,7 +254,7 @@ int setting_game_speed(void)
 void setting_increase_game_speed(void)
 {
     if (data.game_speed >= 100) {
-        if (data.game_speed < 500) {
+        if (data.game_speed < 10000) {
             data.game_speed += 100;
         }
     } else {

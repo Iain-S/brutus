@@ -19,8 +19,9 @@ extern "C" {
 #endif
 
     int gsl_siman_main(void);
-    int load_next_loop;
+    int anneal_next_loop;
 
+    #define ANNEAL_DIM 3
 
 #ifdef __cplusplus
 }

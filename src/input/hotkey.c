@@ -27,7 +27,7 @@
 #include "window/editor/empire.h"
 
 #include "annealing/annealing_api.h"
-#include "annealing/gsl_siman_trivial.h"
+#include "annealing/gsl_siman_small.h"
 
 static struct {
     int is_cheating;

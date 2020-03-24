@@ -143,7 +143,7 @@ static int place_plaza(int x_start, int y_start, int x_end, int y_end)
     return items_placed;
 }
 
-static int place_garden(int x_start, int y_start, int x_end, int y_end)
+int place_garden(int x_start, int y_start, int x_end, int y_end)
 {
     game_undo_restore_map(1);
 
