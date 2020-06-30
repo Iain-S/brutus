@@ -216,5 +216,5 @@ void game_exit(void)
     video_shutdown();
     settings_save();
     // This was hanging
-//    sound_system_shutdown();
+    // sound_system_shutdown();
 }
