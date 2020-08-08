@@ -21,10 +21,10 @@
 /* set up parameters for this simulated annealing run */
 
 /* how many points do we try before stepping */
-#define N_TRIES 100 //200
+#define N_TRIES 1 //200
 
 /* how many iterations for each T? */
-#define ITERS_FIXED_T 200  //1000
+#define ITERS_FIXED_T 2  //1000
 
 /* max step size in random walk */
 #define STEP_SIZE 9
@@ -36,8 +36,8 @@
 #define T_INITIAL 0.008
 
 /* damping factor for temperature */
-#define MU_T 1.003
-#define T_MIN 2.0e-6
+#define MU_T 1.1
+#define T_MIN 2.0e-4
 
 /* These control a run of gsl_siman_solve(). */
 gsl_siman_params_t params
@@ -277,10 +277,12 @@ gsl_siman_main(void)
     setting_reset_speeds(10000, setting_scroll_speed());
 
     
+    SDL_Log("Annealing started");
     gsl_siman_solve(r, xp_initial, E1, S1, M1, P1,
                     NULL, NULL, NULL,
                     sizeof(int) * 9, params);
 
+    SDL_Log("Annealing finished");
     gsl_rng_free(r);
     return 0;
 }
