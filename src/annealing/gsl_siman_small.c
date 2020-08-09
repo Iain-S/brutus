@@ -6,6 +6,7 @@
 #include <string.h>
 #include <gsl/gsl_siman.h>
 #include <unistd.h>
+#include <assert.h>
 
 #include "core/time.h"
 #include "game/file.h"
@@ -172,14 +173,15 @@ static void anneal_handle_event(SDL_Event *event, int *active, int *quit)
 double E1(void *xp)
 {
     // load game
-    game_file_load_saved_game("S1 01.sav");
-    
+    assert(1 == game_file_load_saved_game("S1 01.sav"));
+
     api_build_buildings(xp);
-    
+
     int today = game_time_total_days();
     int temp = -1;
     int active = 1;
     int quit = 0;
+    
     
     // run for some days
     while(game_time_total_days() - today < 32){
@@ -264,7 +266,7 @@ gsl_siman_main(void)
     T = gsl_rng_default;
     r = gsl_rng_alloc(T);
 
-    game_file_load_saved_game("S1 01.sav");
+//    game_file_load_saved_game("S1 01.sav");
     SDL_Log("showing window");
     window_city_show();
     setting_reset_speeds(10000, setting_scroll_speed());

@@ -508,7 +508,8 @@ static void teardown(void)
     SDL_Log("Exiting game");
     game_exit();
     platform_screen_destroy();
-    SDL_Quit();
+    // This was hanging for some reason
+//    SDL_Quit();
     teardown_logging();
 }
 

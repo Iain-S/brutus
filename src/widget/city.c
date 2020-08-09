@@ -130,14 +130,16 @@ static int handle_legion_click(const map_tile *tile)
     return 0;
 }
 
-static void build_start(const map_tile *tile)
+//static 
+void build_start(const map_tile *tile)
 {
     if (tile->grid_offset /*&& !game_state_is_paused()*/) { // TODO FIXME
         building_construction_start(tile->x, tile->y, tile->grid_offset);
     }
 }
 
-static void build_move(const map_tile *tile)
+//static 
+void build_move(const map_tile *tile)
 {
     if (!building_construction_in_progress()) {
         return;
@@ -145,7 +147,8 @@ static void build_move(const map_tile *tile)
     building_construction_update(tile->x, tile->y, tile->grid_offset);
 }
 
-static void build_end(void)
+//static 
+void build_end(void)
 {
     if (building_construction_in_progress()) {
         if (building_construction_type() != BUILDING_NONE) {

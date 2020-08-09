@@ -3,6 +3,7 @@
 
 #include "input/mouse.h"
 #include "graphics/tooltip.h"
+#include "map/point.h"
 
 typedef struct {
     int x;
@@ -21,5 +22,12 @@ void widget_city_handle_mouse_military(const mouse *m, int legion_formation_id);
 void widget_city_get_tooltip(tooltip_context *c);
 
 void widget_city_clear_current_tile(void);
+
+void build_start(const map_tile *tile);
+
+void build_move(const map_tile *tile);
+
+void build_end(void);
+
 
 #endif // WIDGET_CITY_H
