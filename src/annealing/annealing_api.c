@@ -7,6 +7,7 @@
 #include "building/type.h"
 #include "building/building.h"
 #include "building/model.h"
+#include "map/property.h"
 #include "gsl_siman_small.h"
 #include "annealing/annealing_api.h"
 
@@ -66,7 +67,7 @@ place_building_func place_building_funcs[5] = {
 }; 
 
 char* place_building_names[5] = {
-    "empty land"
+    "empty land",
     "house",
     "road",
 //    "engineer's post",
@@ -74,6 +75,10 @@ char* place_building_names[5] = {
     "garden",
     "well"
 };
+
+char* api_get_building_name(int i){
+    return place_building_names[i];
+}
 
 void api_init_random_3_by_3(){
 
@@ -109,6 +114,7 @@ int api_score_random_3_by_3(){
 
 void api_build_buildings(void* xp){
 //    int squares[ANNEAL_DIM][ANNEAL_DIM] = (int[ANNEAL_DIM][ANNEAL_DIM]) xp;
+    map_property_clear_constructing_and_deleted();
     int (*squares)[ANNEAL_DIM] = (int(*)[ANNEAL_DIM])xp;
     for (int x = 0; x < 3; x++){
         for (int y = 0; y < 3; y++){

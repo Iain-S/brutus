@@ -632,7 +632,7 @@ int game_file_io_read_saved_game(const char *filename, int offset)
 {
     init_savegame_data();
 
-    log_info("Loading saved game", filename, 0);
+//    log_info("Loading saved game", filename, 0);
     FILE *fp = file_open(dir_get_case_corrected_file(filename), "rb");
     if (!fp) {
         log_error("Unable to load game", 0, 0);

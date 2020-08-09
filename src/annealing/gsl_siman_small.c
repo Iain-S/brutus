@@ -1,6 +1,7 @@
 #include "SDL.h"
 
 #include <math.h>
+#include <time.h>
 #include <stdlib.h>
 #include <string.h>
 #include <gsl/gsl_siman.h>
@@ -192,17 +193,16 @@ double E1(void *xp)
         while (SDL_PollEvent(&event)) {   
             anneal_handle_event(&event, &active, &quit);
         }
+        
         if (active) {
-            anneal_run();
-//            _and_draw();
+            anneal_run_and_draw();
         } else {
             SDL_WaitEvent(NULL);
         }
     
     }
-    anneal_draw();
     int total_prosperity = api_score_random_3_by_3();
-    SDL_Log("total prosperity: %d", total_prosperity);      
+//    SDL_Log("total prosperity: %d", total_prosperity);      
     return 1000 - total_prosperity;
 }
 
@@ -233,10 +233,11 @@ void S1(const gsl_rng* r, void *xp, double step_size)
 {
     int (*old_xp)[ANNEAL_DIM] = (int(*)[ANNEAL_DIM])xp;
 //    SDL_Log("step size: %f", step_size);
+    
     // This function returns a random integer from 0 to n-1
     int i = gsl_rng_uniform_int(r, step_size);
 //    SDL_Log("i: %d", i);
-    // Change up to r elements of new_xp
+    
     api_modify_elements(old_xp, i);
 }
 
@@ -244,16 +245,13 @@ void S1(const gsl_rng* r, void *xp, double step_size)
  * configuration, xp. */
 void P1(void *xp)
 {
-    int (*squares)[ANNEAL_DIM] = (int(*)[ANNEAL_DIM])xp;
-    for (int y = 0; y < 3; y++){
-        SDL_Log("%d %d %d", squares[0][y], squares[1][y], squares[2][y]);
-
-    }
+    // Don't print anything because the annealing table
+    // is nice as it is
 }
 
 int
 gsl_siman_main(void)
-{
+{    
     const gsl_rng_type * T;
     gsl_rng * r;
 
@@ -261,6 +259,7 @@ gsl_siman_main(void)
     int (*xp_initial)[ANNEAL_DIM] = (int(*)[ANNEAL_DIM])calloc(ANNEAL_DIM * ANNEAL_DIM, sizeof(int));//{{{0, 0, 0}, {0, 0, 0}, {0, 0, 0}};
 
     gsl_rng_env_setup();
+    srand(time(NULL));
 
     T = gsl_rng_default;
     r = gsl_rng_alloc(T);
@@ -275,8 +274,28 @@ gsl_siman_main(void)
     gsl_siman_solve(r, xp_initial, E1, S1, M1, P1,
                     NULL, NULL, NULL,
                     sizeof(int) * 9, params);
-
+   
     SDL_Log("Annealing finished");
+    
+    // Now that gsl_simal_solve is done, xp_inital contains
+    // the best solution so we run E1 once more to find out what it is
+    int best_prosperity = 1000 - E1(xp_initial);
+    SDL_Log("best prosperity: %d", best_prosperity);
+    
+    // Write the best solution to the log in case we can't see it on
+    // the screen
+    int (*squares)[ANNEAL_DIM] = (int(*)[ANNEAL_DIM])xp_initial;
+    for (int y = 0; y < 3; y++){
+        SDL_Log("%d %d %d", squares[0][y], squares[1][y], squares[2][y]);
+
+    }
+    
+    // Explain what the numbers mean
+    for (int i = 0; i < 5 ; i++){
+        SDL_Log("%d = %s", i, api_get_building_name(i));
+    }
+    
+    // Clean up
     gsl_rng_free(r);
 
     // Set the game speed to 0 so that nothing changes from now on
