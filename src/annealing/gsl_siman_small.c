@@ -4,6 +4,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <gsl/gsl_siman.h>
+#include <unistd.h>
 
 #include "core/time.h"
 #include "game/file.h"
@@ -17,6 +18,7 @@
 #include "graphics/window.h"
 #include "sound/city.h"
 #include "game/settings.h"
+#include "window/city.h"
 
 /* set up parameters for this simulated annealing run */
 
@@ -37,7 +39,8 @@
 
 /* damping factor for temperature */
 #define MU_T 1.1
-#define T_MIN 2.0e-4
+//#define T_MIN 2.0e-4
+#define T_MIN 2.0e-3
 
 /* These control a run of gsl_siman_solve(). */
 gsl_siman_params_t params
@@ -54,15 +57,20 @@ enum {
     USER_EVENT_CENTER_WINDOW,
 };
 
+static void anneal_run(void){
+    time_set_millis(SDL_GetTicks());
+    game_run();
+}
+
+static void anneal_draw(void){
+    window_draw(1);
+    platform_screen_render();
+}
+
 static void anneal_run_and_draw(void)
 {
-    time_set_millis(SDL_GetTicks());
-
-    game_run();
-   // game_draw();
-    window_draw(1);
-//    sound_city_play();
-    platform_screen_render();
+    anneal_run();
+    anneal_draw();
 }
 
 static void anneal_handle_mouse_button(SDL_MouseButtonEvent *event, int is_down)
@@ -185,12 +193,14 @@ double E1(void *xp)
             anneal_handle_event(&event, &active, &quit);
         }
         if (active) {
-            anneal_run_and_draw();
+            anneal_run();
+//            _and_draw();
         } else {
             SDL_WaitEvent(NULL);
         }
     
     }
+    anneal_draw();
     int total_prosperity = api_score_random_3_by_3();
     SDL_Log("total prosperity: %d", total_prosperity);      
     return 1000 - total_prosperity;
@@ -222,31 +232,12 @@ double M1(void *xp, void *yp)
 void S1(const gsl_rng* r, void *xp, double step_size)
 {
     int (*old_xp)[ANNEAL_DIM] = (int(*)[ANNEAL_DIM])xp;
-//    int** new_xp = (int**)calloc(sizeof(old_xp)/sizeof(old_xp[0]), 
-//                                 sizeof(old_xp[0]));
-//    
-//    for (int i = 0; i < sizeof(old_xp); i++){
-//        new_xp[i] = (int*)calloc(sizeof(old_xp[0])/sizeof(old_xp[0][0]), 
-//                                 sizeof(old_xp[0][0]));
-//        memcpy(new_xp[i], old_xp[i], sizeof(old_xp[0]));
-//    }
-//    
-//    // do a test
-//    for (int x = 0; x < 3; x++){
-//        for (int y = 0; y < 3; y++){
-//            if (old_xp[x][y] != new_xp[x][y]){
-//                printf("error at %d %d, %d is not equal to %d", 
-//                        x, y, old_xp[x][y], new_xp[x][y]);
-//            }
-//        }
-//    }
-    
+//    SDL_Log("step size: %f", step_size);
     // This function returns a random integer from 0 to n-1
     int i = gsl_rng_uniform_int(r, step_size);
-    
+//    SDL_Log("i: %d", i);
     // Change up to r elements of new_xp
     api_modify_elements(old_xp, i);
-//    return new_xp;
 }
 
 /* This function should print the content of the 
@@ -255,7 +246,8 @@ void P1(void *xp)
 {
     int (*squares)[ANNEAL_DIM] = (int(*)[ANNEAL_DIM])xp;
     for (int y = 0; y < 3; y++){
-        printf("%d %d %d", squares[0][y], squares[1][y], squares[2][y]);
+        SDL_Log("%d %d %d", squares[0][y], squares[1][y], squares[2][y]);
+
     }
 }
 
@@ -274,6 +266,8 @@ gsl_siman_main(void)
     r = gsl_rng_alloc(T);
 
     game_file_load_saved_game("S1 01.sav");
+    SDL_Log("showing window");
+    window_city_show();
     setting_reset_speeds(10000, setting_scroll_speed());
 
     
@@ -284,5 +278,13 @@ gsl_siman_main(void)
 
     SDL_Log("Annealing finished");
     gsl_rng_free(r);
+
+    // Set the game speed to 0 so that nothing changes from now on
+    setting_reset_speeds(0, setting_scroll_speed());
+    
+    // Save and load because it refreshes the window nicely
+//    game_file_write_saved_game("S1 01 annealed.sav");
+//    game_file_load_saved_game("S1 01 annealed.sav");
+
     return 0;
 }

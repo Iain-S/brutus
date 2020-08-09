@@ -11,8 +11,8 @@
  * Created on 18 March 2020, 13:09
  */
 
-#ifndef GSL_SIMAN_TRIVIAL_H
-#define GSL_SIMAN_TRIVIAL_H
+#ifndef GSL_SIMAN_SMALL_H
+#define GSL_SIMAN_SMALL_H
 
 #ifdef __cplusplus
 extern "C" {
@@ -27,5 +27,5 @@ extern "C" {
 }
 #endif
 
-#endif /* GSL_SIMAN_TRIVIAL_H */
+#endif /* GSL_SIMAN_SMALL_H */
 

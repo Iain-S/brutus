@@ -19,10 +19,12 @@
 #include <signal.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <unistd.h>
+
 
 //#include "annealing/annealing.h"
 //#include "annealing/tsp.h"
-#include "annealing/gsl_siman_trivial.h"
+#include "annealing/gsl_siman_small.h"
 #include "game/file.h"
 
 #ifdef __SWITCH__
@@ -324,13 +326,11 @@ static void handle_event(SDL_Event *event, int *active, int *quit)
 
 static void main_loop(void)
 {
-    mouse_set_inside_window(1);
+//    mouse_set_inside_window(1);
+    gsl_siman_main();
 
-    run_and_draw();
     int active = 1;
     int quit = 0;
-    anneal_next_loop=0;
-//    game_file_load_saved_game("S1 01.sav");
     while (!quit) {
         SDL_Event event;
         /* Process event queue */
@@ -351,11 +351,6 @@ static void main_loop(void)
 #endif      
             handle_event(&event, &active, &quit);
         }
-//        if (anneal_next_loop == 1) {
-            gsl_siman_main();
-            //game_file_load_saved_game("S1 01.sav");
-            anneal_next_loop = 0;
-//        }
         if (!quit) {
             if (active) {
                 run_and_draw();
