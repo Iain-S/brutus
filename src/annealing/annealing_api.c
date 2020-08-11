@@ -9,7 +9,7 @@
 #include "building/model.h"
 #include "map/property.h"
 #include "map/point.h"
-#include "gsl_siman_small.h"
+#include "gsl_siman.h"
 #include "annealing/annealing_api.h"
 #include "widget/city.h"
 
@@ -123,7 +123,7 @@ char* api_get_building_name(int i){
 ////    return buildings_placed;
 //};
 
-int api_score_random_3_by_3(){
+int api_score_city(){
     // The same as ratings.calculate_max_prosperity but we take the total
     // prosperity, not the average per house
     

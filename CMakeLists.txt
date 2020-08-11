@@ -200,8 +200,7 @@ set(ANNEALING_FILES
     ${PROJECT_SOURCE_DIR}/src/annealing/tsp.c
     ${PROJECT_SOURCE_DIR}/src/annealing/random.c
     ${PROJECT_SOURCE_DIR}/src/annealing/annealing_api.c
-#    ${PROJECT_SOURCE_DIR}/src/annealing/gsl_siman_trivial.c
-    ${PROJECT_SOURCE_DIR}/src/annealing/gsl_siman_small.c
+    ${PROJECT_SOURCE_DIR}/src/annealing/gsl_siman.c
 )
 
 set(BUILDING_FILES

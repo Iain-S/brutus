@@ -24,7 +24,7 @@
 
 //#include "annealing/annealing.h"
 //#include "annealing/tsp.h"
-#include "annealing/gsl_siman_small.h"
+#include "annealing/gsl_siman.h"
 #include "game/file.h"
 
 #ifdef __SWITCH__

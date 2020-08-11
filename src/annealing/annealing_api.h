@@ -20,7 +20,7 @@ extern "C" {
 
     //void api_place_house(int x, int y);
 //    void api_init_random_3_by_3(void);
-    int api_score_random_3_by_3(void);
+    int api_score_city(void);
     void api_change_a_square(void);
     void api_build_buildings(void*);
     void api_modify_elements(void*, int);

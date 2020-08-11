@@ -14,7 +14,7 @@
 #include "game/time.h"
 #include "platform/screen.h"
 #include "annealing/annealing_api.h"
-#include "annealing/gsl_siman_small.h"
+#include "annealing/gsl_siman.h"
 #include "input/mouse.h"
 #include "platform/keyboard_input.h"
 #include "graphics/window.h"
@@ -197,7 +197,7 @@ double E1(void *xp)
         }
     
     }
-    int total_prosperity = api_score_random_3_by_3();
+    int total_prosperity = api_score_city();
 //    SDL_Log("total prosperity: %d", total_prosperity);      
     return 1000 - total_prosperity;
 }
