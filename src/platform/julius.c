@@ -326,7 +326,7 @@ static void handle_event(SDL_Event *event, int *active, int *quit)
 
 static void main_loop(void)
 {
-//    mouse_set_inside_window(1);
+    mouse_set_inside_window(1);
     gsl_siman_main();
 
     int active = 1;

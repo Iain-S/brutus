@@ -25,10 +25,10 @@
 /* set up parameters for this simulated annealing run */
 
 /* how many points do we try before stepping */
-#define N_TRIES 1 //200
+#define N_TRIES 3 //200
 
 /* how many iterations for each T? */
-#define ITERS_FIXED_T 2  //1000
+#define ITERS_FIXED_T 3  //1000
 
 /* max step size in random walk */
 #define STEP_SIZE 9
@@ -40,7 +40,7 @@
 #define T_INITIAL 0.008
 
 /* damping factor for temperature */
-#define MU_T 1.1
+#define MU_T 1.09
 //#define T_MIN 2.0e-4
 #define T_MIN 2.0e-3
 
@@ -177,19 +177,13 @@ double E1(void *xp)
 
     api_build_buildings(xp);
 
-    int today = game_time_total_days();
-    int temp = -1;
+    int first_day = game_time_total_days();
     int active = 1;
     int quit = 0;
     
     
-    // run for some days
-    while(game_time_total_days() - today < 32){
-        if (game_time_total_days() - today > temp){
-            temp = game_time_total_days() - today;
-//            SDL_Log("total days: %d", temp);
-        }
-
+    // run for just long enough for fires to happen
+    while(game_time_total_days() - first_day < 90){
         SDL_Event event;
         
         while (SDL_PollEvent(&event)) {   
@@ -293,7 +287,7 @@ gsl_siman_main(void)
     }
     
     // Explain what the numbers mean
-    for (int i = 0; i < 5 ; i++){
+    for (int i = 0; i < 6 ; i++){
         SDL_Log("%d = %s", i, api_get_building_name(i));
     }
     

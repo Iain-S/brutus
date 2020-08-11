@@ -41,8 +41,9 @@ void api_place_engineer(int x, int y){
 
 
 void api_place_prefecture(int x, int y){
-//    int placed = building_construction_place_building(BUILDING_PREFECTURE, x, y);
-//    assert(placed == 1);
+    int placed = building_construction_place_building(BUILDING_PREFECTURE, x, y);
+    assert(placed == 1);
+    
 }
 
 
@@ -81,22 +82,22 @@ void api_place_garden(int x, int y){
 
 // These are our choice of buildings
 typedef void (*place_building_func)(int, int);  
-place_building_func place_building_funcs[5] = {
+place_building_func place_building_funcs[6] = {
     &api_place_nothing,
     &api_place_house, 
     &api_place_road, 
 //    &api_place_engineer, 
-//    &api_place_prefecture,
+    &api_place_prefecture,
     &api_place_garden,
     &api_place_well
 }; 
 
-char* place_building_names[5] = {
+char* place_building_names[6] = {
     "empty land",
     "house",
     "road",
 //    "engineer's post",
-//    "prefecture",
+    "prefecture",
     "garden",
     "well"
 };
