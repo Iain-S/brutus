@@ -16,14 +16,14 @@
 
 
 void api_place_house(int x, int y){
+    // Place a house at the tile given by x and y
     int placed = place_houses(0, x, y, x, y);
     assert(placed == 1);
 }
 
 
 void api_place_road(int x, int y){
-//    int placed = building_construction_place_road(0, x, y, x, y);
-//    assert(placed == 1);
+    // Place a road at the tile given by x and y
     building_construction_set_type(BUILDING_ROAD);
     map_tile tile;
     tile.x = x;
@@ -34,13 +34,14 @@ void api_place_road(int x, int y){
 }
 
 
-void api_place_engineer(int x, int y){
+//void api_place_engineer(int x, int y){
 //    int placed = building_construction_place_building(BUILDING_ENGINEERS_POST, x, y);
 //    assert(placed == 1);
-}
+//}
 
 
 void api_place_prefecture(int x, int y){
+    // Place a prefecture at the tile given by x and y
     int placed = building_construction_place_building(BUILDING_PREFECTURE, x, y);
     assert(placed == 1);
     
@@ -48,13 +49,18 @@ void api_place_prefecture(int x, int y){
 
 
 void api_place_nothing(int x, int y){
+    // By not placing anything, we leave empty grass
+    // ToDo We should probably delete what was at x and y
     // pass
 }
 
+
 void api_place_well(int x, int y){
+    // Place a well at the tile given by x and y
     int placed = building_construction_place_building(BUILDING_WELL, x, y);
     assert(placed == 1);
 }
+
 
 void api_place_garden(int x, int y){
 //    int placed = place_garden(x, y, x, y); //building_construction_place_building(BUILDING_GARDENS, x, y);
@@ -71,57 +77,64 @@ void api_place_garden(int x, int y){
     tile.y = y;
     build_start(&tile);
     build_move(&tile);
-
     build_end();
-           
 }
 
-//void build_buildings(void* xp){
-//    return;
-//}
 
-// These are our choice of buildings
+void api_place_market(int x, int y){
+    // Place a market at the tile given by x and y
+    building_construction_set_type(BUILDING_MARKET);
+    map_tile tile;
+    tile.x = x;
+    tile.y = y;
+    build_start(&tile);
+    build_move(&tile);
+    build_end();
+}
+
+
 typedef void (*place_building_func)(int, int);  
-place_building_func place_building_funcs[6] = {
+place_building_func place_building_funcs[7] = {
+// These are our choice of buildings
     &api_place_nothing,
     &api_place_house, 
     &api_place_road, 
 //    &api_place_engineer, 
     &api_place_prefecture,
     &api_place_garden,
-    &api_place_well
+    &api_place_well,
+    &api_place_market
 }; 
 
-char* place_building_names[6] = {
+
+char* place_building_names[7] = {
     "empty land",
     "house",
     "road",
 //    "engineer's post",
     "prefecture",
     "garden",
-    "well"
+    "well",
+    "market"
 };
+
+
+int place_building_sizes[7] = {
+// These must be sorted in ascending size
+    1,
+    1,
+    1,
+    1,
+    1,
+    1,
+    4
+};
+
 
 char* api_get_building_name(int i){
     return place_building_names[i];
 }
 
-//void api_init_random_3_by_3(){
-//
-//    
-////    place_building_func* buildings_placed = (place_building_func*) calloc(9 * 
-////            sizeof(place_building_func));
-//    
-//    // For each tile in our 3 x 3, place a building
-//    for(int x=0; x < 3; x++){
-//        for(int y=0; y < 3; y++){
-//            int random_index = rand() % (sizeof(place_building_names) / sizeof(place_building_names[0]));
-//            place_building_funcs[random_index](x + 7, y + 7);
-////            buildings_placed[x * 3 + y] = place_building_funcs[random_index];
-//        }
-//    } 
-////    return buildings_placed;
-//};
 
 int api_score_city(){
     // The same as ratings.calculate_max_prosperity but we take the total
@@ -150,23 +163,24 @@ void api_build_buildings(void* xp){
 }
 
 
-void api_change_a_square(){
-    // Change one square of our housing block
-    return;   
-}
-
 void api_modify_elements(void* xp, int num_elements){
     // Modify up to num_elements of xp, in place
     int (*squares)[ANNEAL_DIM] = (int(*)[ANNEAL_DIM])xp;
-    //int number_of_squares = (sizeof(squares)/sizeof(squares[0])) * (sizeof(squares[0]) / sizeof(squares[0][0]));
     
     for(int i = 0; i < num_elements; i++){
         int square_index = rand() % (ANNEAL_DIM * ANNEAL_DIM);
         int x = square_index / ANNEAL_DIM;
         int y = square_index % ANNEAL_DIM;
         
+//        int biggest_buildable_building = 
+        
         int new_building_type = rand() % (sizeof(place_building_funcs) / sizeof(place_building_funcs[0]));
         squares[x][y] = new_building_type;
     } 
     return;
+}
+
+
+int api_test_func(int a) {
+    return a * 2;
 }

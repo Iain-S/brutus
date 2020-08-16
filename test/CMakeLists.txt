@@ -1,4 +1,6 @@
 include_directories(.)
+#include_directories(../src)
+
 
 if(${CMAKE_C_COMPILER_ID} STREQUAL "GNU" OR ${CMAKE_C_COMPILER_ID} STREQUAL "Clang")
     set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} --coverage")
@@ -25,6 +27,32 @@ add_executable(compare
     sav/sav_compare.c
     stub/log.c
     ${PROJECT_SOURCE_DIR}/src/core/zip.c
+)
+
+add_executable(annealing_tests
+    annealing_tests.c
+    ../src/annealing/annealing_api.c
+    stub/image.c
+    stub/input.c
+    stub/lang.c
+    stub/log.c
+    stub/model.c
+    stub/sound_device.c
+    stub/ui.c
+    stub/video.c
+    ${TEST_CORE_FILES}
+    ${TEST_BUILDING_FILES}
+    ${CITY_FILES}
+    ${EMPIRE_FILES}
+    ${FIGURE_FILES}
+    ${FIGURETYPE_FILES}
+    ${GAME_FILES}
+    ${MAP_FILES}
+    ${SCENARIO_FILES}
+    ${SOUND_FILES}
+    ${EDITOR_FILES}    
+#    ${WIDGET_FILES}
+
 )
 
 add_executable(autopilot

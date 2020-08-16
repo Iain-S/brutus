@@ -26,6 +26,7 @@ extern "C" {
     void api_modify_elements(void*, int);
     char* api_get_building_name(int);
 
+    int api_test_func(int);
     
 #ifdef __cplusplus
 }
