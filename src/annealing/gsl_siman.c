@@ -31,6 +31,7 @@
 #define ITERS_FIXED_T 3  //1000
 
 /* max step size in random walk */
+// ToDo does this need to be related to ANNEAL_DIM?
 #define STEP_SIZE 9
 
 /* Boltzmann constant */
@@ -211,8 +212,8 @@ double M1(void *xp, void *yp)
     int (*y_squares)[ANNEAL_DIM] = (int(*)[ANNEAL_DIM])yp;
     
     // for now, just add the number of different squares
-    for (int x = 0; x < 3; x++){
-        for (int y = 0; y < 3; y++){
+    for (int x = 0; x < ANNEAL_DIM; x++){
+        for (int y = 0; y < ANNEAL_DIM; y++){
             if(x_squares[x][y] != y_squares[x][y]){
                 distance++;
             }
@@ -252,7 +253,7 @@ gsl_siman_main(void)
     gsl_rng * r;
 
     // initialise with empty land
-    int (*xp_initial)[ANNEAL_DIM] = (int(*)[ANNEAL_DIM])calloc(ANNEAL_DIM * ANNEAL_DIM, sizeof(int));//{{{0, 0, 0}, {0, 0, 0}, {0, 0, 0}};
+    int (*xp_initial)[ANNEAL_DIM] = (int(*)[ANNEAL_DIM])calloc(ANNEAL_DIM * ANNEAL_DIM, sizeof(int));
 
     gsl_rng_env_setup();
     srand(time(NULL));
@@ -269,7 +270,7 @@ gsl_siman_main(void)
     SDL_Log("Annealing started");
     gsl_siman_solve(r, xp_initial, E1, S1, M1, P1,
                     NULL, NULL, NULL,
-                    sizeof(int) * 9, params);
+                    sizeof(int) * ANNEAL_DIM * ANNEAL_DIM, params);
    
     SDL_Log("Annealing finished");
     
@@ -281,6 +282,8 @@ gsl_siman_main(void)
     // Write the best solution to the log in case we can't see it on
     // the screen
     int (*squares)[ANNEAL_DIM] = (int(*)[ANNEAL_DIM])xp_initial;
+    
+    // ToDo print out arbitrary size
     for (int y = 0; y < 3; y++){
         SDL_Log("%d %d %d", squares[0][y], squares[1][y], squares[2][y]);
 

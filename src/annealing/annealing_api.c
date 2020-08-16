@@ -142,8 +142,8 @@ void api_build_buildings(void* xp){
 //    int squares[ANNEAL_DIM][ANNEAL_DIM] = (int[ANNEAL_DIM][ANNEAL_DIM]) xp;
     map_property_clear_constructing_and_deleted();
     int (*squares)[ANNEAL_DIM] = (int(*)[ANNEAL_DIM])xp;
-    for (int x = 0; x < 3; x++){
-        for (int y = 0; y < 3; y++){
+    for (int x = 0; x < ANNEAL_DIM; x++){
+        for (int y = 0; y < ANNEAL_DIM; y++){
             place_building_funcs[squares[x][y]](x + 7, y + 7);
         }
     }
@@ -161,9 +161,9 @@ void api_modify_elements(void* xp, int num_elements){
     //int number_of_squares = (sizeof(squares)/sizeof(squares[0])) * (sizeof(squares[0]) / sizeof(squares[0][0]));
     
     for(int i = 0; i < num_elements; i++){
-        int square_index = rand() % 9;
-        int x = square_index / 3;
-        int y = square_index % 3;
+        int square_index = rand() % (ANNEAL_DIM * ANNEAL_DIM);
+        int x = square_index / ANNEAL_DIM;
+        int y = square_index % ANNEAL_DIM;
         
         int new_building_type = rand() % (sizeof(place_building_funcs) / sizeof(place_building_funcs[0]));
         squares[x][y] = new_building_type;

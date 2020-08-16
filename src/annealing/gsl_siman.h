@@ -21,7 +21,7 @@ extern "C" {
     int gsl_siman_main(void);
     int anneal_next_loop;
 
-    #define ANNEAL_DIM 3
+    #define ANNEAL_DIM 4
 
 #ifdef __cplusplus
 }
