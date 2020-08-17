@@ -163,24 +163,26 @@ void api_build_buildings(void* xp){
 }
 
 
-void api_modify_elements(void* xp, int num_elements){
+void api_modify_elements_r(void* xp, int num_elements, int (*rand_a)(void), int (*rand_b)(void)){
     // Modify up to num_elements of xp, in place
     int (*squares)[ANNEAL_DIM] = (int(*)[ANNEAL_DIM])xp;
     
     for(int i = 0; i < num_elements; i++){
-        int square_index = rand() % (ANNEAL_DIM * ANNEAL_DIM);
+        int square_index = rand_a() % (ANNEAL_DIM * ANNEAL_DIM);
         int x = square_index / ANNEAL_DIM;
         int y = square_index % ANNEAL_DIM;
         
 //        int biggest_buildable_building = 
         
-        int new_building_type = rand() % (sizeof(place_building_funcs) / sizeof(place_building_funcs[0]));
+        int number_of_buildings = sizeof(place_building_funcs) / sizeof(place_building_funcs[0]);
+        int new_building_type = rand_b() % number_of_buildings;
         squares[x][y] = new_building_type;
     } 
     return;
 }
 
 
-int api_test_func(int a) {
-    return a * 2;
+void api_modify_elements(void* xp, int num_elements){
+    // Modify up to num_elements of xp, in place
+    api_modify_elements_r(xp, num_elements, rand, rand);
 }
