@@ -276,7 +276,7 @@ gsl_siman_main(void)
 //    game_file_load_saved_game("S1 01.sav");
     SDL_Log("showing window");
     window_city_show();
-    setting_reset_speeds(10000, setting_scroll_speed());
+    setting_reset_speeds(100000, setting_scroll_speed());
 
     
     SDL_Log("Annealing started");
