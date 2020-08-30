@@ -1,5 +1,7 @@
 #include <stdlib.h>
 #include <assert.h>
+#include <stdio.h>
+
 
 #include "building/construction.h"
 #include "building/construction_routed.h"
@@ -12,7 +14,6 @@
 #include "gsl_siman.h"
 #include "annealing/annealing_api.h"
 #include "widget/city.h"
-
 
 
 void api_place_house(int x, int y){
@@ -94,7 +95,7 @@ void api_place_market(int x, int y){
 
 
 typedef void (*place_building_func)(int, int);  
-place_building_func place_building_funcs[7] = {
+place_building_func place_building_funcs[6] = {
 // These are our choice of buildings
     &api_place_nothing,
     &api_place_house, 
@@ -103,11 +104,11 @@ place_building_func place_building_funcs[7] = {
     &api_place_prefecture,
     &api_place_garden,
     &api_place_well,
-    &api_place_market
+//    &api_place_market
 }; 
 
 
-char* place_building_names[7] = {
+char* place_building_names[6] = {
     "empty land",
     "house",
     "road",
@@ -115,11 +116,11 @@ char* place_building_names[7] = {
     "prefecture",
     "garden",
     "well",
-    "market"
+//    "market"
 };
 
 
-int place_building_sizes[7] = {
+int place_building_sizes[6] = {
 // These must be sorted in ascending size
     1,
     1,
@@ -127,7 +128,7 @@ int place_building_sizes[7] = {
     1,
     1,
     1,
-    4
+//    4
 };
 
 
@@ -152,12 +153,17 @@ int api_score_city(){
 
 
 void api_build_buildings(void* xp){
-//    int squares[ANNEAL_DIM][ANNEAL_DIM] = (int[ANNEAL_DIM][ANNEAL_DIM]) xp;
     map_property_clear_constructing_and_deleted();
-    int (*squares)[ANNEAL_DIM] = (int(*)[ANNEAL_DIM])xp;
+    abp (*squares)[ANNEAL_DIM] = (abp(*)[ANNEAL_DIM])xp;
     for (int x = 0; x < ANNEAL_DIM; x++){
         for (int y = 0; y < ANNEAL_DIM; y++){
-            place_building_funcs[squares[x][y]](x + 7, y + 7);
+            ab my_building = *(squares[x][y]);
+            int building_type = my_building.building_type;
+            printf("getting: %d\n", building_type);
+            if (building_type >= (sizeof(place_building_funcs) / sizeof(place_building_funcs[0]))){
+                printf("got: %d", building_type);    
+            }
+            place_building_funcs[building_type](x + 7, y + 7);
         }
     }
 }
@@ -165,7 +171,8 @@ void api_build_buildings(void* xp){
 
 void api_modify_elements_r(void* xp, int num_elements, int (*rand_a)(void), int (*rand_b)(void)){
     // Modify up to num_elements of xp, in place
-    int (*squares)[ANNEAL_DIM] = (int(*)[ANNEAL_DIM])xp;
+    // Decide on the square to change with rand_a and the new building with rand_b
+    abp (*squares)[ANNEAL_DIM] = (abp(*)[ANNEAL_DIM])xp;
     
     for(int i = 0; i < num_elements; i++){
         int square_index = rand_a() % (ANNEAL_DIM * ANNEAL_DIM);
@@ -176,13 +183,20 @@ void api_modify_elements_r(void* xp, int num_elements, int (*rand_a)(void), int 
         
         int number_of_buildings = sizeof(place_building_funcs) / sizeof(place_building_funcs[0]);
         int new_building_type = rand_b() % number_of_buildings;
-        squares[x][y] = new_building_type;
+        printf("setting: %d\n", new_building_type);
+        abp new_building = (abp)malloc(1 * sizeof(ab));
+        new_building->building_type = new_building_type;
+        // this causes problems, presumably because there are other copies of this
+        // xp made by gsl
+//        free(squares[x][y]);  
+        squares[x][y] = new_building;
     } 
     return;
 }
 
 
 void api_modify_elements(void* xp, int num_elements){
-    // Modify up to num_elements of xp, in place
+    // Modify up to num_elements of xp, in place,
+    // specifying which random number generators to use
     api_modify_elements_r(xp, num_elements, rand, rand);
 }

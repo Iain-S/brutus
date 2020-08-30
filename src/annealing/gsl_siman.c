@@ -208,8 +208,8 @@ double E1(void *xp)
 double M1(void *xp, void *yp)
 {
     int distance = 0;
-    int (*x_squares)[ANNEAL_DIM] = (int(*)[ANNEAL_DIM])xp;
-    int (*y_squares)[ANNEAL_DIM] = (int(*)[ANNEAL_DIM])yp;
+    abp (*x_squares)[ANNEAL_DIM] = (abp(*)[ANNEAL_DIM])xp;
+    abp (*y_squares)[ANNEAL_DIM] = (abp(*)[ANNEAL_DIM])yp;
     
     // for now, just add the number of different squares
     for (int x = 0; x < ANNEAL_DIM; x++){
@@ -228,7 +228,7 @@ double M1(void *xp, void *yp)
  step size. */
 void S1(const gsl_rng* r, void *xp, double step_size)
 {
-    int (*old_xp)[ANNEAL_DIM] = (int(*)[ANNEAL_DIM])xp;
+    abp (*old_xp)[ANNEAL_DIM] = (abp(*)[ANNEAL_DIM])xp;
 //    SDL_Log("step size: %f", step_size);
     
     // This function returns a random integer from 0 to n-1
@@ -253,8 +253,22 @@ gsl_siman_main(void)
     gsl_rng * r;
 
     // initialise with empty land
-    int (*xp_initial)[ANNEAL_DIM] = (int(*)[ANNEAL_DIM])calloc(ANNEAL_DIM * ANNEAL_DIM, sizeof(int));
+    abp (*xp_initial)[ANNEAL_DIM] = (abp(*)[ANNEAL_DIM])calloc(ANNEAL_DIM * ANNEAL_DIM, sizeof(abp));
 
+    for (int x = 0; x < ANNEAL_DIM; x++){
+        for (int y = 0; y < ANNEAL_DIM; y++){
+            abp empty_land = (abp)malloc(1 * sizeof(ab));
+            empty_land->building_type = 0;
+            xp_initial[x][y] = empty_land;
+        }
+    }
+    
+    for (int x = 0; x < ANNEAL_DIM; x++){
+        for (int y = 0; y < ANNEAL_DIM; y++){
+            printf("land?: %d", xp_initial[x][y]->building_type);
+        }
+    }
+    
     gsl_rng_env_setup();
     srand(time(NULL));
 
@@ -270,7 +284,7 @@ gsl_siman_main(void)
     SDL_Log("Annealing started");
     gsl_siman_solve(r, xp_initial, E1, S1, M1, P1,
                     NULL, NULL, NULL,
-                    sizeof(int) * ANNEAL_DIM * ANNEAL_DIM, params);
+                    sizeof(abp) * ANNEAL_DIM * ANNEAL_DIM, params);
    
     SDL_Log("Annealing finished");
     
@@ -281,7 +295,7 @@ gsl_siman_main(void)
     
     // Write the best solution to the log in case we can't see it on
     // the screen
-    int (*squares)[ANNEAL_DIM] = (int(*)[ANNEAL_DIM])xp_initial;
+    abp (*squares)[ANNEAL_DIM] = (abp(*)[ANNEAL_DIM])xp_initial;
     
     // ToDo print out arbitrary size
     for (int y = 0; y < 3; y++){

@@ -196,9 +196,6 @@ set(CORE_FILES
 )
 
 set(ANNEALING_FILES
-    ${PROJECT_SOURCE_DIR}/src/annealing/annealing.c
-    ${PROJECT_SOURCE_DIR}/src/annealing/tsp.c
-    ${PROJECT_SOURCE_DIR}/src/annealing/random.c
     ${PROJECT_SOURCE_DIR}/src/annealing/annealing_api.c
     ${PROJECT_SOURCE_DIR}/src/annealing/gsl_siman.c
 )
