@@ -21,10 +21,11 @@ extern "C" {
     int gsl_siman_main(void);
     int anneal_next_loop;
     
-    // pointer to an annealing building
+    // an annealing building
     typedef struct {
         int building_type;
-    } ab, *abp;  
+        unsigned int uid;
+    } ab;  
 
     #define ANNEAL_DIM 4
 

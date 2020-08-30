@@ -154,15 +154,15 @@ int api_score_city(){
 
 void api_build_buildings(void* xp){
     map_property_clear_constructing_and_deleted();
-    abp (*squares)[ANNEAL_DIM] = (abp(*)[ANNEAL_DIM])xp;
+    ab (*squares)[ANNEAL_DIM] = (ab(*)[ANNEAL_DIM])xp;
     for (int x = 0; x < ANNEAL_DIM; x++){
         for (int y = 0; y < ANNEAL_DIM; y++){
-            ab my_building = *(squares[x][y]);
+            ab my_building = squares[x][y];
             int building_type = my_building.building_type;
-            printf("getting: %d\n", building_type);
-            if (building_type >= (sizeof(place_building_funcs) / sizeof(place_building_funcs[0]))){
-                printf("got: %d", building_type);    
-            }
+//            printf("getting: %d\n", building_type);
+//            if (building_type >= (sizeof(place_building_funcs) / sizeof(place_building_funcs[0]))){
+//                printf("got: %d", building_type);    
+//            }
             place_building_funcs[building_type](x + 7, y + 7);
         }
     }
@@ -172,7 +172,7 @@ void api_build_buildings(void* xp){
 void api_modify_elements_r(void* xp, int num_elements, int (*rand_a)(void), int (*rand_b)(void)){
     // Modify up to num_elements of xp, in place
     // Decide on the square to change with rand_a and the new building with rand_b
-    abp (*squares)[ANNEAL_DIM] = (abp(*)[ANNEAL_DIM])xp;
+    ab (*squares)[ANNEAL_DIM] = (ab(*)[ANNEAL_DIM])xp;
     
     for(int i = 0; i < num_elements; i++){
         int square_index = rand_a() % (ANNEAL_DIM * ANNEAL_DIM);
@@ -184,12 +184,10 @@ void api_modify_elements_r(void* xp, int num_elements, int (*rand_a)(void), int 
         int number_of_buildings = sizeof(place_building_funcs) / sizeof(place_building_funcs[0]);
         int new_building_type = rand_b() % number_of_buildings;
         printf("setting: %d\n", new_building_type);
-        abp new_building = (abp)malloc(1 * sizeof(ab));
-        new_building->building_type = new_building_type;
         // this causes problems, presumably because there are other copies of this
         // xp made by gsl
 //        free(squares[x][y]);  
-        squares[x][y] = new_building;
+        squares[x][y].building_type = new_building_type;
     } 
     return;
 }
