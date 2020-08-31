@@ -19,14 +19,17 @@ extern "C" {
 #endif
 
     //void api_place_house(int x, int y);
-//    void api_init_random_3_by_3(void);
+    //    void api_init_random_3_by_3(void);
     int api_score_city(void);
     void api_change_a_square(void);
     void api_build_buildings(void*);
     void api_modify_elements(void*, int);
     char* api_get_building_name(int);
     void api_modify_elements_r(void*, int, int (*)(void), int (*)(void));
-    
+    void api_pave_over(void*, int, int);
+    void api_replace_building(void*, int, int, int);
+    unsigned int global_building_uid_counter;
+
 #ifdef __cplusplus
 }
 #endif
