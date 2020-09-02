@@ -26,6 +26,7 @@ void api_place_road(int x, int y) {
     map_tile tile;
     tile.x = x;
     tile.y = y;
+    tile.grid_offset = 1;
     build_start(&tile);
     build_move(&tile);
     build_end();
@@ -69,6 +70,7 @@ void api_place_garden(int x, int y) {
     map_tile tile;
     tile.x = x;
     tile.y = y;
+    tile.grid_offset = 1;
     build_start(&tile);
     build_move(&tile);
     build_end();
@@ -80,6 +82,21 @@ void api_place_market(int x, int y) {
     map_tile tile;
     tile.x = x;
     tile.y = y;
+    tile.grid_offset = 1;
+    build_start(&tile);
+    build_move(&tile);
+    build_end();
+}
+
+
+void api_place_school(int x, int y) {
+    // Place a market at the tile given by x and y
+    building_construction_set_type(BUILDING_SCHOOL);
+    map_tile tile;
+    tile.x = x;
+    tile.y = y;
+    // ToDo What is grid_offset for and what should we set it to?
+    tile.grid_offset = 1;
     build_start(&tile);
     build_move(&tile);
     build_end();
@@ -87,7 +104,7 @@ void api_place_market(int x, int y) {
 
 
 typedef void (*place_building_func)(int, int);
-place_building_func place_building_funcs[7] = {
+place_building_func place_building_funcs[8] = {
     // These are our choice of buildings
     &api_place_nothing,
     &api_place_house,
@@ -95,24 +112,26 @@ place_building_func place_building_funcs[7] = {
     &api_place_prefecture,
     &api_place_garden,
     &api_place_well,
-    &api_place_market
+    &api_place_market,
+    &api_place_school
     //    &api_place_engineer, 
 };
 
 
-char* place_building_names[7] = {
+char* place_building_names[8] = {
     "empty land",
     "house",
     "road",
     "prefecture",
     "garden",
     "well",
-    "market"
+    "market",
+    "school"
     //    "engineer's post",
 };
 
 
-int place_building_sizes[7] = {
+int place_building_sizes[8] = {
     // These must be sorted in ascending size
     // and are the size in one dimension (i.e. width not area)
     1,
@@ -121,6 +140,7 @@ int place_building_sizes[7] = {
     1,
     1,
     1,
+    2,
     2
     //    1
 };
@@ -176,27 +196,47 @@ void api_build_buildings(void* xp) {
     }
 }
 
+uint api_max(uint a, uint b) {
+    if (a >= b) {
+        return a;
+    } else {
+        return b;
+    }
+}
+
+unsigned int api_get_biggest_building_index(unsigned int x, unsigned int y) {
+    // Get the index of the largest building that can be built here
+
+    // The size of the largest building we can put at x,y
+    unsigned int biggest_building_size = ANNEAL_DIM - api_max(x, y);
+
+
+    unsigned int number_of_buildings = sizeof (place_building_funcs) / sizeof (place_building_funcs[0]);
+    unsigned int i = 0;
+    for (; i < number_of_buildings; i++) {
+        if (place_building_sizes[i] > biggest_building_size) {
+            break;
+        }
+    }
+    assert(i > 0);
+    return (i - 1);
+}
+
 void api_modify_elements_r(void* xp, int num_elements, int (*rand_a)(void), int (*rand_b)(void)) {
     // Modify up to num_elements of xp, in place
     // Decide on the square to change with rand_a and the new building with rand_b
+    
 //    ab(*squares)[ANNEAL_DIM] = (ab(*)[ANNEAL_DIM])xp;
 
     for (int i = 0; i < num_elements; i++) {
-        int square_index = rand_a() % (ANNEAL_DIM * ANNEAL_DIM);
-        int x = square_index / ANNEAL_DIM;
-        int y = square_index % ANNEAL_DIM;
+        uint square_index = rand_a() % (ANNEAL_DIM * ANNEAL_DIM);
+        uint x = square_index / ANNEAL_DIM;
+        uint y = square_index % ANNEAL_DIM;
 
-        //todo
-        //        int biggest_buildable_building = 
+        // The index of the largest building we can put at x,y
+        uint biggest_buildable_building = api_get_biggest_building_index(x, y);
 
-        int number_of_buildings = sizeof (place_building_funcs) / sizeof (place_building_funcs[0]);
-        int new_building_type = rand_b() % number_of_buildings;
-        // this causes problems, presumably because there are other copies of this
-        // xp made by gsl
-        //        free(squares[x][y]);  
-//        squares[x][y].building_type = new_building_type;
-//        squares[x][y].uid = global_building_uid_counter;
-//        global_building_uid_counter++;
+        uint new_building_type = rand_b() % (biggest_buildable_building + 1);
         api_replace_building(xp, x, y, new_building_type);
     }
     return;
@@ -233,27 +273,27 @@ void api_pave_over(void* xp, int x, int y) {
 
     unsigned int uid = squares[x][y].uid;
     unsigned int building_type = squares[x][y].building_type;
-    
+
     for (int i = 0; i < ANNEAL_DIM; i++) {
         for (int j = 0; j < ANNEAL_DIM; j++) {
             if (squares[i][j].uid == uid) {
                 assert(squares[i][j].building_type == building_type);
-                
-//                if (squares[i][j].building_type != building_type){
-//                    printf("x:%d  y:%d  i:%d  j:%d uid:%d\n", x, y, i, j, uid);
-//
-//
-//                    for (int y = 0; y < 4; y++) {
-//                        printf("%d %d %d %d\n", squares[0][y].building_type, squares[1][y].building_type, squares[2][y].building_type, squares[3][y].building_type);
-//                    }
-//
-//                    for (int y = 0; y < 4; y++) {
-//                        printf("%d %d %d %d\n", squares[0][y].uid, squares[1][y].uid, squares[2][y].uid, squares[3][y].uid);
-//                    }
-//                    // for debugging
-//                    assert(squares[x][y].building_type == squares[i][j].building_type);
-//
-//                }
+
+                //                if (squares[i][j].building_type != building_type){
+                //                    printf("x:%d  y:%d  i:%d  j:%d uid:%d\n", x, y, i, j, uid);
+                //
+                //
+                //                    for (int y = 0; y < 4; y++) {
+                //                        printf("%d %d %d %d\n", squares[0][y].building_type, squares[1][y].building_type, squares[2][y].building_type, squares[3][y].building_type);
+                //                    }
+                //
+                //                    for (int y = 0; y < 4; y++) {
+                //                        printf("%d %d %d %d\n", squares[0][y].uid, squares[1][y].uid, squares[2][y].uid, squares[3][y].uid);
+                //                    }
+                //                    // for debugging
+                //                    assert(squares[x][y].building_type == squares[i][j].building_type);
+                //
+                //                }
                 squares[i][j].building_type = 2; // road
                 squares[i][j].uid = global_building_uid_counter;
                 global_building_uid_counter++;

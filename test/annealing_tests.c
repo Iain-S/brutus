@@ -36,6 +36,14 @@ void test_api_modify_elements_r1(void) {
 
     ab(*xp)[ANNEAL_DIM] = (ab(*)[ANNEAL_DIM])calloc(ANNEAL_DIM * ANNEAL_DIM, sizeof (ab));
 
+    for (int x = 0; x < ANNEAL_DIM; x++) {
+        for (int y = 0; y < ANNEAL_DIM; y++) {
+            xp[x][y].building_type = 0;
+            xp[x][y].uid = global_building_uid_counter;
+            global_building_uid_counter++;
+        }
+    }
+    
     api_modify_elements_r(xp, 1, return_one, return_one);
 
     for (int x = 0; x < ANNEAL_DIM; x++) {
@@ -134,7 +142,15 @@ void test_api_replace_building(void) {
     assert(xp[2][3].building_type == 0); // empty land
 }
 
+void test_api_get_biggest_building_index(void) {
+    printf("test_api_get_biggest_building_index\n");
+
+    assert(api_get_biggest_building_index(0, 0) == 7);
+    assert(api_get_biggest_building_index(ANNEAL_DIM-1, ANNEAL_DIM-1) == 5);
+}
+
 int main(void) {
+    test_api_get_biggest_building_index();
     test_api_modify_elements_r1();
     test_api_pave_over();
     test_api_replace_building();
