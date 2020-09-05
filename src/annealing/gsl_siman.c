@@ -20,7 +20,11 @@
 #include "graphics/window.h"
 #include "sound/city.h"
 #include "game/settings.h"
+#include "game/resource.h"
 #include "window/city.h"
+#include "building/granary.h"
+#include "city/finance.h"
+
 
 /* set up parameters for this simulated annealing run */
 
@@ -167,11 +171,37 @@ static void anneal_handle_event(SDL_Event *event, int *active, int *quit) {
     }
 }
 
+void provision_city(void) {
+    // give ourselves lots of food and money to work with
+
+    // find our granary
+    building* granary = 0;
+    for (int i = 1; i < MAX_BUILDINGS; i++) {
+        building *b = building_get(i);
+        if (b->type == BUILDING_GRANARY) {
+            granary = b;
+        }
+    }
+
+    assert(granary > 0);
+
+    // fill our granary
+    for (int x = 0; x < 20; x++) {
+        building_granary_add_resource(granary, RESOURCE_WHEAT, 0);
+    }
+
+    // fill our treasury
+    city_finance_process_donation(10000);
+
+}
+
 /* This function type should return the energy of a 
  * configuration xp */
 double E1(void *xp) {
     // load game
     assert(1 == game_file_load_saved_game("S1 01.sav"));
+
+    provision_city();
 
     api_build_buildings(xp);
 
@@ -240,8 +270,7 @@ void P1(void *xp) {
     // is nice as it is
 }
 
-int
-gsl_siman_main(void) {
+int gsl_siman_main(void) {
     const gsl_rng_type * T;
     gsl_rng * r;
 
@@ -262,9 +291,8 @@ gsl_siman_main(void) {
     T = gsl_rng_default;
     r = gsl_rng_alloc(T);
 
-    //    game_file_load_saved_game("S1 01.sav");
-    SDL_Log("showing window");
     window_city_show();
+
     setting_reset_speeds(100000, setting_scroll_speed());
 
 
