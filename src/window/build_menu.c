@@ -70,7 +70,7 @@ static int init(int submenu)
     data.selected_submenu = submenu;
     data.num_items = building_menu_count_items(submenu);
     data.y_offset = Y_MENU_OFFSETS[data.num_items];
-    if (submenu == 0 || submenu == 1 || submenu == 2) {
+    if (submenu == 0 || submenu == 1 || submenu == 2 || submenu == 26) {
         button_menu_item(0);
         return 0;
     } else {

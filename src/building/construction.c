@@ -32,6 +32,8 @@
 #include "map/terrain.h"
 #include "map/tiles.h"
 #include "map/water.h"
+#include "annealing/gsl_siman.h"
+
 
 struct reservoir_info {
     int cost;
@@ -363,6 +365,7 @@ int building_construction_is_updatable(void)
         case BUILDING_WALL:
         case BUILDING_PLAZA:
         case BUILDING_GARDENS:
+        case BUILDING_ANNEALING_ZONE:
         case BUILDING_HOUSE_VACANT_LOT:
             return 1;
         default:
@@ -411,6 +414,9 @@ void building_construction_update(int x, int y, int grid_offset)
         int items_placed = place_plaza(data.start.x, data.start.y, x, y);
         if (items_placed >= 0) current_cost *= items_placed;
     } else if (type == BUILDING_GARDENS) {
+        int items_placed = place_garden(data.start.x, data.start.y, x, y);
+        if (items_placed >= 0) current_cost *= items_placed;
+    } else if (type == BUILDING_ANNEALING_ZONE) {
         int items_placed = place_garden(data.start.x, data.start.y, x, y);
         if (items_placed >= 0) current_cost *= items_placed;
     } else if (type == BUILDING_LOW_BRIDGE || type == BUILDING_SHIP_BRIDGE) {
@@ -515,6 +521,18 @@ void building_construction_place(void)
     if (type >= BUILDING_LARGE_TEMPLE_CERES && type <= BUILDING_LARGE_TEMPLE_VENUS && city_resource_count(RESOURCE_MARBLE) < 2) {
         map_property_clear_constructing_and_deleted();
         city_warning_show(WARNING_MARBLE_NEEDED_LARGE_TEMPLE);
+        return;
+    }
+    if (type == BUILDING_ANNEALING_ZONE){
+        // not sure whether this is needed
+        map_property_clear_constructing_and_deleted();
+        
+        // clear the area
+        building_construction_clear_land(0, x_start, y_start, x_end, y_end);
+
+        // call anneal on this area
+        gsl_siman_main();
+        
         return;
     }
     if (type == BUILDING_ORACLE && city_resource_count(RESOURCE_MARBLE) < 2) {

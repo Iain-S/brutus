@@ -95,7 +95,8 @@ static image_button buttons_build_expanded[] = {
     {113, 385, 39, 26, IB_BUILD, 92, 32, button_build, button_none, 11, 0, 1},
     {13, 421, 39, 26, IB_NORMAL, 92, 48, button_undo, button_none, 0, 0, 1},
     {63, 421, 39, 26, IB_NORMAL, 90, 18, button_messages, button_help, 0, 0, 1},
-    {113, 421, 39, 26, IB_BUILD, 90, 22, button_go_to_problem, button_none, 0, 0, 1},
+//    {113, 421, 39, 26, IB_BUILD, 90, 22, button_go_to_problem, button_none, 0, 0, 1},  // replace this
+    {113, 421, 39, 26, IB_BUILD, 90, 22, button_build, button_none, 26, 0, 1},  // with this
 };
 
 static image_button buttons_top_expanded[] = {
@@ -252,7 +253,9 @@ static void draw_number_of_messages(void)
         int messages = city_message_count();
         buttons_build_expanded[12].enabled = game_can_undo();
         buttons_build_expanded[13].enabled = messages > 0;
-        buttons_build_expanded[14].enabled = city_message_problem_area_count();
+//        buttons_build_expanded[14].enabled = city_message_problem_area_count();
+        buttons_build_expanded[14].enabled = 1;
+
         if (messages) {
             int x_offset = get_x_offset_expanded();
             text_draw_number_centered_colored(messages, x_offset + 74, 452, 32, FONT_SMALL_PLAIN, COLOR_BLACK);
@@ -377,6 +380,7 @@ static void button_go_to_problem(int param1, int param2)
         window_invalidate();
     }
 }
+
 
 static void button_advisors(int param1, int param2)
 {

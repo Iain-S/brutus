@@ -151,6 +151,7 @@ static void draw_regular_building(building_type type, int image_id, int x, int y
 
 static int get_building_image_id(int map_x, int map_y, building_type type, const building_properties *props)
 {
+   
     int image_id = image_group(props->image_group) + props->image_offset;
     if (type == BUILDING_GATEHOUSE) {
         int orientation = map_orientation_for_gatehouse(map_x, map_y);
@@ -239,6 +240,11 @@ static void draw_default(const map_tile *tile, int x_view, int y_view, building_
     // update road required based on timer
     building_construction_update_road_orientation();
 
+    if (type == BUILDING_ANNEALING_ZONE) {
+        // we want it to look like a garden but not act like one
+        type = BUILDING_GARDENS;
+    } 
+    
     const building_properties *props = building_properties_for_type(type);
     int building_size = type == BUILDING_WAREHOUSE ? 3 : props->size;
 

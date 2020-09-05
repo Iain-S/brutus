@@ -44,7 +44,7 @@ static const building_type MENU_BUILDING_TYPE[MAX_BUILDING_ITEMS][MAX_BUILDING_I
     {BUILDING_LARGE_TEMPLE_CERES, BUILDING_LARGE_TEMPLE_NEPTUNE, BUILDING_LARGE_TEMPLE_MERCURY, BUILDING_LARGE_TEMPLE_MARS, BUILDING_LARGE_TEMPLE_VENUS, 0},
     {BUILDING_FORT_LEGIONARIES, BUILDING_FORT_JAVELIN, BUILDING_FORT_MOUNTED, 0},
     {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 0}, // 25 herd/fish points
-    {0}, // 26 unused
+    {BUILDING_ANNEALING_ZONE, 0}, // 26 SIMULATED ANNEALING
     {0}, // 27 unused
     {0}, // 28 unused
     {0}, // 29 unused
@@ -319,7 +319,8 @@ int building_menu_next_index(int submenu, int current_index)
 
 building_type building_menu_type(int submenu, int item)
 {
-    return MENU_BUILDING_TYPE[submenu][item];
+    building_type mbt = MENU_BUILDING_TYPE[submenu][item];
+    return mbt;
 }
 
 int building_menu_has_changed(void)

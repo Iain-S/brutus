@@ -29,10 +29,10 @@
 /* set up parameters for this simulated annealing run */
 
 /* how many points do we try before stepping */
-#define N_TRIES 3 //200
+#define N_TRIES 1 //200
 
 /* how many iterations for each T? */
-#define ITERS_FIXED_T 3  //1000
+#define ITERS_FIXED_T 1  //1000
 
 /* max step size in random walk */
 // ToDo does this need to be related to ANNEAL_DIM?

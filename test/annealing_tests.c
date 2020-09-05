@@ -177,3 +177,7 @@ void build_move(const map_tile *tile) {
 void build_end(void) {
     return;
 }
+
+int gsl_siman_main(void) {
+    return;
+}
