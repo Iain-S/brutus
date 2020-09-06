@@ -145,7 +145,7 @@ int place_building_sizes[8] = {
     //    1
 };
 
-unsigned int global_building_uid_counter = 1;
+int global_building_uid_counter = 1;
 
 char* api_get_building_name(int i) {
     return place_building_names[i];
@@ -165,7 +165,7 @@ int api_score_city() {
     return points;
 }
 
-int already_built(unsigned int* built_uids, unsigned int max, unsigned int uid) {
+int already_built(int* built_uids, int max, int uid) {
     // does c have bool?
     for (int i = 0; i < max; i++) {
         if (built_uids[i] == uid) {
@@ -177,13 +177,13 @@ int already_built(unsigned int* built_uids, unsigned int max, unsigned int uid) 
 
 void api_build_buildings(void* xp) {
     map_property_clear_constructing_and_deleted();
-    ab(*squares)[ANNEAL_DIM] = (ab(*)[ANNEAL_DIM])xp;
+    ab(*squares)[ANNEAL_Y_DIM] = (ab(*)[ANNEAL_Y_DIM])xp;
 
-    unsigned int built_uids[ANNEAL_DIM * ANNEAL_DIM];
-    unsigned int uid_index = 0;
+    int built_uids[ANNEAL_Y_DIM * ANNEAL_X_DIM];
+    int uid_index = 0;
 
-    for (int x = 0; x < ANNEAL_DIM; x++) {
-        for (int y = 0; y < ANNEAL_DIM; y++) {
+    for (int x = 0; x < ANNEAL_X_DIM; x++) {
+        for (int y = 0; y < ANNEAL_Y_DIM; y++) {
             if (already_built(built_uids, uid_index, squares[x][y].uid)) {
                 continue;
             } else {
@@ -196,7 +196,7 @@ void api_build_buildings(void* xp) {
     }
 }
 
-uint api_max(uint a, uint b) {
+int api_max(uint a, uint b) {
     if (a >= b) {
         return a;
     } else {
@@ -204,15 +204,25 @@ uint api_max(uint a, uint b) {
     }
 }
 
-unsigned int api_get_biggest_building_index(unsigned int x, unsigned int y) {
+int api_min(uint a, uint b) {
+    if (a <= b) {
+        return a;
+    } else {
+        return b;
+    }
+}
+
+int api_get_biggest_building_index(int x, int y) {
     // Get the index of the largest building that can be built here
 
     // The size of the largest building we can put at x,y
-    unsigned int biggest_building_size = ANNEAL_DIM - api_max(x, y);
+    int biggest_y_dimension = ANNEAL_Y_DIM - y;
+    int biggest_x_dimension = ANNEAL_X_DIM - x;
+//    int biggest_building_size = api_min(ANNEAL_Y_DIM, ANNEAL_X_DIM) - api_max(x, y);
+    int biggest_building_size = api_min(biggest_x_dimension, biggest_y_dimension);
 
-
-    unsigned int number_of_buildings = sizeof (place_building_funcs) / sizeof (place_building_funcs[0]);
-    unsigned int i = 0;
+    int number_of_buildings = sizeof (place_building_funcs) / sizeof (place_building_funcs[0]);
+    int i = 0;
     for (; i < number_of_buildings; i++) {
         if (place_building_sizes[i] > biggest_building_size) {
             break;
@@ -229,14 +239,13 @@ void api_modify_elements_r(void* xp, int num_elements, int (*rand_a)(void), int 
 //    ab(*squares)[ANNEAL_DIM] = (ab(*)[ANNEAL_DIM])xp;
 
     for (int i = 0; i < num_elements; i++) {
-        uint square_index = rand_a() % (ANNEAL_DIM * ANNEAL_DIM);
-        uint x = square_index / ANNEAL_DIM;
-        uint y = square_index % ANNEAL_DIM;
+        int x = rand_a() % ANNEAL_X_DIM;
+        int y = rand_a() % ANNEAL_Y_DIM;
 
         // The index of the largest building we can put at x,y
-        uint biggest_buildable_building = api_get_biggest_building_index(x, y);
+        int biggest_buildable_building = api_get_biggest_building_index(x, y);
 
-        uint new_building_type = rand_b() % (biggest_buildable_building + 1);
+        int new_building_type = rand_b() % (biggest_buildable_building + 1);
         api_replace_building(xp, x, y, new_building_type);
     }
     return;
@@ -245,7 +254,7 @@ void api_modify_elements_r(void* xp, int num_elements, int (*rand_a)(void), int 
 void api_replace_building(void* xp, int x, int y, int new_building_type) {
     // replace the building at xp[x][y] with new_building
     // paving over any buildings that get in the way
-    ab(*squares)[ANNEAL_DIM] = (ab(*)[ANNEAL_DIM])xp;
+    ab(*squares)[ANNEAL_Y_DIM] = (ab(*)[ANNEAL_Y_DIM])xp;
 
     // firstly, pave over anything that would be touched by the building
     int new_building_size = place_building_sizes[new_building_type];
@@ -269,13 +278,13 @@ void api_replace_building(void* xp, int x, int y, int new_building_type) {
 void api_pave_over(void* xp, int x, int y) {
     // pave over the square at xp[x][y] and any other tiles that
     // that building covers
-    ab(*squares)[ANNEAL_DIM] = (ab(*)[ANNEAL_DIM])xp;
+    ab(*squares)[ANNEAL_Y_DIM] = (ab(*)[ANNEAL_Y_DIM])xp;
 
-    unsigned int uid = squares[x][y].uid;
-    unsigned int building_type = squares[x][y].building_type;
+    int uid = squares[x][y].uid;
+    int building_type = squares[x][y].building_type;
 
-    for (int i = 0; i < ANNEAL_DIM; i++) {
-        for (int j = 0; j < ANNEAL_DIM; j++) {
+    for (int i = 0; i < ANNEAL_X_DIM; i++) {
+        for (int j = 0; j < ANNEAL_Y_DIM; j++) {
             if (squares[i][j].uid == uid) {
                 assert(squares[i][j].building_type == building_type);
 

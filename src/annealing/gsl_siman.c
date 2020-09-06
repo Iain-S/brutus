@@ -21,6 +21,7 @@
 #include "sound/city.h"
 #include "game/settings.h"
 #include "game/resource.h"
+#include "game/state.h"
 #include "window/city.h"
 #include "building/granary.h"
 #include "city/finance.h"
@@ -234,13 +235,13 @@ double E1(void *xp) {
  configurations, xp and yp. */
 double M1(void *xp, void *yp) {
     int distance = 0;
-    ab(*x_squares)[ANNEAL_DIM] = (ab(*)[ANNEAL_DIM])xp;
-    ab(*y_squares)[ANNEAL_DIM] = (ab(*)[ANNEAL_DIM])yp;
+    ab(*a_squares)[ANNEAL_Y_DIM] = (ab(*)[ANNEAL_Y_DIM])xp;
+    ab(*b_squares)[ANNEAL_Y_DIM] = (ab(*)[ANNEAL_Y_DIM])xp;
 
     // for now, just add the number of different squares
-    for (int x = 0; x < ANNEAL_DIM; x++) {
-        for (int y = 0; y < ANNEAL_DIM; y++) {
-            if (x_squares[x][y].building_type != y_squares[x][y].building_type) {
+    for (int x = 0; x < ANNEAL_X_DIM; x++) {
+        for (int y = 0; y < ANNEAL_Y_DIM; y++) {
+            if (a_squares[x][y].building_type != b_squares[x][y].building_type) {
                 distance++;
             }
         }
@@ -253,7 +254,8 @@ double M1(void *xp, void *yp) {
  step taken from the generator, r, up to a max distance of 
  step size. */
 void S1(const gsl_rng* r, void *xp, double step_size) {
-    ab(*old_xp)[ANNEAL_DIM] = (ab(*)[ANNEAL_DIM])xp;
+    ab(*old_xp)[ANNEAL_Y_DIM] = (ab(*)[ANNEAL_Y_DIM])xp;
+
     //    SDL_Log("step size: %f", step_size);
 
     // This function returns a random integer from 0 to n-1
@@ -270,15 +272,16 @@ void P1(void *xp) {
     // is nice as it is
 }
 
+//int gsl_siman_main(int x_start, int y_start, int x_end, int y_end) {
 int gsl_siman_main(void) {
     const gsl_rng_type * T;
     gsl_rng * r;
 
     // initialise with empty land
-    ab(*xp_initial)[ANNEAL_DIM] = (ab(*)[ANNEAL_DIM])calloc(ANNEAL_DIM * ANNEAL_DIM, sizeof (ab));
+    ab(*xp_initial)[ANNEAL_Y_DIM] = (ab(*)[ANNEAL_Y_DIM])calloc(ANNEAL_Y_DIM * ANNEAL_X_DIM, sizeof (ab));
 
-    for (int x = 0; x < ANNEAL_DIM; x++) {
-        for (int y = 0; y < ANNEAL_DIM; y++) {
+    for (int x = 0; x < ANNEAL_X_DIM; x++) {
+        for (int y = 0; y < ANNEAL_Y_DIM; y++) {
             xp_initial[x][y].building_type = 0;
             xp_initial[x][y].uid = global_building_uid_counter;
             global_building_uid_counter++;
@@ -293,6 +296,8 @@ int gsl_siman_main(void) {
 
     window_city_show();
 
+    int original_speed = setting_game_speed();
+    
     setting_reset_speeds(100000, setting_scroll_speed());
     assert(1 == game_file_write_saved_game("annealing.sav"));
 
@@ -300,7 +305,7 @@ int gsl_siman_main(void) {
     SDL_Log("Annealing started");
     gsl_siman_solve(r, xp_initial, E1, S1, M1, P1,
             NULL, NULL, NULL,
-            sizeof (ab) * ANNEAL_DIM * ANNEAL_DIM, params);
+            sizeof (ab) * ANNEAL_Y_DIM * ANNEAL_X_DIM, params);
 
     SDL_Log("Annealing finished");
 
@@ -311,10 +316,10 @@ int gsl_siman_main(void) {
 
     // Write the best solution to the log in case we can't see it on
     // the screen
-    ab(*squares)[ANNEAL_DIM] = (ab(*)[ANNEAL_DIM])xp_initial;
+    ab(*squares)[ANNEAL_Y_DIM] = (ab(*)[ANNEAL_Y_DIM])xp_initial;
 
     // ToDo print out arbitrary size
-    for (int y = 0; y < 4; y++) {
+    for (int y = 0; y < ANNEAL_Y_DIM; y++) {
         SDL_Log("%d %d %d %d", squares[0][y].building_type, squares[1][y].building_type, squares[2][y].building_type, squares[3][y].building_type);
     }
 
@@ -326,8 +331,12 @@ int gsl_siman_main(void) {
     // Clean up
     gsl_rng_free(r);
 
-    // Set the game speed to 0 so that nothing changes from now on
-    setting_reset_speeds(0, setting_scroll_speed());
+    // Set the game speed back to normal
+    setting_reset_speeds(original_speed, setting_scroll_speed());
+    
+    // pause so that nothing changes from now on
+    game_state_unpause();
+    game_state_toggle_paused();
 
     return 0;
 }

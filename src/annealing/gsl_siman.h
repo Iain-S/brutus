@@ -28,8 +28,9 @@ extern "C" {
         unsigned int uid;
     } ab;
 
-#define ANNEAL_DIM 5
-
+    #define ANNEAL_X_DIM 8
+    #define ANNEAL_Y_DIM 2
+    
 #ifdef __cplusplus
 }
 #endif

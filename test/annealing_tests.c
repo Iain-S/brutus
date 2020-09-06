@@ -34,10 +34,10 @@ int return_global_int(void) {
 void test_api_modify_elements_r1(void) {
     printf("test_api_modify_elements_r\n");
 
-    ab(*xp)[ANNEAL_DIM] = (ab(*)[ANNEAL_DIM])calloc(ANNEAL_DIM * ANNEAL_DIM, sizeof (ab));
+    ab(*xp)[ANNEAL_Y_DIM] = (ab(*)[ANNEAL_Y_DIM])calloc(ANNEAL_X_DIM * ANNEAL_Y_DIM, sizeof (ab));
 
-    for (int x = 0; x < ANNEAL_DIM; x++) {
-        for (int y = 0; y < ANNEAL_DIM; y++) {
+    for (int x = 0; x < ANNEAL_X_DIM; x++) {
+        for (int y = 0; y < ANNEAL_Y_DIM; y++) {
             xp[x][y].building_type = 0;
             xp[x][y].uid = global_building_uid_counter;
             global_building_uid_counter++;
@@ -46,8 +46,8 @@ void test_api_modify_elements_r1(void) {
     
     api_modify_elements_r(xp, 1, return_one, return_one);
 
-    for (int x = 0; x < ANNEAL_DIM; x++) {
-        for (int y = 0; y < ANNEAL_DIM; y++) {
+    for (int x = 0; x < ANNEAL_X_DIM; x++) {
+        for (int y = 0; y < ANNEAL_Y_DIM; y++) {
             if (x == 0 && y == 1) {
                 assert(xp[x][y].building_type == 1);
             } else {
@@ -64,7 +64,7 @@ void test_api_modify_elements_r2(void) {
 
     // ToDo srand() with the time
 
-    ab(*xp)[ANNEAL_DIM] = (ab(*)[ANNEAL_DIM])calloc(ANNEAL_DIM * ANNEAL_DIM, sizeof (ab));
+    ab(*xp)[ANNEAL_Y_DIM] = (ab(*)[ANNEAL_Y_DIM])calloc(ANNEAL_X_DIM * ANNEAL_Y_DIM, sizeof (ab));
 
     api_modify_elements_r(xp, 1, rand, rand);
 
@@ -80,11 +80,11 @@ void test_api_modify_elements_r2(void) {
 
 void test_api_pave_over(void) {
     printf("test_api_pave_over\n");
-    ab(*xp)[ANNEAL_DIM] = (ab(*)[ANNEAL_DIM])calloc(ANNEAL_DIM * ANNEAL_DIM, sizeof (ab));
+    ab(*xp)[ANNEAL_Y_DIM] = (ab(*)[ANNEAL_Y_DIM])calloc(ANNEAL_X_DIM * ANNEAL_Y_DIM, sizeof (ab));
 
     // set everything to empty land
-    for (int x = 0; x < ANNEAL_DIM; x++) {
-        for (int y = 0; y < ANNEAL_DIM; y++) {
+    for (int x = 0; x < ANNEAL_X_DIM; x++) {
+        for (int y = 0; y < ANNEAL_Y_DIM; y++) {
             xp[x][y].building_type = 0;
             xp[x][y].uid = global_building_uid_counter;
             global_building_uid_counter++;
@@ -109,11 +109,11 @@ void test_api_pave_over(void) {
 
 void test_api_replace_building(void) {
     printf("test_api_replace_building\n");
-    ab(*xp)[ANNEAL_DIM] = (ab(*)[ANNEAL_DIM])calloc(ANNEAL_DIM * ANNEAL_DIM, sizeof (ab));
+    ab(*xp)[ANNEAL_Y_DIM] = (ab(*)[ANNEAL_Y_DIM])calloc(ANNEAL_X_DIM * ANNEAL_Y_DIM, sizeof (ab));
 
     // set everything to empty land
-    for (int x = 0; x < ANNEAL_DIM; x++) {
-        for (int y = 0; y < ANNEAL_DIM; y++) {
+    for (int x = 0; x < ANNEAL_X_DIM; x++) {
+        for (int y = 0; y < ANNEAL_Y_DIM; y++) {
             xp[x][y].building_type = 0;
             xp[x][y].uid = global_building_uid_counter;
             global_building_uid_counter++;
@@ -146,7 +146,7 @@ void test_api_get_biggest_building_index(void) {
     printf("test_api_get_biggest_building_index\n");
 
     assert(api_get_biggest_building_index(0, 0) == 7);
-    assert(api_get_biggest_building_index(ANNEAL_DIM-1, ANNEAL_DIM-1) == 5);
+    assert(api_get_biggest_building_index(ANNEAL_X_DIM-1, ANNEAL_Y_DIM-1) == 5);
 }
 
 int main(void) {

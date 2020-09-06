@@ -28,8 +28,8 @@ extern "C" {
     void api_modify_elements_r(void*, int, int (*)(void), int (*)(void));
     void api_pave_over(void*, int, int);
     void api_replace_building(void*, int, int, int);
-    unsigned int api_get_biggest_building_index(unsigned int, unsigned int);
-    unsigned int global_building_uid_counter;
+    int api_get_biggest_building_index(int, int);
+    int global_building_uid_counter;
 
 #ifdef __cplusplus
 }
