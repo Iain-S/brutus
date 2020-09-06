@@ -179,5 +179,5 @@ void build_end(void) {
 }
 
 int gsl_siman_main(void) {
-    return;
+    return 0;
 }

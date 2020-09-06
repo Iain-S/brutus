@@ -20,7 +20,7 @@ extern "C" {
 
     int gsl_siman_main(void);
     int anneal_next_loop;
-
+    void gsl_provision_city(void);
     // an annealing building
 
     typedef struct {

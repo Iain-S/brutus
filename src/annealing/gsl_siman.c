@@ -171,7 +171,7 @@ static void anneal_handle_event(SDL_Event *event, int *active, int *quit) {
     }
 }
 
-void provision_city(void) {
+void gsl_provision_city(void) {
     // give ourselves lots of food and money to work with
 
     // find our granary
@@ -199,9 +199,9 @@ void provision_city(void) {
  * configuration xp */
 double E1(void *xp) {
     // load game
-    assert(1 == game_file_load_saved_game("S1 01.sav"));
+    assert(1 == game_file_load_saved_game("annealing.sav"));
 
-    provision_city();
+//    gsl_provision_city();
 
     api_build_buildings(xp);
 
@@ -294,6 +294,7 @@ int gsl_siman_main(void) {
     window_city_show();
 
     setting_reset_speeds(100000, setting_scroll_speed());
+    assert(1 == game_file_write_saved_game("annealing.sav"));
 
 
     SDL_Log("Annealing started");
@@ -327,10 +328,6 @@ int gsl_siman_main(void) {
 
     // Set the game speed to 0 so that nothing changes from now on
     setting_reset_speeds(0, setting_scroll_speed());
-
-    // Save and load because it refreshes the window nicely
-    //    game_file_write_saved_game("S1 01 annealed.sav");
-    //    game_file_load_saved_game("S1 01 annealed.sav");
 
     return 0;
 }

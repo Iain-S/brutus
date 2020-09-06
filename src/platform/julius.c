@@ -328,6 +328,10 @@ static void main_loop(void)
 {
     mouse_set_inside_window(1);
     mouse_set_position(7,7);
+    
+    game_file_load_saved_game("S1 01.sav");
+    gsl_provision_city();
+
     gsl_siman_main();
 
     int active = 1;

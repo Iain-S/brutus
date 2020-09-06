@@ -66,6 +66,7 @@ add_executable(autopilot
     stub/sound_device.c
     stub/ui.c
     stub/video.c
+    stub/annealing.c
     ${TEST_CORE_FILES}
     ${TEST_BUILDING_FILES}
     ${CITY_FILES}
