@@ -51,6 +51,11 @@
 //#define T_MIN 2.0e-4
 #define T_MIN 2.0e-3
 
+int ANNEAL_X_DIM;
+int ANNEAL_Y_DIM;
+int ANNEAL_X_OFFSET;
+int ANNEAL_Y_OFFSET;
+
 /* These control a run of gsl_siman_solve(). */
 gsl_siman_params_t params
         = {N_TRIES, ITERS_FIXED_T, STEP_SIZE,
@@ -196,13 +201,11 @@ void gsl_provision_city(void) {
 
 }
 
-/* This function type should return the energy of a 
+/* This function type should return the energy of a
  * configuration xp */
 double E1(void *xp) {
     // load game
     assert(1 == game_file_load_saved_game("annealing.sav"));
-
-//    gsl_provision_city();
 
     api_build_buildings(xp);
 
@@ -227,11 +230,11 @@ double E1(void *xp) {
 
     }
     int total_prosperity = api_score_city();
-    //    SDL_Log("total prosperity: %d", total_prosperity);      
+    //    SDL_Log("total prosperity: %d", total_prosperity);
     return 1000 - total_prosperity;
 }
 
-/* This function should return the distance between two 
+/* This function should return the distance between two
  configurations, xp and yp. */
 double M1(void *xp, void *yp) {
     int distance = 0;
@@ -251,7 +254,7 @@ double M1(void *xp, void *yp) {
 }
 
 /* This function should modify the xp, using a random
- step taken from the generator, r, up to a max distance of 
+ step taken from the generator, r, up to a max distance of
  step size. */
 void S1(const gsl_rng* r, void *xp, double step_size) {
     ab(*old_xp)[ANNEAL_Y_DIM] = (ab(*)[ANNEAL_Y_DIM])xp;
@@ -265,17 +268,23 @@ void S1(const gsl_rng* r, void *xp, double step_size) {
     api_modify_elements(old_xp, i);
 }
 
-/* This function should print the content of the 
+/* This function should print the content of the
  * configuration, xp. */
 void P1(void *xp) {
     // Don't print anything because the annealing table
     // is nice as it is
 }
 
-//int gsl_siman_main(int x_start, int y_start, int x_end, int y_end) {
-int gsl_siman_main(void) {
+/* Start the simulated annealing */
+int gsl_siman_main(int x_start, int y_start, int x_end, int y_end) {
     const gsl_rng_type * T;
     gsl_rng * r;
+
+    ANNEAL_X_DIM = x_end - x_start;
+    ANNEAL_Y_DIM = y_end - y_start;
+
+    ANNEAL_X_OFFSET = x_start;
+    ANNEAL_Y_OFFSET = y_start;
 
     // initialise with empty land
     ab(*xp_initial)[ANNEAL_Y_DIM] = (ab(*)[ANNEAL_Y_DIM])calloc(ANNEAL_Y_DIM * ANNEAL_X_DIM, sizeof (ab));
@@ -297,7 +306,7 @@ int gsl_siman_main(void) {
     window_city_show();
 
     int original_speed = setting_game_speed();
-    
+
     setting_reset_speeds(100000, setting_scroll_speed());
     assert(1 == game_file_write_saved_game("annealing.sav"));
 
@@ -333,7 +342,7 @@ int gsl_siman_main(void) {
 
     // Set the game speed back to normal
     setting_reset_speeds(original_speed, setting_scroll_speed());
-    
+
     // pause so that nothing changes from now on
     game_state_unpause();
     game_state_toggle_paused();

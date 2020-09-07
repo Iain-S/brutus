@@ -138,6 +138,7 @@ static void collapse_building(building *b)
 {
     city_message_apply_sound_interval(MESSAGE_CAT_COLLAPSE);
     if (!tutorial_handle_collapse()) {
+        // ToDo Silence this during annealing
         city_message_post_with_popup_delay(MESSAGE_CAT_COLLAPSE, MESSAGE_COLLAPSED_BUILDING, b->type, b->grid_offset);
     }
     

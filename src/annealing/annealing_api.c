@@ -88,7 +88,6 @@ void api_place_market(int x, int y) {
     build_end();
 }
 
-
 void api_place_school(int x, int y) {
     // Place a market at the tile given by x and y
     building_construction_set_type(BUILDING_SCHOOL);
@@ -114,7 +113,7 @@ place_building_func place_building_funcs[8] = {
     &api_place_well,
     &api_place_market,
     &api_place_school
-    //    &api_place_engineer, 
+    //    &api_place_engineer,
 };
 
 
@@ -188,7 +187,7 @@ void api_build_buildings(void* xp) {
                 continue;
             } else {
                 ab my_building = squares[x][y];
-                place_building_funcs[my_building.building_type](x + 7, y + 7);
+                place_building_funcs[my_building.building_type](ANNEAL_X_OFFSET + x, ANNEAL_Y_OFFSET + y);
                 built_uids[uid_index] = my_building.uid;
                 uid_index++;
             }
@@ -218,7 +217,7 @@ int api_get_biggest_building_index(int x, int y) {
     // The size of the largest building we can put at x,y
     int biggest_y_dimension = ANNEAL_Y_DIM - y;
     int biggest_x_dimension = ANNEAL_X_DIM - x;
-//    int biggest_building_size = api_min(ANNEAL_Y_DIM, ANNEAL_X_DIM) - api_max(x, y);
+    //    int biggest_building_size = api_min(ANNEAL_Y_DIM, ANNEAL_X_DIM) - api_max(x, y);
     int biggest_building_size = api_min(biggest_x_dimension, biggest_y_dimension);
 
     int number_of_buildings = sizeof (place_building_funcs) / sizeof (place_building_funcs[0]);
@@ -235,8 +234,8 @@ int api_get_biggest_building_index(int x, int y) {
 void api_modify_elements_r(void* xp, int num_elements, int (*rand_a)(void), int (*rand_b)(void)) {
     // Modify up to num_elements of xp, in place
     // Decide on the square to change with rand_a and the new building with rand_b
-    
-//    ab(*squares)[ANNEAL_DIM] = (ab(*)[ANNEAL_DIM])xp;
+
+    //    ab(*squares)[ANNEAL_DIM] = (ab(*)[ANNEAL_DIM])xp;
 
     for (int i = 0; i < num_elements; i++) {
         int x = rand_a() % ANNEAL_X_DIM;

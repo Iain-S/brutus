@@ -332,7 +332,7 @@ static void main_loop(void)
     game_file_load_saved_game("S1 01.sav");
     gsl_provision_city();
 
-    gsl_siman_main();
+    gsl_siman_main(7, 7, 12, 12);
 
     int active = 1;
     int quit = 0;

@@ -531,7 +531,7 @@ void building_construction_place(void)
         building_construction_clear_land(0, x_start, y_start, x_end, y_end);
 
         // call anneal on this area
-        gsl_siman_main();
+        gsl_siman_main(x_start, y_start, x_end, y_end);
         
         return;
     }

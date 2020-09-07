@@ -43,7 +43,7 @@ void test_api_modify_elements_r1(void) {
             global_building_uid_counter++;
         }
     }
-    
+
     api_modify_elements_r(xp, 1, return_one, return_one);
 
     for (int x = 0; x < ANNEAL_X_DIM; x++) {
@@ -146,7 +146,7 @@ void test_api_get_biggest_building_index(void) {
     printf("test_api_get_biggest_building_index\n");
 
     assert(api_get_biggest_building_index(0, 0) == 7);
-    assert(api_get_biggest_building_index(ANNEAL_X_DIM-1, ANNEAL_Y_DIM-1) == 5);
+    assert(api_get_biggest_building_index(ANNEAL_X_DIM - 1, ANNEAL_Y_DIM - 1) == 5);
 }
 
 int main(void) {
@@ -165,19 +165,19 @@ void build_start(const map_tile *tile) {
 }
 
 
-//static 
+//static
 
 void build_move(const map_tile *tile) {
     return;
 }
 
 
-//static 
+//static
 
 void build_end(void) {
     return;
 }
 
-int gsl_siman_main(void) {
+int gsl_siman_main(int a, int b, int c, int d) {
     return 0;
 }

@@ -4,7 +4,7 @@
  * and open the template in the editor.
  */
 
-/* 
+/*
  * File:   gsl_siman_trivial.h
  * Author: iain
  *
@@ -18,7 +18,9 @@
 extern "C" {
 #endif
 
-    int gsl_siman_main(void);
+    int gsl_siman_main(int, int, int, int);
+//    int gsl_siman_main(void);
+
     int anneal_next_loop;
     void gsl_provision_city(void);
     // an annealing building
@@ -28,9 +30,11 @@ extern "C" {
         unsigned int uid;
     } ab;
 
-    #define ANNEAL_X_DIM 8
-    #define ANNEAL_Y_DIM 2
-    
+    int ANNEAL_X_DIM;
+    int ANNEAL_Y_DIM;
+    int ANNEAL_X_OFFSET;
+    int ANNEAL_Y_OFFSET;
+
 #ifdef __cplusplus
 }
 #endif
