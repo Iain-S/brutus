@@ -14,6 +14,14 @@
 #include "annealing/annealing_api.h"
 #include "widget/city.h"
 
+typedef void (*place_building_func)(int, int);
+
+typedef struct {
+    char* name;
+    int size;
+    place_building_func func;
+} building_row;
+
 void api_place_house(int x, int y) {
     // Place a house at the tile given by x and y
     int placed = place_houses(0, x, y, x, y);
@@ -102,52 +110,23 @@ void api_place_school(int x, int y) {
 }
 
 
-typedef void (*place_building_func)(int, int);
-place_building_func place_building_funcs[8] = {
-    // These are our choice of buildings
-    &api_place_nothing,
-    &api_place_house,
-    &api_place_road,
-    &api_place_prefecture,
-    &api_place_garden,
-    &api_place_well,
-    &api_place_market,
-    &api_place_school
-    //    &api_place_engineer,
-};
-
-
-char* place_building_names[8] = {
-    "empty land",
-    "house",
-    "road",
-    "prefecture",
-    "garden",
-    "well",
-    "market",
-    "school"
-    //    "engineer's post",
-};
-
-
-int place_building_sizes[8] = {
+building_row building_table[8] = {
     // These must be sorted in ascending size
     // and are the size in one dimension (i.e. width not area)
-    1,
-    1,
-    1,
-    1,
-    1,
-    1,
-    2,
-    2
-    //    1
+    {"empty land", 1, &api_place_nothing},
+    {"house", 1, &api_place_house},
+    {"road", 1, &api_place_road},
+    {"prefecture", 1, &api_place_prefecture},
+    {"garden", 1, &api_place_garden},
+    {"well", 1, &api_place_well},
+    {"market", 2, &api_place_market},
+    {"school", 2, &api_place_school}
 };
 
 int global_building_uid_counter = 1;
 
 char* api_get_building_name(int i) {
-    return place_building_names[i];
+    return building_table[i].name;
 }
 
 int api_score_city() {
@@ -187,7 +166,7 @@ void api_build_buildings(void* xp) {
                 continue;
             } else {
                 ab my_building = squares[x][y];
-                place_building_funcs[my_building.building_type](ANNEAL_X_OFFSET + x, ANNEAL_Y_OFFSET + y);
+                building_table[my_building.building_type].func(ANNEAL_X_OFFSET + x, ANNEAL_Y_OFFSET + y);
                 built_uids[uid_index] = my_building.uid;
                 uid_index++;
             }
@@ -220,10 +199,10 @@ int api_get_biggest_building_index(int x, int y) {
     //    int biggest_building_size = api_min(ANNEAL_Y_DIM, ANNEAL_X_DIM) - api_max(x, y);
     int biggest_building_size = api_min(biggest_x_dimension, biggest_y_dimension);
 
-    int number_of_buildings = sizeof (place_building_funcs) / sizeof (place_building_funcs[0]);
+    int number_of_buildings = sizeof (building_table) / sizeof (building_table[0]);
     int i = 0;
     for (; i < number_of_buildings; i++) {
-        if (place_building_sizes[i] > biggest_building_size) {
+        if (building_table[i].size > biggest_building_size) {
             break;
         }
     }
@@ -256,7 +235,7 @@ void api_replace_building(void* xp, int x, int y, int new_building_type) {
     ab(*squares)[ANNEAL_Y_DIM] = (ab(*)[ANNEAL_Y_DIM])xp;
 
     // firstly, pave over anything that would be touched by the building
-    int new_building_size = place_building_sizes[new_building_type];
+    int new_building_size = building_table[new_building_type].size;
 
     for (int i = 0; i < new_building_size; i++) {
         for (int j = 0; j < new_building_size; j++) {
