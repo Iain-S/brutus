@@ -30,10 +30,10 @@
 /* set up parameters for this simulated annealing run */
 
 /* how many points do we try before stepping */
-#define N_TRIES 1 //200
+#define N_TRIES 3 //200
 
 /* how many iterations for each T? */
-#define ITERS_FIXED_T 1  //1000
+#define ITERS_FIXED_T 3  //1000
 
 /* max step size in random walk */
 // ToDo does this need to be related to ANNEAL_DIM?
@@ -58,7 +58,7 @@ int ANNEAL_Y_OFFSET;
 
 /* These control a run of gsl_siman_solve(). */
 gsl_siman_params_t params
-        = {N_TRIES, ITERS_FIXED_T, STEP_SIZE,
+    = {N_TRIES, ITERS_FIXED_T, STEP_SIZE,
     K, T_INITIAL, MU_T, T_MIN};
 
 #define INTPTR(d) (*(int*)(d))
@@ -229,8 +229,8 @@ double E1(void *xp) {
         }
 
     }
-    int total_prosperity = api_score_city();
-    //    SDL_Log("total prosperity: %d", total_prosperity);
+    int total_prosperity = api_score_city(ANNEAL_X_OFFSET, ANNEAL_Y_OFFSET, ANNEAL_X_OFFSET + ANNEAL_X_DIM, ANNEAL_Y_OFFSET + ANNEAL_Y_DIM);
+//    SDL_Log("total prosperity: %d", total_prosperity);
     return 1000 - total_prosperity;
 }
 
@@ -313,12 +313,12 @@ int gsl_siman_main(int x_start, int y_start, int x_end, int y_end) {
 
     SDL_Log("Annealing started");
     gsl_siman_solve(r, xp_initial, E1, S1, M1, P1,
-            NULL, NULL, NULL,
-            sizeof (ab) * ANNEAL_Y_DIM * ANNEAL_X_DIM, params);
+        NULL, NULL, NULL,
+        sizeof (ab) * ANNEAL_Y_DIM * ANNEAL_X_DIM, params);
 
     SDL_Log("Annealing finished");
 
-    // Now that gsl_simal_solve is done, xp_inital contains
+    // Now that gsl_simal_solve is done, xp_initial contains
     // the best solution so we run E1 once more to find out what it is
     int best_prosperity = 1000 - E1(xp_initial);
     SDL_Log("best prosperity: %d", best_prosperity);

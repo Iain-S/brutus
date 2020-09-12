@@ -324,15 +324,16 @@ static void handle_event(SDL_Event *event, int *active, int *quit)
     }
 }
 
-static void main_loop(void)
+static void main_loop(int anneal)
 {
     mouse_set_inside_window(1);
-    mouse_set_position(7,7);
+    mouse_set_position(6, 6);
     
-    game_file_load_saved_game("S1 01.sav");
-    gsl_provision_city();
-
-    gsl_siman_main(7, 7, 12, 12);
+    if (anneal == 1){
+		game_file_load_saved_game("S1 theatre 1.sav");
+	    gsl_provision_city();
+	    gsl_siman_main(6, 7, 13, 14);
+    }
 
     int active = 1;
     int quit = 0;
@@ -525,7 +526,7 @@ int main(int argc, char **argv)
 
     setup(&args);
 
-    main_loop();
+    main_loop(args.anneal);
 
     teardown();
     return 0;

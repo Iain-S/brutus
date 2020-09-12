@@ -52,6 +52,7 @@ int platform_parse_arguments(int argc, char **argv, julius_args *output_args)
     output_args->data_directory = 0;
     output_args->display_scale_percentage = 100;
     output_args->cursor_scale_percentage = 100;
+    output_args->anneal = 0;
 
     for (int i = 1; i < argc; i++) {
         // we ignore "-psn" arguments, this is needed to launch the app
@@ -88,6 +89,8 @@ int platform_parse_arguments(int argc, char **argv, julius_args *output_args)
                 SDL_Log(CURSOR_SCALE_ERROR_MESSAGE);
                 ok = 0;
             }
+        } else if (SDL_strcmp(argv[i], "--anneal") == 0) {
+            output_args->anneal = 1;
         } else if (SDL_strcmp(argv[i], "--help") == 0) {
             ok = 0;
         } else if (SDL_strncmp(argv[i], "--", 2) == 0) {

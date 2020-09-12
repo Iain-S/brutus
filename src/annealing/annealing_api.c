@@ -77,7 +77,7 @@ char* api_get_building_name(int i) {
     return building_table[i].name;
 }
 
-int api_score_city() {
+int api_score_city(int x_start, int y_start, int x_end, int y_end) {
     // The same as ratings.calculate_max_prosperity but we take the total
     // prosperity, not the average per house
 
@@ -85,7 +85,9 @@ int api_score_city() {
     for (int i = 1; i < MAX_BUILDINGS; i++) {
         building *b = building_get(i);
         if (b->state && b->house_size) {
-            points += model_get_house(b->subtype.house_level)->prosperity;
+            if (b->x >= x_start && b->x <= x_end && b->y >= y_start && b->y <= y_end) {
+                points += model_get_house(b->subtype.house_level)->prosperity;
+            }
         }
     }
     return points;
