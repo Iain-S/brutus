@@ -22,11 +22,6 @@ typedef struct {
     building_type type;
 } building_row;
 
-//void api_place_engineer(int x, int y){
-//    int placed = building_construction_place_building(BUILDING_ENGINEERS_POST, x, y);
-//    assert(placed == 1);
-//}
-
 void api_place_building(int x, int y, building_type building_type) {
     int placed = 0;
     switch (building_type) {
@@ -36,12 +31,10 @@ void api_place_building(int x, int y, building_type building_type) {
             placed = place_houses(0, x, y, x, y);
             assert(placed == 1);
             break;
-        case BUILDING_PREFECTURE:
-        case BUILDING_WELL:
-        case BUILDING_ROAD:
-        case BUILDING_MARKET:
-        case BUILDING_GARDENS:
-        case BUILDING_SCHOOL:
+        case BUILDING_PLAZA:
+            api_place_building(x, y, BUILDING_ROAD);
+            // note: no break; because we want to build the plaza on the road
+        default:
             building_construction_set_type(building_type);
             map_tile tile;
             tile.x = x;
@@ -51,25 +44,31 @@ void api_place_building(int x, int y, building_type building_type) {
             build_move(&tile);
             build_end();
             // ToDo - Check that we could place the building
-            break;
-        default:
-            printf("got - %d\n", building_type);
-            //	    exit();
     }
-
 }
 
-building_row building_table[8] = {
+building_row building_table[] = {
     // These must be sorted in ascending size
-    // and are the size in one dimension (i.e. width not area)
+    // and the sizes are along one dimension (i.e. width not area)
     {"empty land", 1, BUILDING_NONE},
     {"house", 1, BUILDING_HOUSE_VACANT_LOT},
     {"road", 1, BUILDING_ROAD},
     {"prefecture", 1, BUILDING_PREFECTURE},
     {"garden", 1, BUILDING_GARDENS},
     {"well", 1, BUILDING_WELL},
+    {"engineer's post", 1, BUILDING_ENGINEERS_POST},
+    {"doctor", 1, BUILDING_DOCTOR},
+    {"barber", 1, BUILDING_BARBER},
+    {"small statue", 1, BUILDING_SMALL_STATUE},
+    {"fountain", 1, BUILDING_FOUNTAIN},
+    {"plaza", 1, BUILDING_PLAZA},
+    //    {"", 1, BUILDING_},
     {"market", 2, BUILDING_MARKET},
-    {"school", 2, BUILDING_SCHOOL}
+    {"school", 2, BUILDING_SCHOOL},
+    {"bath house", 2, BUILDING_BATHHOUSE},
+    {"library", 2, BUILDING_LIBRARY},
+    //    {"", 2, BUILDING_},
+    {"theatre", 2, BUILDING_THEATER}
 };
 
 int global_building_uid_counter = 1;
