@@ -14,113 +14,62 @@
 #include "annealing/annealing_api.h"
 #include "widget/city.h"
 
-typedef void (*place_building_func)(int, int);
+typedef void (*place_building_func)(int, int, building_type);
 
 typedef struct {
     char* name;
     int size;
-    place_building_func func;
+    building_type type;
 } building_row;
-
-void api_place_house(int x, int y) {
-    // Place a house at the tile given by x and y
-    int placed = place_houses(0, x, y, x, y);
-    assert(placed == 1);
-}
-
-void api_place_road(int x, int y) {
-    // Place a road at the tile given by x and y
-    building_construction_set_type(BUILDING_ROAD);
-    map_tile tile;
-    tile.x = x;
-    tile.y = y;
-    tile.grid_offset = 1;
-    build_start(&tile);
-    build_move(&tile);
-    build_end();
-}
-
 
 //void api_place_engineer(int x, int y){
 //    int placed = building_construction_place_building(BUILDING_ENGINEERS_POST, x, y);
 //    assert(placed == 1);
 //}
 
-void api_place_prefecture(int x, int y) {
-    // Place a prefecture at the tile given by x and y
-    int placed = building_construction_place_building(BUILDING_PREFECTURE, x, y);
-    assert(placed == 1);
+void api_place_building(int x, int y, building_type building_type) {
+    int placed = 0;
+    switch (building_type) {
+        case BUILDING_NONE:
+            break;
+        case BUILDING_HOUSE_VACANT_LOT:
+            placed = place_houses(0, x, y, x, y);
+            assert(placed == 1);
+            break;
+        case BUILDING_PREFECTURE:
+        case BUILDING_WELL:
+        case BUILDING_ROAD:
+        case BUILDING_MARKET:
+        case BUILDING_GARDENS:
+        case BUILDING_SCHOOL:
+            building_construction_set_type(building_type);
+            map_tile tile;
+            tile.x = x;
+            tile.y = y;
+            tile.grid_offset = 1;
+            build_start(&tile);
+            build_move(&tile);
+            build_end();
+            // ToDo - Check that we could place the building
+            break;
+        default:
+            printf("got - %d\n", building_type);
+            //	    exit();
+    }
 
 }
-
-void api_place_nothing(int x, int y) {
-    // By not placing anything, we leave empty grass
-    // ToDo We should probably delete what was at x and y
-    // pass
-}
-
-void api_place_well(int x, int y) {
-    // Place a well at the tile given by x and y
-    int placed = building_construction_place_building(BUILDING_WELL, x, y);
-    assert(placed == 1);
-}
-
-void api_place_garden(int x, int y) {
-    //    int placed = place_garden(x, y, x, y); //building_construction_place_building(BUILDING_GARDENS, x, y);
-    //    assert(placed == 1);
-    //    data.start.x = x;
-    //    data.start.y = y;
-    //    data.end.x = x;
-    //    data.end.y = y;
-    //    data.type = BUILDING_GARDENS;
-    //    building_construction_place();
-    building_construction_set_type(BUILDING_GARDENS);
-    map_tile tile;
-    tile.x = x;
-    tile.y = y;
-    tile.grid_offset = 1;
-    build_start(&tile);
-    build_move(&tile);
-    build_end();
-}
-
-void api_place_market(int x, int y) {
-    // Place a market at the tile given by x and y
-    building_construction_set_type(BUILDING_MARKET);
-    map_tile tile;
-    tile.x = x;
-    tile.y = y;
-    tile.grid_offset = 1;
-    build_start(&tile);
-    build_move(&tile);
-    build_end();
-}
-
-void api_place_school(int x, int y) {
-    // Place a market at the tile given by x and y
-    building_construction_set_type(BUILDING_SCHOOL);
-    map_tile tile;
-    tile.x = x;
-    tile.y = y;
-    // ToDo What is grid_offset for and what should we set it to?
-    tile.grid_offset = 1;
-    build_start(&tile);
-    build_move(&tile);
-    build_end();
-}
-
 
 building_row building_table[8] = {
     // These must be sorted in ascending size
     // and are the size in one dimension (i.e. width not area)
-    {"empty land", 1, &api_place_nothing},
-    {"house", 1, &api_place_house},
-    {"road", 1, &api_place_road},
-    {"prefecture", 1, &api_place_prefecture},
-    {"garden", 1, &api_place_garden},
-    {"well", 1, &api_place_well},
-    {"market", 2, &api_place_market},
-    {"school", 2, &api_place_school}
+    {"empty land", 1, BUILDING_NONE},
+    {"house", 1, BUILDING_HOUSE_VACANT_LOT},
+    {"road", 1, BUILDING_ROAD},
+    {"prefecture", 1, BUILDING_PREFECTURE},
+    {"garden", 1, BUILDING_GARDENS},
+    {"well", 1, BUILDING_WELL},
+    {"market", 2, BUILDING_MARKET},
+    {"school", 2, BUILDING_SCHOOL}
 };
 
 int global_building_uid_counter = 1;
@@ -166,7 +115,7 @@ void api_build_buildings(void* xp) {
                 continue;
             } else {
                 ab my_building = squares[x][y];
-                building_table[my_building.building_type].func(ANNEAL_X_OFFSET + x, ANNEAL_Y_OFFSET + y);
+                api_place_building(ANNEAL_X_OFFSET + x, ANNEAL_Y_OFFSET + y, building_table[my_building.building_type].type);
                 built_uids[uid_index] = my_building.uid;
                 uid_index++;
             }
