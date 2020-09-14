@@ -67,6 +67,11 @@ building_row building_table[] = {
     {"school", 2, BUILDING_SCHOOL},
     {"bath house", 2, BUILDING_BATHHOUSE},
     {"library", 2, BUILDING_LIBRARY},
+    {"small temple to ceres", 2, BUILDING_SMALL_TEMPLE_CERES},
+    {"small temple to neptune", 2, BUILDING_SMALL_TEMPLE_NEPTUNE},
+    {"small temple to mercury", 2, BUILDING_SMALL_TEMPLE_MERCURY},
+    {"small temple to mars", 2, BUILDING_SMALL_TEMPLE_MARS},
+    {"small temple to venus", 2, BUILDING_SMALL_TEMPLE_VENUS},
     //    {"", 2, BUILDING_},
     {"theatre", 2, BUILDING_THEATER}
 };
