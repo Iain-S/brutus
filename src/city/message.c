@@ -167,6 +167,9 @@ void city_message_apply_sound_interval(message_category category)
 
 void city_message_post(int use_popup, int message_type, int param1, int param2)
 {
+    // ToDo - Should only silence while annealing
+    return;
+
     int id = new_message_id();
     if (id < 0) {
         return;
