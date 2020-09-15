@@ -62,7 +62,6 @@ building_row building_table[] = {
     {"small statue", 1, BUILDING_SMALL_STATUE},
     {"fountain", 1, BUILDING_FOUNTAIN},
     {"plaza", 1, BUILDING_PLAZA},
-    //    {"", 1, BUILDING_},
     {"market", 2, BUILDING_MARKET},
     {"school", 2, BUILDING_SCHOOL},
     {"bath house", 2, BUILDING_BATHHOUSE},
@@ -72,10 +71,14 @@ building_row building_table[] = {
     {"small temple to mercury", 2, BUILDING_SMALL_TEMPLE_MERCURY},
     {"small temple to mars", 2, BUILDING_SMALL_TEMPLE_MARS},
     {"small temple to venus", 2, BUILDING_SMALL_TEMPLE_VENUS},
-    //    {"", 2, BUILDING_},
-    {"theatre", 2, BUILDING_THEATER}
+    {"oracle", 2, BUILDING_ORACLE},
+    {"theatre", 2, BUILDING_THEATER},
+    {"medium statue", 2, BUILDING_MEDIUM_STATUE},
+    {"large statue", 3, BUILDING_LARGE_STATUE},
+    {"amphitheatre", 3, BUILDING_AMPHITHEATER},
+    {"colosseum", 5, BUILDING_COLOSSEUM}
 };
-
+ 
 int global_building_uid_counter = 1;
 
 char* api_get_building_name(int i) {
@@ -185,7 +188,7 @@ void api_modify_elements_r(void* xp, int num_elements, int (*rand_a)(void), int 
 }
 
 void api_replace_building(void* xp, int x, int y, int new_building_type) {
-    // replace the building at xp[x][y] with new_building
+    // Replace the building at xp[x][y] with new_building
     // paving over any buildings that get in the way
     ab(*squares)[ANNEAL_Y_DIM] = (ab(*)[ANNEAL_Y_DIM])xp;
 

@@ -24,6 +24,7 @@
 #include "game/state.h"
 #include "window/city.h"
 #include "building/granary.h"
+#include "building/warehouse.h"
 #include "city/finance.h"
 
 
@@ -196,9 +197,28 @@ void gsl_provision_city(void) {
         building_granary_add_resource(granary, RESOURCE_WHEAT, 0);
     }
 
+    // find our warehouse
+    building* warehouse = 0;
+    for (int i = 1; i < MAX_BUILDINGS; i++) {
+        building *b = building_get(i);
+        if (b->type == BUILDING_WAREHOUSE) {
+            warehouse = b;
+        }
+    }
+
+    assert(warehouse > 0);
+
+    // fill our warehouse
+    for (int x = 0; x < 20; x++) {
+        building_warehouse_add_resource(warehouse, RESOURCE_POTTERY);
+        building_warehouse_add_resource(warehouse, RESOURCE_FURNITURE);
+        building_warehouse_add_resource(warehouse, RESOURCE_OIL);
+        building_warehouse_add_resource(warehouse, RESOURCE_WINE);
+        building_warehouse_add_resource(warehouse, RESOURCE_MARBLE);
+    }
+
     // fill our treasury
     city_finance_process_donation(10000);
-
 }
 
 /* This function type should return the energy of a
