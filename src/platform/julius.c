@@ -330,7 +330,7 @@ static void main_loop(int anneal)
     mouse_set_position(6, 6);
     
     if (anneal == 1){
-	game_file_load_saved_game("S1 warehouse 1.sav");
+	game_file_load_saved_game("S1 01.sav");
 	gsl_provision_city();
 	gsl_siman_main(6, 7, 13, 14);
     }
