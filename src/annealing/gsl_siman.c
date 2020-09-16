@@ -179,42 +179,27 @@ static void anneal_handle_event(SDL_Event *event, int *active, int *quit) {
 }
 
 void gsl_provision_city(void) {
-    // give ourselves lots of food and money to work with
+    // give ourselves lots of food, goods and money to work with
 
     // find our granary
-    building* granary = 0;
     for (int i = 1; i < MAX_BUILDINGS; i++) {
         building *b = building_get(i);
         if (b->type == BUILDING_GRANARY) {
-            granary = b;
+            for (int x = 0; x < 20; x++) {
+                building_granary_add_resource(b, RESOURCE_WHEAT, 0);
+                building_granary_add_resource(b, RESOURCE_VEGETABLES, 0);
+                building_granary_add_resource(b, RESOURCE_FRUIT, 0);
+                building_granary_add_resource(b, RESOURCE_MEAT, 0);
+            }
+        } else if (b->type == BUILDING_WAREHOUSE) {
+            for (int x = 0; x < 20; x++) {
+                building_warehouse_add_resource(b, RESOURCE_POTTERY);
+                building_warehouse_add_resource(b, RESOURCE_FURNITURE);
+                building_warehouse_add_resource(b, RESOURCE_OIL);
+                building_warehouse_add_resource(b, RESOURCE_WINE);
+                building_warehouse_add_resource(b, RESOURCE_MARBLE);
+            }
         }
-    }
-
-    assert(granary > 0);
-
-    // fill our granary
-    for (int x = 0; x < 20; x++) {
-        building_granary_add_resource(granary, RESOURCE_WHEAT, 0);
-    }
-
-    // find our warehouse
-    building* warehouse = 0;
-    for (int i = 1; i < MAX_BUILDINGS; i++) {
-        building *b = building_get(i);
-        if (b->type == BUILDING_WAREHOUSE) {
-            warehouse = b;
-        }
-    }
-
-    assert(warehouse > 0);
-
-    // fill our warehouse
-    for (int x = 0; x < 20; x++) {
-        building_warehouse_add_resource(warehouse, RESOURCE_POTTERY);
-        building_warehouse_add_resource(warehouse, RESOURCE_FURNITURE);
-        building_warehouse_add_resource(warehouse, RESOURCE_OIL);
-        building_warehouse_add_resource(warehouse, RESOURCE_WINE);
-        building_warehouse_add_resource(warehouse, RESOURCE_MARBLE);
     }
 
     // fill our treasury
@@ -259,7 +244,7 @@ double E1(void *xp) {
 double M1(void *xp, void *yp) {
     int distance = 0;
     ab(*a_squares)[ANNEAL_Y_DIM] = (ab(*)[ANNEAL_Y_DIM])xp;
-    ab(*b_squares)[ANNEAL_Y_DIM] = (ab(*)[ANNEAL_Y_DIM])xp;
+    ab(*b_squares)[ANNEAL_Y_DIM] = (ab(*)[ANNEAL_Y_DIM])yp;
 
     // for now, just add the number of different squares
     for (int x = 0; x < ANNEAL_X_DIM; x++) {

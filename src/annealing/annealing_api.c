@@ -75,6 +75,8 @@ building_row building_table[] = {
     {"theatre", 2, BUILDING_THEATER},
     {"medium statue", 2, BUILDING_MEDIUM_STATUE},
     {"large statue", 3, BUILDING_LARGE_STATUE},
+    {"academy", 3, BUILDING_ACADEMY},
+    {"hospital", 3, BUILDING_HOSPITAL},
     {"amphitheatre", 3, BUILDING_AMPHITHEATER},
     {"colosseum", 5, BUILDING_COLOSSEUM}
 };
