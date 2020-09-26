@@ -330,9 +330,9 @@ static void main_loop(int anneal)
     mouse_set_position(6, 6);
     
     if (anneal == 1){
-	game_file_load_saved_game("annealscenario1.sav");
-	gsl_provision_city();
-	gsl_siman_main(7, 8, 11, 12);
+		game_file_load_saved_game("annealscenario1.sav");
+		gsl_provision_city();
+		gsl_siman_main(7, 8, 16, 17);
     }
 
     int active = 1;

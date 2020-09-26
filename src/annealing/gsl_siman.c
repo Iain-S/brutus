@@ -22,6 +22,7 @@
 #include "game/settings.h"
 #include "game/resource.h"
 #include "game/state.h"
+#include "graphics/video.h"
 #include "window/city.h"
 #include "building/granary.h"
 #include "building/warehouse.h"
@@ -159,6 +160,10 @@ static void anneal_handle_event(SDL_Event *event, int *active, int *quit) {
             }
             break;
 
+        case SDL_QUIT:
+            *quit = 1;
+            break;
+
         case SDL_USEREVENT:
             if (event->user.code == USER_EVENT_QUIT) {
                 *quit = 1;
@@ -206,6 +211,12 @@ void gsl_provision_city(void) {
     city_finance_process_donation(10000);
 }
 
+static void gsl_teardown(void) {
+    SDL_Log("Exiting game");
+    video_shutdown();
+    platform_screen_destroy();
+}
+
 /* This function type should return the energy of a
  * configuration xp */
 double E1(void *xp) {
@@ -219,12 +230,17 @@ double E1(void *xp) {
     int quit = 0;
 
 
-    // run for just long enough for fires to happen
-    while (game_time_total_days() - first_day < 90) {
+    // run for just long enough for fire and collapse to happen
+    while (game_time_total_days() - first_day < 150) {
         SDL_Event event;
 
         while (SDL_PollEvent(&event)) {
             anneal_handle_event(&event, &active, &quit);
+
+            if (quit == 1) {
+                gsl_teardown();
+                exit(0);
+            }
         }
 
         if (active) {
