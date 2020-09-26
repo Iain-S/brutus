@@ -7,6 +7,7 @@ extern "C" {
 
     int api_score_city(int, int, int, int);
     void api_change_a_square(void);
+    void api_list_buildings(void);
     void api_build_buildings(void*);
     void api_modify_elements(void*, int);
     char* api_get_building_name(int);

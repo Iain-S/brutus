@@ -296,6 +296,40 @@ void P1(void *xp) {
     // is nice as it is
 }
 
+void initialise_xp(void* xp) {
+    ab(*xp_initial)[ANNEAL_Y_DIM] = (ab(*)[ANNEAL_Y_DIM])xp;
+
+    // initialise with empty land
+    for (int x = 0; x < ANNEAL_X_DIM; x++) {
+        for (int y = 0; y < ANNEAL_Y_DIM; y++) {
+            xp_initial[x][y].building_type = 0;
+            xp_initial[x][y].uid = global_building_uid_counter;
+            global_building_uid_counter++;
+        }
+    }
+
+    // add any existing buildings
+    int highest_id = building_get_highest_id();
+
+    // There always seems to be an empty building in the 0th element of
+    // the master buildings array!
+    for (int i = 1; i <= highest_id; i++) {
+        building* b = building_get(i);
+
+        // ToDo There seems to be a short (few seconds) lag between building a
+        //      building and it being picked up.  Not sure if it's an issue in practice.
+        if ((int) b->state > BUILDING_STATE_UNUSED && (int) b->state < BUILDING_STATE_DELETED_BY_GAME) {
+            if (b->x > ANNEAL_X_OFFSET && b->x <= ANNEAL_X_OFFSET + ANNEAL_X_DIM &&
+                b->y > ANNEAL_Y_OFFSET && b->y <= ANNEAL_Y_OFFSET + ANNEAL_Y_DIM) {
+                //                xp_initial[b->x - ANNEAL_X_OFFSET][b->y - ANNEAL_Y_OFFSET] = get_index_from_type();
+                printf("x: %u, y: %u, s:%u, t:%hi\n", (unsigned) b->x, (unsigned) b->y, (unsigned) b->size, b->type);
+            }
+        }
+    }
+
+    return;
+}
+
 /* Start the simulated annealing */
 int gsl_siman_main(int x_start, int y_start, int x_end, int y_end) {
     const gsl_rng_type * T;
@@ -307,17 +341,10 @@ int gsl_siman_main(int x_start, int y_start, int x_end, int y_end) {
     ANNEAL_X_OFFSET = x_start;
     ANNEAL_Y_OFFSET = y_start;
 
-    // initialise with empty land
     ab(*xp_initial)[ANNEAL_Y_DIM] = (ab(*)[ANNEAL_Y_DIM])calloc(ANNEAL_Y_DIM * ANNEAL_X_DIM, sizeof (ab));
 
-    for (int x = 0; x < ANNEAL_X_DIM; x++) {
-        for (int y = 0; y < ANNEAL_Y_DIM; y++) {
-            xp_initial[x][y].building_type = 0;
-            xp_initial[x][y].uid = global_building_uid_counter;
-            global_building_uid_counter++;
-        }
-    }
-
+    initialise_xp(xp_initial);
+    return;
     gsl_rng_env_setup();
     srand(time(NULL));
 

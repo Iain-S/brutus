@@ -528,7 +528,7 @@ void building_construction_place(void)
         map_property_clear_constructing_and_deleted();
 
         // clear the area
-        building_construction_clear_land(0, x_start, y_start, x_end, y_end);
+        //building_construction_clear_land(0, x_start, y_start, x_end, y_end);
 
         // call anneal on this area
         gsl_siman_main(x_start, y_start, x_end+1, y_end+1);

@@ -80,11 +80,27 @@ building_row building_table[] = {
     {"amphitheatre", 3, BUILDING_AMPHITHEATER},
     {"colosseum", 5, BUILDING_COLOSSEUM}
 };
- 
+
 int global_building_uid_counter = 1;
 
 char* api_get_building_name(int i) {
     return building_table[i].name;
+}
+
+void api_list_buildings() {
+    int highest_id = building_get_highest_id();
+    
+    // There always seems to be an empty building in the 0th element of
+    // the master buildings array
+    for (int i = 1; i <= highest_id; i++) {
+        building* b = building_get(i);
+	
+	    // ToDo There seems to be a short (few seconds) lag between building a
+	    //      building and it being picked up.  Not sure if it's an issue in practice.  
+	    if ((int)b->state > BUILDING_STATE_UNUSED && (int)b->state < BUILDING_STATE_DELETED_BY_GAME) {
+			printf("x: %u, y: %u, s:%u, t:%hi\n", (unsigned) b->x, (unsigned) b->y, (unsigned) b->size, b->type);
+		}
+    }
 }
 
 int api_score_city(int x_start, int y_start, int x_end, int y_end) {
