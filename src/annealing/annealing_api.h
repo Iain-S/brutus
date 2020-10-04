@@ -1,6 +1,8 @@
 #ifndef ANNEALING_API_H
 #define ANNEALING_API_H
 
+#include "building/type.h"
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -16,6 +18,8 @@ extern "C" {
     void api_replace_building(void*, int, int, int);
     int api_get_biggest_building_index(int, int);
     int global_building_uid_counter;
+    int api_get_index_from_type(building_type);
+    building_type api_get_type_from_index(int);
 
 #ifdef __cplusplus
 }

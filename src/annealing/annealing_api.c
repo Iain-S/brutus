@@ -87,19 +87,36 @@ char* api_get_building_name(int i) {
     return building_table[i].name;
 }
 
+/* Get the index in building_table of this type of building */
+int api_get_index_from_type(building_type building_type) {
+    int array_length = sizeof (building_table) / sizeof (building_table[0]);
+    for (int i = 0; i < array_length; i++) {
+        if (building_table[i].type == building_type) {
+            return i;
+        }
+    }
+    // We should never get this far
+    assert(0);
+}
+
+/* Get the C3 building type from the index of this building */
+building_type api_get_type_from_index(int building_index) {
+    return building_table[building_index].type;
+}
+
 void api_list_buildings() {
     int highest_id = building_get_highest_id();
-    
+
     // There always seems to be an empty building in the 0th element of
     // the master buildings array
     for (int i = 1; i <= highest_id; i++) {
         building* b = building_get(i);
-	
-	    // ToDo There seems to be a short (few seconds) lag between building a
-	    //      building and it being picked up.  Not sure if it's an issue in practice.  
-	    if ((int)b->state > BUILDING_STATE_UNUSED && (int)b->state < BUILDING_STATE_DELETED_BY_GAME) {
-			printf("x: %u, y: %u, s:%u, t:%hi\n", (unsigned) b->x, (unsigned) b->y, (unsigned) b->size, b->type);
-		}
+
+        // ToDo There seems to be a short (few seconds) lag between building a
+        //      building and it being picked up.  Not sure if it's an issue in practice.
+        if ((int) b->state > BUILDING_STATE_UNUSED && (int) b->state < BUILDING_STATE_DELETED_BY_GAME) {
+            printf("x: %u, y: %u, s:%u, t:%hi\n", (unsigned) b->x, (unsigned) b->y, (unsigned) b->size, b->type);
+        }
     }
 }
 
@@ -142,7 +159,7 @@ void api_build_buildings(void* xp) {
                 continue;
             } else {
                 ab my_building = squares[x][y];
-                api_place_building(ANNEAL_X_OFFSET + x, ANNEAL_Y_OFFSET + y, building_table[my_building.building_type].type);
+                api_place_building(ANNEAL_X_OFFSET + x, ANNEAL_Y_OFFSET + y, building_table[my_building.building_index].type);
                 built_uids[uid_index] = my_building.uid;
                 uid_index++;
             }
@@ -222,7 +239,7 @@ void api_replace_building(void* xp, int x, int y, int new_building_type) {
     // secondly, place the new building down
     for (int i = 0; i < new_building_size; i++) {
         for (int j = 0; j < new_building_size; j++) {
-            squares[x + i][y + j].building_type = new_building_type;
+            squares[x + i][y + j].building_index = new_building_type;
             squares[x + i][y + j].uid = global_building_uid_counter;
         }
     }
@@ -235,12 +252,12 @@ void api_pave_over(void* xp, int x, int y) {
     ab(*squares)[ANNEAL_Y_DIM] = (ab(*)[ANNEAL_Y_DIM])xp;
 
     int uid = squares[x][y].uid;
-    int building_type = squares[x][y].building_type;
+    int building_type = squares[x][y].building_index;
 
     for (int i = 0; i < ANNEAL_X_DIM; i++) {
         for (int j = 0; j < ANNEAL_Y_DIM; j++) {
             if (squares[i][j].uid == uid) {
-                assert(squares[i][j].building_type == building_type);
+                assert(squares[i][j].building_index == building_type);
 
                 //                if (squares[i][j].building_type != building_type){
                 //                    printf("x:%d  y:%d  i:%d  j:%d uid:%d\n", x, y, i, j, uid);
@@ -257,7 +274,7 @@ void api_pave_over(void* xp, int x, int y) {
                 //                    assert(squares[x][y].building_type == squares[i][j].building_type);
                 //
                 //                }
-                squares[i][j].building_type = 2; // road
+                squares[i][j].building_index = 2; // road
                 squares[i][j].uid = global_building_uid_counter;
                 global_building_uid_counter++;
             }

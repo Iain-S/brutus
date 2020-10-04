@@ -23,10 +23,12 @@ extern "C" {
 
     int anneal_next_loop;
     void gsl_provision_city(void);
-    // an annealing building
 
+    // an annealing building
     typedef struct {
-        int building_type;
+        // different to Caesar's building type, ours an index into an array
+        int building_index;
+        // each building has a uid
         unsigned int uid;
     } ab;
 

@@ -26,42 +26,41 @@
 #include "window/city.h"
 #include "building/granary.h"
 #include "building/warehouse.h"
+#include "building/construction_clear.h"
 #include "city/finance.h"
 
 
 /* set up parameters for this simulated annealing run */
 
 /* how many points do we try before stepping */
-#define N_TRIES 3 //200
+#define N_TRIES 100 //200
 
 /* how many iterations for each T? */
-#define ITERS_FIXED_T 3  //1000
+// ToDo - Why doesn't changing this affect the run time?
+#define ITERS_FIXED_T 500  //1000
 
 /* max step size in random walk */
 // ToDo does this need to be related to ANNEAL_DIM?
-#define STEP_SIZE 9
+#define STEP_SIZE 40
 
 /* Boltzmann constant */
 #define K 1.0
 
 /* initial temperature */
-#define T_INITIAL 0.008
+//#define T_INITIAL 0.008
+#define T_INITIAL 0.018
 
 /* damping factor for temperature */
 #define MU_T 1.09
 
-//#define T_MIN 2.0e-4
-#define T_MIN 2.0e-3
+/* final temperature */
+#define T_MIN 2.0e-5
+//#define T_MIN 2.0e-3
 
 int ANNEAL_X_DIM;
 int ANNEAL_Y_DIM;
 int ANNEAL_X_OFFSET;
 int ANNEAL_Y_OFFSET;
-
-/* These control a run of gsl_siman_solve(). */
-gsl_siman_params_t params
-    = {N_TRIES, ITERS_FIXED_T, STEP_SIZE,
-    K, T_INITIAL, MU_T, T_MIN};
 
 #define INTPTR(d) (*(int*)(d))
 
@@ -217,11 +216,36 @@ static void gsl_teardown(void) {
     platform_screen_destroy();
 }
 
+void gsl_print_xp(void* xp) {
+    ab(*squares)[ANNEAL_Y_DIM] = (ab(*)[ANNEAL_Y_DIM])xp;
+    
+    // ToDo Resize this as needed
+    char output[500];
+    
+    for (int x = 0; x < ANNEAL_X_DIM; x++) {
+        int offset = 0;
+        for (int y = 0; y < ANNEAL_Y_DIM; y++) {
+            // ToDo We should pad these numbers to 2-3 places like 023 or 03
+            offset += snprintf(output + offset, 
+                               500 - offset, 
+                               "%d ", 
+                               api_get_type_from_index(squares[x][y].building_index));
+        }
+        SDL_Log(output);
+    }
+}
+
 /* This function type should return the energy of a
  * configuration xp */
 double E1(void *xp) {
+    
     // load game
     assert(1 == game_file_load_saved_game("annealing.sav"));
+
+    gsl_print_xp(xp);
+    
+    // ToDo Where best to call?
+    //    building_construction_clear_land(0, ANNEAL_X_OFFSET, ANNEAL_Y_OFFSET, ANNEAL_X_OFFSET + ANNEAL_X_DIM, ANNEAL_Y_OFFSET + ANNEAL_Y_DIM);
 
     api_build_buildings(xp);
 
@@ -251,7 +275,7 @@ double E1(void *xp) {
 
     }
     int total_prosperity = api_score_city(ANNEAL_X_OFFSET, ANNEAL_Y_OFFSET, ANNEAL_X_OFFSET + ANNEAL_X_DIM, ANNEAL_Y_OFFSET + ANNEAL_Y_DIM);
-//    SDL_Log("total prosperity: %d", total_prosperity);
+    //    SDL_Log("total prosperity: %d", total_prosperity);
     return 1000 - total_prosperity;
 }
 
@@ -265,7 +289,7 @@ double M1(void *xp, void *yp) {
     // for now, just add the number of different squares
     for (int x = 0; x < ANNEAL_X_DIM; x++) {
         for (int y = 0; y < ANNEAL_Y_DIM; y++) {
-            if (a_squares[x][y].building_type != b_squares[x][y].building_type) {
+            if (a_squares[x][y].building_index != b_squares[x][y].building_index) {
                 distance++;
             }
         }
@@ -302,7 +326,7 @@ void initialise_xp(void* xp) {
     // initialise with empty land
     for (int x = 0; x < ANNEAL_X_DIM; x++) {
         for (int y = 0; y < ANNEAL_Y_DIM; y++) {
-            xp_initial[x][y].building_type = 0;
+            xp_initial[x][y].building_index = 0;
             xp_initial[x][y].uid = global_building_uid_counter;
             global_building_uid_counter++;
         }
@@ -317,16 +341,26 @@ void initialise_xp(void* xp) {
         building* b = building_get(i);
 
         // ToDo There seems to be a short (few seconds) lag between building a
-        //      building and it being picked up.  Not sure if it's an issue in practice.
+        //      building and it being recognised.  Not sure if it's an issue in practice.
         if ((int) b->state > BUILDING_STATE_UNUSED && (int) b->state < BUILDING_STATE_DELETED_BY_GAME) {
             if (b->x > ANNEAL_X_OFFSET && b->x <= ANNEAL_X_OFFSET + ANNEAL_X_DIM &&
                 b->y > ANNEAL_Y_OFFSET && b->y <= ANNEAL_Y_OFFSET + ANNEAL_Y_DIM) {
-                //                xp_initial[b->x - ANNEAL_X_OFFSET][b->y - ANNEAL_Y_OFFSET] = get_index_from_type();
-                printf("x: %u, y: %u, s:%u, t:%hi\n", (unsigned) b->x, (unsigned) b->y, (unsigned) b->size, b->type);
+                //                xp_initial[b->x - ANNEAL_X_OFFSET][b->y - ANNEAL_Y_OFFSET].building_type = api_get_index_from_type(b->type);
+                api_replace_building(xp, b->x - ANNEAL_X_OFFSET, b->y - ANNEAL_Y_OFFSET, api_get_index_from_type(b->type));
+
+                printf("x: %u, y: %u, s:%u, t:%d\n", (unsigned) b->x, (unsigned) b->y, (unsigned) b->size, b->type);
             }
         }
     }
-
+    
+    // ToDo This doesn't pick up roads
+    for (int i = 1; i <= highest_id; i++) {
+        building* b = building_get(i);
+        if (b->type == BUILDING_ROAD) {
+            int a = 1;
+        }    
+    }
+            
     return;
 }
 
@@ -338,13 +372,18 @@ int gsl_siman_main(int x_start, int y_start, int x_end, int y_end) {
     ANNEAL_X_DIM = x_end - x_start;
     ANNEAL_Y_DIM = y_end - y_start;
 
+    // ToDo We've assumed that the cursor is being dragged top to bottom and
+    //      left to right but we should handle the other possibilities too.
+    assert(ANNEAL_X_DIM >= 1);
+    assert(ANNEAL_Y_DIM >= 1);
+
     ANNEAL_X_OFFSET = x_start;
     ANNEAL_Y_OFFSET = y_start;
 
     ab(*xp_initial)[ANNEAL_Y_DIM] = (ab(*)[ANNEAL_Y_DIM])calloc(ANNEAL_Y_DIM * ANNEAL_X_DIM, sizeof (ab));
 
     initialise_xp(xp_initial);
-    return;
+
     gsl_rng_env_setup();
     srand(time(NULL));
 
@@ -356,10 +395,22 @@ int gsl_siman_main(int x_start, int y_start, int x_end, int y_end) {
     int original_speed = setting_game_speed();
 
     setting_reset_speeds(100000, setting_scroll_speed());
+    // Now that we have initialised xp, we need to clear the are or we won't
+    // be able to build on it.
+    building_construction_clear_land(0, x_start, y_start, x_end, y_end);
+    for (int d = 0; d < 10; d++) {
+        anneal_run_and_draw();
+    }
+
     assert(1 == game_file_write_saved_game("annealing.sav"));
-
-
     SDL_Log("Annealing started");
+
+    /* These control a run of gsl_siman_solve(). */
+    gsl_siman_params_t params
+        = {N_TRIES, ITERS_FIXED_T, STEP_SIZE,
+        K, T_INITIAL, MU_T, T_MIN};
+
+
     gsl_siman_solve(r, xp_initial, E1, S1, M1, P1,
         NULL, NULL, NULL,
         sizeof (ab) * ANNEAL_Y_DIM * ANNEAL_X_DIM, params);
@@ -377,7 +428,7 @@ int gsl_siman_main(int x_start, int y_start, int x_end, int y_end) {
 
     // ToDo print out arbitrary size
     for (int y = 0; y < ANNEAL_Y_DIM; y++) {
-        SDL_Log("%d %d %d %d", squares[0][y].building_type, squares[1][y].building_type, squares[2][y].building_type, squares[3][y].building_type);
+        SDL_Log("%d %d %d %d", squares[0][y].building_index, squares[1][y].building_index, squares[2][y].building_index, squares[3][y].building_index);
     }
 
     // Explain what the numbers mean
@@ -390,7 +441,7 @@ int gsl_siman_main(int x_start, int y_start, int x_end, int y_end) {
 
     // Set the game speed back to normal
     setting_reset_speeds(original_speed, setting_scroll_speed());
-
+    //    exit(0);
     // pause so that nothing changes from now on
     game_state_unpause();
     game_state_toggle_paused();

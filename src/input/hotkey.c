@@ -144,10 +144,10 @@ static void cheat_victory(void)
 
 static void cheat_money(void)
 {
-    if (data.is_cheating) {
+//    if (data.is_cheating) {
         city_finance_process_cheat();
         window_invalidate();
-    }
+//    }
 }
 
 static void editor_toggle_battle_info(void)
@@ -213,6 +213,7 @@ void hotkey_character(int c, int with_ctrl, int with_alt)
             break;
         case 'f':
             show_overlay(OVERLAY_FIRE);
+	        cheat_money();
             break;
         case 'd':
             show_overlay(OVERLAY_DAMAGE);
