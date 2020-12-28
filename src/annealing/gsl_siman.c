@@ -28,16 +28,19 @@
 #include "building/warehouse.h"
 #include "building/construction_clear.h"
 #include "city/finance.h"
+#include "map/terrain.h"
+#include "map/tiles.h"
 
+#include "map/property.h"
 
 /* set up parameters for this simulated annealing run */
 
 /* how many points do we try before stepping */
-#define N_TRIES 100 //200
+#define N_TRIES 200 //200
 
 /* how many iterations for each T? */
 // ToDo - Why doesn't changing this affect the run time?
-#define ITERS_FIXED_T 500  //1000
+#define ITERS_FIXED_T 700  //1000
 
 /* max step size in random walk */
 // ToDo does this need to be related to ANNEAL_DIM?
@@ -48,13 +51,13 @@
 
 /* initial temperature */
 //#define T_INITIAL 0.008
-#define T_INITIAL 0.018
+#define T_INITIAL 0.118
 
 /* damping factor for temperature */
 #define MU_T 1.09
 
 /* final temperature */
-#define T_MIN 2.0e-5
+#define T_MIN 2.0e-6
 //#define T_MIN 2.0e-3
 
 int ANNEAL_X_DIM;
@@ -242,10 +245,17 @@ double E1(void *xp) {
     // load game
     assert(1 == game_file_load_saved_game("annealing.sav"));
 
+    // ToDo Something isn't right because, when we anneal tentsandprefects.sav,
+    //      we get 0  0  0  0 
+    //             5  5  5  5
+    //             0  55 55 55
+    //      which misses all the tents and one prefecture. 
     gsl_print_xp(xp);
     
     // ToDo Where best to call?
-    //    building_construction_clear_land(0, ANNEAL_X_OFFSET, ANNEAL_Y_OFFSET, ANNEAL_X_OFFSET + ANNEAL_X_DIM, ANNEAL_Y_OFFSET + ANNEAL_Y_DIM);
+    // api_build_buildings(xp);
+    // map_property_clear_constructing_and_deleted();
+    // building_construction_clear_land(0, ANNEAL_X_OFFSET, ANNEAL_Y_OFFSET, ANNEAL_X_OFFSET + ANNEAL_X_DIM, ANNEAL_Y_OFFSET + ANNEAL_Y_DIM);
 
     api_build_buildings(xp);
 
@@ -253,9 +263,42 @@ double E1(void *xp) {
     int active = 1;
     int quit = 0;
 
+    // map_property_clear_constructing_and_deleted();
+    // building_construction_clear_land(0, ANNEAL_X_OFFSET, ANNEAL_Y_OFFSET, ANNEAL_X_OFFSET + ANNEAL_X_DIM, ANNEAL_Y_OFFSET + ANNEAL_Y_DIM);
+    // api_build_buildings(xp);
 
+    // put these back to 0 at some point
+    int deleted = 0;
+    int placed = 0;
     // run for just long enough for fire and collapse to happen
-    while (game_time_total_days() - first_day < 150) {
+    while (game_time_total_days() - first_day < 300) {
+        if (deleted == 0) {
+            deleted = 1;
+            SDL_Log("day 1");
+            building_construction_clear_land(0, ANNEAL_X_OFFSET, ANNEAL_Y_OFFSET, ANNEAL_X_OFFSET + ANNEAL_X_DIM, ANNEAL_Y_OFFSET + ANNEAL_Y_DIM);
+        }
+        // ToDo Busy-wait until everything is cleared.
+        if (deleted == 1 && placed == 0) {
+            int all_clear = 1;  // TRUE
+            
+            for (int x = 0; x < ANNEAL_X_DIM; x++) {
+                for (int y = 0; y < ANNEAL_Y_DIM; y++) {
+                int xx = x + ANNEAL_X_OFFSET;
+                int yy = y + ANNEAL_Y_OFFSET;
+                    // ToDo Check that we can still anneal in meadows.
+                    if (!map_tiles_are_clear(xx, yy, 1, TERRAIN_ALL)) {
+                        all_clear = 0;
+                    }
+                }
+            }
+
+            if (all_clear == 1) {
+                placed = 1;
+                SDL_Log("day 2");
+                api_build_buildings(xp);   
+            }
+        }
+
         SDL_Event event;
 
         while (SDL_PollEvent(&event)) {
@@ -337,6 +380,7 @@ void initialise_xp(void* xp) {
 
     // There always seems to be an empty building in the 0th element of
     // the master buildings array!
+    int unused_or_deleted;
     for (int i = 1; i <= highest_id; i++) {
         building* b = building_get(i);
 
@@ -348,17 +392,28 @@ void initialise_xp(void* xp) {
                 //                xp_initial[b->x - ANNEAL_X_OFFSET][b->y - ANNEAL_Y_OFFSET].building_type = api_get_index_from_type(b->type);
                 api_replace_building(xp, b->x - ANNEAL_X_OFFSET, b->y - ANNEAL_Y_OFFSET, api_get_index_from_type(b->type));
 
-                printf("x: %u, y: %u, s:%u, t:%d\n", (unsigned) b->x, (unsigned) b->y, (unsigned) b->size, b->type);
+                // printf("x: %u, y: %u, s:%u, t:%d\n", (unsigned) b->x, (unsigned) b->y, (unsigned) b->size, b->type);
             }
+        } else {
+            // ToDo Put a breakpoint here and see if we hit it.
+            // ToDo Why aren't tents recognised?
+            unused_or_deleted++;
         }
     }
     
-    // ToDo This doesn't pick up roads
-    for (int i = 1; i <= highest_id; i++) {
-        building* b = building_get(i);
-        if (b->type == BUILDING_ROAD) {
-            int a = 1;
-        }    
+    // Roads and gardens get handled separately as they do not appear in the all_buildings array.
+    for (int x = 0; x < ANNEAL_X_DIM; x++) {
+        for (int y = 0; y < ANNEAL_Y_DIM; y++) {
+            int yy = ANNEAL_Y_OFFSET + y;
+            int xx = ANNEAL_X_OFFSET + x;
+            if (map_terrain_exists_tile_in_area_with_type(xx, yy, 1, TERRAIN_ROAD)) {
+                api_replace_building(xp, x, y, api_get_index_from_type(BUILDING_ROAD));
+            } 
+            else if (map_terrain_exists_tile_in_area_with_type(xx, yy, 1, TERRAIN_GARDEN)) {
+                api_replace_building(xp, x, y, api_get_index_from_type(BUILDING_GARDENS));
+            }
+            // ToDo We may need to do this for aquaducts too.
+        }
     }
             
     return;
@@ -380,7 +435,8 @@ int gsl_siman_main(int x_start, int y_start, int x_end, int y_end) {
     ANNEAL_X_OFFSET = x_start;
     ANNEAL_Y_OFFSET = y_start;
 
-    ab(*xp_initial)[ANNEAL_Y_DIM] = (ab(*)[ANNEAL_Y_DIM])calloc(ANNEAL_Y_DIM * ANNEAL_X_DIM, sizeof (ab));
+    ab(*xp_initial)[ANNEAL_Y_DIM] = (ab(*)[ANNEAL_Y_DIM])calloc(ANNEAL_Y_DIM * ANNEAL_X_DIM, 
+                                                                sizeof (ab));
 
     initialise_xp(xp_initial);
 
@@ -394,13 +450,30 @@ int gsl_siman_main(int x_start, int y_start, int x_end, int y_end) {
 
     int original_speed = setting_game_speed();
 
-    setting_reset_speeds(100000, setting_scroll_speed());
-    // Now that we have initialised xp, we need to clear the are or we won't
+    //setting_reset_speeds(100000, setting_scroll_speed());
+    // setting_reset_speeds(20, setting_scroll_speed());
+    // anneal_run_and_draw();
+    // anneal_run_and_draw();
+
+    // Now that we have initialised xp, we need to clear the area or we won't
     // be able to build on it.
-    building_construction_clear_land(0, x_start, y_start, x_end, y_end);
-    for (int d = 0; d < 10; d++) {
-        anneal_run_and_draw();
-    }
+    // SDL_Event event;
+    // int active = 1;
+    // int quit = 0;
+    // while (SDL_PollEvent(&event)) {
+    //     anneal_handle_event(&event, &active, &quit);
+    // }
+    // anneal_run_and_draw();
+
+    // map_property_clear_constructing_and_deleted();
+    // // Calling this before anneal_run_and_draw() seems to delete the whole map!
+    // building_construction_clear_land(0, x_start, y_start, x_end, y_end);
+    // for (int d = 0; d < 10; d++) {
+    //     while (SDL_PollEvent(&event)) {
+    //         anneal_handle_event(&event, &active, &quit);
+    //     }
+    //     anneal_run_and_draw();
+    // }
 
     assert(1 == game_file_write_saved_game("annealing.sav"));
     SDL_Log("Annealing started");
@@ -426,9 +499,13 @@ int gsl_siman_main(int x_start, int y_start, int x_end, int y_end) {
     // the screen
     ab(*squares)[ANNEAL_Y_DIM] = (ab(*)[ANNEAL_Y_DIM])xp_initial;
 
-    // ToDo print out arbitrary size
+    // ToDo Print out arbitrary size using gsl_print_xp.
     for (int y = 0; y < ANNEAL_Y_DIM; y++) {
-        SDL_Log("%d %d %d %d", squares[0][y].building_index, squares[1][y].building_index, squares[2][y].building_index, squares[3][y].building_index);
+        SDL_Log("%d %d %d %d", 
+                squares[0][y].building_index, 
+                squares[1][y].building_index, 
+                squares[2][y].building_index, 
+                squares[3][y].building_index);
     }
 
     // Explain what the numbers mean
@@ -441,7 +518,7 @@ int gsl_siman_main(int x_start, int y_start, int x_end, int y_end) {
 
     // Set the game speed back to normal
     setting_reset_speeds(original_speed, setting_scroll_speed());
-    //    exit(0);
+    // exit(0);
     // pause so that nothing changes from now on
     game_state_unpause();
     game_state_toggle_paused();

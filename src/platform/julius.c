@@ -333,6 +333,9 @@ static void main_loop(int anneal)
 		game_file_load_saved_game("annealscenario1.sav");
 		gsl_provision_city();
 		gsl_siman_main(7, 8, 16, 17);
+
+        // Optional, if we want to do timings.
+        //exit(0);
     }
 
     int active = 1;

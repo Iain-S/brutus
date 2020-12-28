@@ -29,7 +29,7 @@ void api_place_building(int x, int y, building_type building_type) {
             break;
         case BUILDING_HOUSE_VACANT_LOT:
             placed = place_houses(0, x, y, x, y);
-            assert(placed == 1);
+            // assert(placed == 1);
             break;
         case BUILDING_PLAZA:
             api_place_building(x, y, BUILDING_ROAD);
