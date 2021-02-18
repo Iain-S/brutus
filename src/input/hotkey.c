@@ -197,7 +197,10 @@ void hotkey_character(int c, int with_ctrl, int with_alt)
     }
 
     switch (c) {
-	    case 'i':
+	    case 'r':
+        // pRovision
+	        gsl_provision_city();
+        case 'i':
 	        api_list_buildings();
         case '[':
             change_game_speed(1);

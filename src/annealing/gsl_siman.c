@@ -387,8 +387,8 @@ void initialise_xp(void* xp) {
         // ToDo There seems to be a short (few seconds) lag between building a
         //      building and it being recognised.  Not sure if it's an issue in practice.
         if ((int) b->state > BUILDING_STATE_UNUSED && (int) b->state < BUILDING_STATE_DELETED_BY_GAME) {
-            if (b->x > ANNEAL_X_OFFSET && b->x <= ANNEAL_X_OFFSET + ANNEAL_X_DIM &&
-                b->y > ANNEAL_Y_OFFSET && b->y <= ANNEAL_Y_OFFSET + ANNEAL_Y_DIM) {
+            if (b->x >= ANNEAL_X_OFFSET && b->x < ANNEAL_X_OFFSET + ANNEAL_X_DIM &&
+                b->y >= ANNEAL_Y_OFFSET && b->y < ANNEAL_Y_OFFSET + ANNEAL_Y_DIM) {
                 //                xp_initial[b->x - ANNEAL_X_OFFSET][b->y - ANNEAL_Y_OFFSET].building_type = api_get_index_from_type(b->type);
                 api_replace_building(xp, b->x - ANNEAL_X_OFFSET, b->y - ANNEAL_Y_OFFSET, api_get_index_from_type(b->type));
 
@@ -396,7 +396,6 @@ void initialise_xp(void* xp) {
             }
         } else {
             // ToDo Put a breakpoint here and see if we hit it.
-            // ToDo Why aren't tents recognised?
             unused_or_deleted++;
         }
     }

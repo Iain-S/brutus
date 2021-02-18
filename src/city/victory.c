@@ -35,6 +35,9 @@ int city_victory_state(void)
 
 void city_victory_check(void)
 {
+    // We don't want the Victory dialogue to pop-up while annealing.
+    return;
+
     if (scenario_is_open_play()) {
         return;
     }

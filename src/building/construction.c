@@ -417,8 +417,9 @@ void building_construction_update(int x, int y, int grid_offset)
         int items_placed = place_garden(data.start.x, data.start.y, x, y);
         if (items_placed >= 0) current_cost *= items_placed;
     } else if (type == BUILDING_ANNEALING_ZONE) {
-        int items_placed = place_garden(data.start.x, data.start.y, x, y);
-        if (items_placed >= 0) current_cost *= items_placed;
+        // Maybe we find some other way to show the area as it is being chosen.
+        //int items_placed = place_garden(data.start.x, data.start.y, x, y);
+        //if (items_placed >= 0) current_cost *= items_placed;
     } else if (type == BUILDING_LOW_BRIDGE || type == BUILDING_SHIP_BRIDGE) {
         int length = map_bridge_building_length();
         if (length > 1) current_cost *= length;
