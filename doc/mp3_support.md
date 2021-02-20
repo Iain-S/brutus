@@ -1,6 +1,6 @@
-# MP3 playback support in Julius
+# MP3 playback support in Brutus
 
-Julius currently supports the playback of MP3 files instead of the original, low-quality wav files.
+Brutus currently supports the playback of MP3 files instead of the original, low-quality wav files.
 
 If you have the high-quality MP3 files that were once available from the
 [Sierra Website](http://web.archive.org/web/20000303064239/www.caesar3.com/downloads.shtml),
@@ -8,10 +8,6 @@ you can play them instead of the original files. Alternatively, you can play any
 of the original music.
 
 In order to play the files, you must have the library `libmpg123-0` installed.
-
-For Windows, if you installed Julius using the provided zip file, `libmpg123-0` is already installed.
-
-For macOS, if you installed Julius using the provided `dmg` file, `libmpg123-0` is already installed.
 
 For Linux, `libmpg123-0` is usually installed with `SDL_mixer`. If not, you can install it using a package manager.
 
@@ -26,6 +22,6 @@ Then, create a folder named `mp3` in the main folder where your Caesar 3 data fi
 * `Combat_Short.mp3` - Short battle music;
 * `setup.mp3` - Main menu music.
 
-For each file that is missing, Julius will play the original wav instead.
+For each file that is missing, Brutus will play the original wav instead.
 
 The original mp3 files can be downloaded [here](https://bintray.com/bvschaik/caesar3-music/mp3).
