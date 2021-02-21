@@ -1,3 +1,4 @@
+// API for manipulating roads and buildings
 #include <stdlib.h>
 #include <assert.h>
 #include <stdio.h>
@@ -17,12 +18,15 @@
 typedef void (*place_building_func)(int, int, building_type);
 
 typedef struct {
+    // A row of our buildings table
     char* name;
     int size;
     building_type type;
 } building_row;
 
 void api_place_building(int x, int y, building_type building_type) {
+    // Build the given building at point x,y as if the player did so with
+    // the mouse
     int placed = 0;
     switch (building_type) {
         case BUILDING_NONE:
@@ -30,10 +34,11 @@ void api_place_building(int x, int y, building_type building_type) {
         case BUILDING_HOUSE_VACANT_LOT:
             placed = place_houses(0, x, y, x, y);
             // assert(placed == 1);
+            // ToDo Re-insert the assert
             break;
         case BUILDING_PLAZA:
             api_place_building(x, y, BUILDING_ROAD);
-            // note: no break; because we want to build the plaza on the road
+            // note: no `break` because we want to build the plaza on the road
         default:
             building_construction_set_type(building_type);
             map_tile tile;
@@ -43,7 +48,7 @@ void api_place_building(int x, int y, building_type building_type) {
             build_start(&tile);
             build_move(&tile);
             build_end();
-            // ToDo - Check that we could place the building
+            // ToDo Check that we could place the building
     }
 }
 
@@ -81,14 +86,16 @@ building_row building_table[] = {
     {"colosseum", 5, BUILDING_COLOSSEUM}
 };
 
+// The next available building UID
 int global_building_uid_counter = 1;
 
 char* api_get_building_name(int i) {
+    // Get the name of the building in row i
     return building_table[i].name;
 }
 
-/* Get the index in building_table of this type of building */
 int api_get_index_from_type(building_type building_type) {
+    // Get the index in building_table of this type of building
     int array_length = sizeof (building_table) / sizeof (building_table[0]);
     for (int i = 0; i < array_length; i++) {
         if (building_table[i].type == building_type) {
@@ -99,12 +106,13 @@ int api_get_index_from_type(building_type building_type) {
     assert(0);
 }
 
-/* Get the C3 building type from the index of this building */
 building_type api_get_type_from_index(int building_index) {
+    // Get the C3 building type from the index of this building
     return building_table[building_index].type;
 }
 
 void api_list_buildings() {
+    // Print all buildings to stdout
     int highest_id = building_get_highest_id();
 
     // There always seems to be an empty building in the 0th element of
@@ -142,6 +150,8 @@ int api_score_city(int x_start, int y_start, int x_end, int y_end) {
 }
 
 int already_built(int* built_uids, int max, int uid) {
+    // Checks whether uid is already in built_uids. Useful to check whether
+    // a multi-tile building has already been processed.
     for (int i = 0; i < max; i++) {
         if (built_uids[i] == uid) {
             return 1;
@@ -151,6 +161,7 @@ int already_built(int* built_uids, int max, int uid) {
 }
 
 void api_build_buildings(void* xp) {
+    // Build all of the buildings specified by xp on the actual game map
     map_property_clear_constructing_and_deleted();
     ab(*squares)[ANNEAL_Y_DIM] = (ab(*)[ANNEAL_Y_DIM])xp;
 
@@ -174,6 +185,7 @@ void api_build_buildings(void* xp) {
 }
 
 int api_max(uint a, uint b) {
+    // Whichever is higher of a and b
     if (a >= b) {
         return a;
     } else {
@@ -182,6 +194,7 @@ int api_max(uint a, uint b) {
 }
 
 int api_min(uint a, uint b) {
+    // Whichever is lower of a and b
     if (a <= b) {
         return a;
     } else {
@@ -195,7 +208,6 @@ int api_get_biggest_building_index(int x, int y) {
     // The size of the largest building we can put at x,y
     int biggest_y_dimension = ANNEAL_Y_DIM - y;
     int biggest_x_dimension = ANNEAL_X_DIM - x;
-    //    int biggest_building_size = api_min(ANNEAL_Y_DIM, ANNEAL_X_DIM) - api_max(x, y);
     int biggest_building_size = api_min(biggest_x_dimension, biggest_y_dimension);
 
     int number_of_buildings = sizeof (building_table) / sizeof (building_table[0]);
@@ -210,10 +222,8 @@ int api_get_biggest_building_index(int x, int y) {
 }
 
 void api_modify_elements_r(void* xp, int num_elements, int (*rand_a)(void), int (*rand_b)(void)) {
-    // Modify up to num_elements of xp, in place
-    // Decide on the square to change with rand_a and the new building with rand_b
-
-    //    ab(*squares)[ANNEAL_DIM] = (ab(*)[ANNEAL_DIM])xp;
+    // Modify up to num_elements of xp, in place. Decide on the square to change
+    // with rand_a and the new building with rand_b
 
     for (int i = 0; i < num_elements; i++) {
         int x = rand_a() % ANNEAL_X_DIM;
@@ -253,7 +263,7 @@ void api_replace_building(void* xp, int x, int y, int new_building_type) {
 }
 
 void api_pave_over(void* xp, int x, int y) {
-    // pave over the square at xp[x][y] and any other tiles that
+    // Pave over the square at xp[x][y] and any other tiles that
     // that building covers
     ab(*squares)[ANNEAL_Y_DIM] = (ab(*)[ANNEAL_Y_DIM])xp;
 
@@ -274,7 +284,6 @@ void api_pave_over(void* xp, int x, int y) {
 }
 
 void api_modify_elements(void* xp, int num_elements) {
-    // Modify up to num_elements of xp, in place,
-    // specifying which random number generators to use
+    // Modify up to num_elements of xp, in place
     api_modify_elements_r(xp, num_elements, rand, rand);
 }

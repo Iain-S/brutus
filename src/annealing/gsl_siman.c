@@ -1,3 +1,4 @@
+// Search for optimal housing blocks using GSL simulated annealing library
 #include "SDL.h"
 
 #include <math.h>
@@ -30,32 +31,31 @@
 #include "city/finance.h"
 #include "map/terrain.h"
 #include "map/tiles.h"
-
 #include "map/property.h"
 
-/* set up parameters for this simulated annealing run */
+// Set up parameters for this simulated annealing run
 
-/* how many points do we try before stepping */
+// How many points do we try before stepping
 #define N_TRIES 200
 
-/* how many iterations for each T? */
-// ToDo - Why doesn't changing this affect the run time?
+// ToDo - Why doesn't changing this seem to affect the run time?
+// How many iterations for each T?
 #define ITERS_FIXED_T 700  // GSL example:1000
 
-/* max step size in random walk */
 // ToDo does this need to be related to ANNEAL_DIM?
+// Max step size in random walk
 #define STEP_SIZE 40
 
-/* Boltzmann constant */
+// Boltzmann constant
 #define K 1.0
 
-/* initial temperature */
+// Initial temperature
 #define T_INITIAL 0.118  // use 0.008 for quicker anneal
 
-/* damping factor for temperature */
+// Damping factor for temperature
 #define MU_T 1.09
 
-/* final temperature */
+// Final temperature
 #define T_MIN 2.0e-6  // use e-3 for quicker anneal
 
 int ANNEAL_X_DIM;
@@ -74,21 +74,25 @@ enum {
 };
 
 static void anneal_run(void) {
+    // Simplified version of run() from julius.c
     time_set_millis(SDL_GetTicks());
     game_run();
 }
 
 static void anneal_draw(void) {
+    // Simplified version of draw() from julius.c
     window_draw(1);
     platform_screen_render();
 }
 
 static void anneal_run_and_draw(void) {
+    // Simplified version of run_and_draw() from julius.c
     anneal_run();
     anneal_draw();
 }
 
 static void anneal_handle_mouse_button(SDL_MouseButtonEvent *event, int is_down) {
+    // Simplified version of handle_mouse_button() from julius.c
     mouse_set_position(event->x, event->y);
     if (event->button == SDL_BUTTON_LEFT) {
         mouse_set_left_down(is_down);
@@ -98,6 +102,7 @@ static void anneal_handle_mouse_button(SDL_MouseButtonEvent *event, int is_down)
 }
 
 static void anneal_handle_window_event(SDL_WindowEvent *event, int *window_active) {
+    // Simplified version of handle_window_event() from julius.c
     switch (event->event) {
         case SDL_WINDOWEVENT_ENTER:
             mouse_set_inside_window(1);
@@ -117,7 +122,6 @@ static void anneal_handle_window_event(SDL_WindowEvent *event, int *window_activ
                     (int) event->data1, (int) event->data2);
             platform_screen_move(event->data1, event->data2);
             break;
-
         case SDL_WINDOWEVENT_SHOWN:
             SDL_Log("Window %d shown", (unsigned int) event->windowID);
             *window_active = 1;
@@ -130,6 +134,7 @@ static void anneal_handle_window_event(SDL_WindowEvent *event, int *window_activ
 }
 
 static void anneal_handle_event(SDL_Event *event, int *active, int *quit) {
+    // Simplified version of handle_event() from julius.c
     switch (event->type) {
         case SDL_WINDOWEVENT:
             anneal_handle_window_event(&event->window, active);
@@ -188,13 +193,14 @@ static void anneal_handle_event(SDL_Event *event, int *active, int *quit) {
 }
 
 void gsl_provision_city(void) {
-    // give ourselves lots of food, goods and money to work with
+    // Give the city lots of food, goods and money
+    // ToDo Move this to the API file
 
-    // find our granary
     for (int i = 1; i < MAX_BUILDINGS; i++) {
         building *b = building_get(i);
         if (b->type == BUILDING_GRANARY) {
             for (int x = 0; x < 20; x++) {
+                // Add all food types needed by palaces
                 building_granary_add_resource(b, RESOURCE_WHEAT, 0);
                 building_granary_add_resource(b, RESOURCE_VEGETABLES, 0);
                 building_granary_add_resource(b, RESOURCE_FRUIT, 0);
@@ -202,6 +208,7 @@ void gsl_provision_city(void) {
             }
         } else if (b->type == BUILDING_WAREHOUSE) {
             for (int x = 0; x < 20; x++) {
+                // Add all resource types needed by palaces
                 building_warehouse_add_resource(b, RESOURCE_POTTERY);
                 building_warehouse_add_resource(b, RESOURCE_FURNITURE);
                 building_warehouse_add_resource(b, RESOURCE_OIL);
@@ -211,17 +218,20 @@ void gsl_provision_city(void) {
         }
     }
 
-    // fill our treasury
+    // Fill the treasury
     city_finance_process_donation(10000);
 }
 
 static void gsl_teardown(void) {
+    // Close resources prior to exit
     SDL_Log("Exiting game");
     video_shutdown();
     platform_screen_destroy();
 }
 
 void gsl_print_xp(void* xp) {
+    // Print the configuration to stdout (useful for debugging)
+
     ab(*squares)[ANNEAL_Y_DIM] = (ab(*)[ANNEAL_Y_DIM])xp;
 
     // ToDo Resize this as needed
@@ -240,10 +250,9 @@ void gsl_print_xp(void* xp) {
     }
 }
 
-/* This function type should return the energy of a
- * configuration xp */
 double E1(void *xp) {
-    // load game
+    // This function type should return the energy of a configuration xp
+
     assert(1 == game_file_load_saved_game("annealing.sav"));
 
     gsl_print_xp(xp);
@@ -323,14 +332,13 @@ double E1(void *xp) {
     return 1000 - total_prosperity;
 }
 
-/* This function should return the distance between two
- configurations, xp and yp. */
 double M1(void *xp, void *yp) {
+    // Return the "distance" between two configurations, xp and yp
     int distance = 0;
     ab(*a_squares)[ANNEAL_Y_DIM] = (ab(*)[ANNEAL_Y_DIM])xp;
     ab(*b_squares)[ANNEAL_Y_DIM] = (ab(*)[ANNEAL_Y_DIM])yp;
 
-    // for now, just add the number of different squares
+    // For now, just add the number of different squares
     for (int x = 0; x < ANNEAL_X_DIM; x++) {
         for (int y = 0; y < ANNEAL_Y_DIM; y++) {
             if (a_squares[x][y].building_index != b_squares[x][y].building_index) {
@@ -342,10 +350,9 @@ double M1(void *xp, void *yp) {
     return distance;
 }
 
-/* This function should modify the xp, using a random
- step taken from the generator, r, up to a max distance of
- step size. */
 void S1(const gsl_rng* r, void *xp, double step_size) {
+    // Modify xp using a random step taken from the generator up to a maximum
+    // distance of step_size
     ab(*old_xp)[ANNEAL_Y_DIM] = (ab(*)[ANNEAL_Y_DIM])xp;
 
     //    SDL_Log("step size: %f", step_size);
@@ -357,17 +364,15 @@ void S1(const gsl_rng* r, void *xp, double step_size) {
     api_modify_elements(old_xp, i);
 }
 
-/* This function should print the content of the
- * configuration, xp. */
 void P1(void *xp) {
-    // Don't print anything because the annealing table
-    // is nice as it is
+    // Don't print anything because the annealing table is nice as it is
 }
 
 void initialise_xp(void* xp) {
+    // Get our initial configuration by checking what is already in the annealing area
     ab(*xp_initial)[ANNEAL_Y_DIM] = (ab(*)[ANNEAL_Y_DIM])xp;
 
-    // initialise with empty land
+    // Initialise with empty land
     for (int x = 0; x < ANNEAL_X_DIM; x++) {
         for (int y = 0; y < ANNEAL_Y_DIM; y++) {
             xp_initial[x][y].building_index = 0;
@@ -376,7 +381,8 @@ void initialise_xp(void* xp) {
         }
     }
 
-    // add any existing buildings
+    // Add any existing buildings
+
     int highest_id = building_get_highest_id();
 
     // There always seems to be an empty building in the 0th element of
@@ -397,12 +403,12 @@ void initialise_xp(void* xp) {
                                      api_get_index_from_type(b->type));
             }
         } else {
-            // ToDo Put a breakpoint here and see if we hit it.
+            // ToDo Put a breakpoint here and see if we hit it
             unused_or_deleted++;
         }
     }
 
-    // Roads and gardens get handled separately as they do not appear in the all_buildings array.
+    // Roads and gardens get handled separately as they do not appear in the all_buildings array
     for (int x = 0; x < ANNEAL_X_DIM; x++) {
         for (int y = 0; y < ANNEAL_Y_DIM; y++) {
             int yy = ANNEAL_Y_OFFSET + y;
@@ -413,15 +419,15 @@ void initialise_xp(void* xp) {
             } else if (map_terrain_exists_tile_in_area_with_type(xx, yy, 1, TERRAIN_GARDEN)) {
                 api_replace_building(xp, x, y, api_get_index_from_type(BUILDING_GARDENS));
             }
-            // ToDo We may need to do this for aquaducts too.
+            // ToDo We may need to do this for aquaducts too
         }
     }
 
     return;
 }
 
-/* Start the simulated annealing */
 int gsl_siman_main(int x_start, int y_start, int x_end, int y_end) {
+    // Start the simulated annealing
     const gsl_rng_type * T;
     gsl_rng * r;
 
@@ -429,7 +435,7 @@ int gsl_siman_main(int x_start, int y_start, int x_end, int y_end) {
     ANNEAL_Y_DIM = y_end - y_start;
 
     // ToDo We've assumed that the cursor is being dragged top to bottom and
-    //      left to right but we should handle the other possibilities too.
+    //      left to right but we should handle the other possibilities too
     assert(ANNEAL_X_DIM >= 1);
     assert(ANNEAL_Y_DIM >= 1);
 
@@ -457,7 +463,7 @@ int gsl_siman_main(int x_start, int y_start, int x_end, int y_end) {
     assert(1 == game_file_write_saved_game("annealing.sav"));
     SDL_Log("Annealing started");
 
-    /* These control a run of gsl_siman_solve(). */
+    // These control a run of gsl_siman_solve()
     gsl_siman_params_t params
         = {N_TRIES, ITERS_FIXED_T, STEP_SIZE,
         K, T_INITIAL, MU_T, T_MIN};
@@ -478,27 +484,17 @@ int gsl_siman_main(int x_start, int y_start, int x_end, int y_end) {
     // the screen
     ab(*squares)[ANNEAL_Y_DIM] = (ab(*)[ANNEAL_Y_DIM])xp_initial;
 
-    // ToDo Print out arbitrary size using gsl_print_xp.
-    for (int y = 0; y < ANNEAL_Y_DIM; y++) {
-        SDL_Log("%d %d %d %d",
-                squares[0][y].building_index,
-                squares[1][y].building_index,
-                squares[2][y].building_index,
-                squares[3][y].building_index);
-    }
+    gsl_print_xp(xp_initial);
 
-    // Explain what the numbers mean
-    for (int i = 0; i < 7; i++) {
-        SDL_Log("%d = %s", i, api_get_building_name(i));
-    }
+    // ToDo Explain what the numbers mean
 
     // Clean up
     gsl_rng_free(r);
 
     // Set the game speed back to normal
     setting_reset_speeds(original_speed, setting_scroll_speed());
-    // exit(0);
-    // pause so that nothing changes from now on
+
+    // Pause so that nothing changes from now on
     game_state_unpause();
     game_state_toggle_paused();
 

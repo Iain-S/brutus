@@ -5,7 +5,6 @@
 #include "annealing/gsl_siman.h"
 #include "building/type.h"
 
-
 int inc_counter = 0;
 
 int increment_one(void) {
@@ -18,19 +17,11 @@ int return_one(void) {
     return 1;
 }
 
-
 int global_int = 0;
 
 int return_global_int(void) {
     return global_int;
 }
-
-
-//int (*get_zeroed_xp(void))[ANNEAL_DIM]{
-//    // Don't forget to free it once you're done
-//    ab (*xp)[ANNEAL_DIM] = (ab(*)[ANNEAL_DIM])calloc(ANNEAL_DIM * ANNEAL_DIM, sizeof(ab));
-//    return xp;
-//}
 
 void test_api_modify_elements_r1(void) {
     printf("test_api_modify_elements_r1\n");
@@ -102,10 +93,10 @@ void test_api_pave_over(void) {
     xp[1][1].uid = 876;
 
     api_pave_over(xp, 1, 1);
-    assert(xp[0][0].building_index == 2); // road
-    assert(xp[0][1].building_index == 2); // road
-    assert(xp[1][0].building_index == 2); // road
-    assert(xp[1][1].building_index == 2); // road
+    assert(xp[0][0].building_index == 2);  // road
+    assert(xp[0][1].building_index == 2);  // road
+    assert(xp[1][0].building_index == 2);  // road
+    assert(xp[1][1].building_index == 2);  // road
 }
 
 void test_api_replace_building(void) {
@@ -131,50 +122,41 @@ void test_api_replace_building(void) {
     xp[1][1].uid = 876;
 
     api_replace_building(xp, 1, 1, 6);
-    assert(xp[0][0].building_index == 2); // road
-    assert(xp[0][1].building_index == 2); // road
-    assert(xp[1][0].building_index == 2); // road
-    assert(xp[1][1].building_index == 6); // market
-    assert(xp[1][2].building_index == 6); // market
-    assert(xp[2][1].building_index == 6); // market
-    assert(xp[2][2].building_index == 6); // market
-    assert(xp[3][3].building_index == 0); // empty land
-    assert(xp[3][2].building_index == 0); // empty land
-    assert(xp[2][3].building_index == 0); // empty land
+    assert(xp[0][0].building_index == 2);  // road
+    assert(xp[0][1].building_index == 2);  // road
+    assert(xp[1][0].building_index == 2);  // road
+    assert(xp[1][1].building_index == 6);  // market
+    assert(xp[1][2].building_index == 6);  // market
+    assert(xp[2][1].building_index == 6);  // market
+    assert(xp[2][2].building_index == 6);  // market
+    assert(xp[3][3].building_index == 0);  // empty land
+    assert(xp[3][2].building_index == 0);  // empty land
+    assert(xp[2][3].building_index == 0);  // empty land
 }
-
-//void test_api_get_biggest_building_index(void) {
-//    printf("test_api_get_biggest_building_index\n");
-//
-//    assert(api_get_biggest_building_index(0, 0) == 7);
-//    assert(api_get_biggest_building_index(ANNEAL_X_DIM - 1, ANNEAL_Y_DIM - 1) == 5);
-//}
 
 void test_api_get_index_from_type(void) {
     printf("test_api_get_index_from_type\n");
 
-    assert(api_get_index_from_type(BUILDING_NONE) == 0);    
-    assert(api_get_index_from_type(BUILDING_MARKET) == 12);    
+    assert(api_get_index_from_type(BUILDING_NONE) == 0);
+    assert(api_get_index_from_type(BUILDING_MARKET) == 12);
 }
 
 void test_api_get_type_from_index(void) {
     printf("test_api_get_type_from_index\n");
 
-    assert(api_get_type_from_index(0) == BUILDING_NONE);    
-    assert(api_get_type_from_index(13) == BUILDING_SCHOOL);    
+    assert(api_get_type_from_index(0) == BUILDING_NONE);
+    assert(api_get_type_from_index(13) == BUILDING_SCHOOL);
 }
 
 
 int main(void) {
     printf("starting tests\n");
-//    test_api_get_biggest_building_index();
-//    test_api_modify_elements_r1();
-//    test_api_pave_over();
-//    test_api_replace_building();
+    test_api_modify_elements_r1();
+    test_api_pave_over();
+    test_api_replace_building();
     test_api_get_type_from_index();
     test_api_get_index_from_type();
     printf("tests passed\n");
-
 }
 
 

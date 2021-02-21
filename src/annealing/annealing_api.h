@@ -1,3 +1,4 @@
+// API functions that can be used outside of annealing_api.c
 #ifndef SRC_ANNEALING_ANNEALING_API_H_
 #define SRC_ANNEALING_ANNEALING_API_H_
 
