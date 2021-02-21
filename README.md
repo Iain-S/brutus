@@ -75,6 +75,7 @@ See [Running](doc/RUNNING.md) for further instructions and startup options.
 ### Pre-commit checks
 
 - Lint Markdown files
+- Lint source files with cpplint
 - Ensure that Brutus builds without errors
 - Run `make test` from the debug/ folder
 - Run `./test/annealing_tests` from the debug folder

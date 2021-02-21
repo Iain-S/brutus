@@ -334,8 +334,8 @@ static void main_loop(int anneal)
 		gsl_provision_city();
 		gsl_siman_main(7, 8, 16, 17);
 
-        // Optional, if we want to do timings.
-        //exit(0);
+        // Optional, if we want to do timings with /usr/bin/time.
+        // exit(0);
     }
 
     int active = 1;

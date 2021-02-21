@@ -10,7 +10,7 @@
 #include "building/model.h"
 #include "map/property.h"
 #include "map/point.h"
-#include "gsl_siman.h"
+#include "annealing/gsl_siman.h"
 #include "annealing/annealing_api.h"
 #include "widget/city.h"
 
@@ -114,8 +114,13 @@ void api_list_buildings() {
 
         // ToDo There seems to be a short (few seconds) lag between building a
         //      building and it being picked up.  Not sure if it's an issue in practice.
-        if ((int) b->state > BUILDING_STATE_UNUSED && (int) b->state < BUILDING_STATE_DELETED_BY_GAME) {
-            printf("x: %u, y: %u, s:%u, t:%hi\n", (unsigned) b->x, (unsigned) b->y, (unsigned) b->size, b->type);
+        if ((int) b->state > BUILDING_STATE_UNUSED
+            && (int) b->state < BUILDING_STATE_DELETED_BY_GAME) {
+            printf("x: %u, y: %u, s:%u, t:%hi\n",
+                   (unsigned) b->x,
+                   (unsigned) b->y,
+                   (unsigned) b->size,
+                   b->type);
         }
     }
 }
@@ -137,7 +142,6 @@ int api_score_city(int x_start, int y_start, int x_end, int y_end) {
 }
 
 int already_built(int* built_uids, int max, int uid) {
-    // does c have bool?
     for (int i = 0; i < max; i++) {
         if (built_uids[i] == uid) {
             return 1;
@@ -159,7 +163,9 @@ void api_build_buildings(void* xp) {
                 continue;
             } else {
                 ab my_building = squares[x][y];
-                api_place_building(ANNEAL_X_OFFSET + x, ANNEAL_Y_OFFSET + y, building_table[my_building.building_index].type);
+                api_place_building(ANNEAL_X_OFFSET + x,
+                                   ANNEAL_Y_OFFSET + y,
+                                   building_table[my_building.building_index].type);
                 built_uids[uid_index] = my_building.uid;
                 uid_index++;
             }
@@ -259,22 +265,7 @@ void api_pave_over(void* xp, int x, int y) {
             if (squares[i][j].uid == uid) {
                 assert(squares[i][j].building_index == building_type);
 
-                //                if (squares[i][j].building_type != building_type){
-                //                    printf("x:%d  y:%d  i:%d  j:%d uid:%d\n", x, y, i, j, uid);
-                //
-                //
-                //                    for (int y = 0; y < 4; y++) {
-                //                        printf("%d %d %d %d\n", squares[0][y].building_type, squares[1][y].building_type, squares[2][y].building_type, squares[3][y].building_type);
-                //                    }
-                //
-                //                    for (int y = 0; y < 4; y++) {
-                //                        printf("%d %d %d %d\n", squares[0][y].uid, squares[1][y].uid, squares[2][y].uid, squares[3][y].uid);
-                //                    }
-                //                    // for debugging
-                //                    assert(squares[x][y].building_type == squares[i][j].building_type);
-                //
-                //                }
-                squares[i][j].building_index = 2; // road
+                squares[i][j].building_index = 2;  // road
                 squares[i][j].uid = global_building_uid_counter;
                 global_building_uid_counter++;
             }

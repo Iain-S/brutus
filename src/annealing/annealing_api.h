@@ -1,5 +1,5 @@
-#ifndef ANNEALING_API_H
-#define ANNEALING_API_H
+#ifndef SRC_ANNEALING_ANNEALING_API_H_
+#define SRC_ANNEALING_ANNEALING_API_H_
 
 #include "building/type.h"
 
@@ -25,5 +25,4 @@ extern "C" {
 }
 #endif
 
-#endif /* ANNEALING_API_H */
-
+#endif  // SRC_ANNEALING_ANNEALING_API_H_
