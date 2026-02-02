@@ -1,6 +1,7 @@
 #include "core/config.h"
 #include "core/encoding.h"
 #include "core/file.h"
+#include "core/hotkey_config.h"
 #include "core/lang.h"
 #include "core/time.h"
 #include "game/game.h"
@@ -14,7 +15,17 @@
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
+
+#ifdef _WIN32
+#include <direct.h>
+#include <windows.h>
+#define get_current_dir _getcwd
+#define sleep_ms(ms) Sleep(ms)
+#else
 #include <unistd.h>
+#define get_current_dir getcwd
+#define sleep_ms(ms) usleep((ms) * 1000)
+#endif
 
 static struct {
     int quit;
@@ -53,6 +64,16 @@ void system_exit(void)
 
 static int pre_init(const char *custom_data_dir)
 {
+    char cwd[FILE_NAME_MAX];
+    if (get_current_dir(cwd, sizeof(cwd))) {
+        char config_path[FILE_NAME_MAX];
+        char hotkey_path[FILE_NAME_MAX];
+        snprintf(config_path, sizeof(config_path), "%s/%s", cwd, "julius.ini");
+        snprintf(hotkey_path, sizeof(hotkey_path), "%s/%s", cwd, "julius-hotkeys.ini");
+        config_set_file_path(config_path);
+        hotkey_config_set_file_path(hotkey_path);
+    }
+
     if (custom_data_dir) {
         printf("Loading game from %s\n", custom_data_dir);
         if (!platform_file_manager_set_base_path(custom_data_dir)) {
@@ -132,7 +153,7 @@ int main(int argc, char **argv)
         }
 
         // Small sleep to avoid burning CPU during testing
-        usleep(1000); // 1ms
+        sleep_ms(1);
     }
 
     printf("Exiting game after %lu ticks\n", tick_count);

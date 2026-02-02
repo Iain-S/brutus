@@ -8,7 +8,7 @@
 
 #define MAX_LINE 100
 
-static const char *INI_FILENAME = "julius.ini";
+static char ini_filename[FILE_NAME_MAX] = "julius.ini";
 
 // Keep this in the same order as the config_keys in config.h
 static const char *ini_keys[] = {
@@ -90,7 +90,7 @@ static void set_defaults(void)
 void config_load(void)
 {
     set_defaults();
-    FILE *fp = file_open(INI_FILENAME, "rt");
+    FILE *fp = file_open(ini_filename, "rt");
     if (!fp) {
         return;
     }
@@ -127,11 +127,20 @@ void config_load(void)
     file_close(fp);
 }
 
+void config_set_file_path(const char *path)
+{
+    if (!path || !*path) {
+        return;
+    }
+    strncpy(ini_filename, path, FILE_NAME_MAX - 1);
+    ini_filename[FILE_NAME_MAX - 1] = 0;
+}
+
 void config_save(void)
 {
-    FILE *fp = file_open(INI_FILENAME, "wt");
+    FILE *fp = file_open(ini_filename, "wt");
     if (!fp) {
-        log_error("Unable to write configuration file", INI_FILENAME, 0);
+        log_error("Unable to write configuration file", ini_filename, 0);
         return;
     }
     for (int i = 0; i < CONFIG_MAX_ENTRIES; i++) {

@@ -10,6 +10,7 @@ Memory usage: ~500MB-1GB GPU RAM during training
 
 import argparse
 import sys
+from datetime import datetime
 from pathlib import Path
 
 try:
@@ -55,6 +56,7 @@ def make_env(data_dir, scenario, max_ticks, lib_path=None):
 
 
 def main():
+    start_cwd = Path.cwd()
     parser = argparse.ArgumentParser(description="Train A2C agent on Julius")
     parser.add_argument(
         "--data-dir",
@@ -103,6 +105,14 @@ def main():
     )
     args = parser.parse_args()
 
+    run_stamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+    base_model_path = Path(args.model_path)
+    if not base_model_path.is_absolute():
+        base_model_path = (start_cwd / base_model_path).resolve()
+    run_dir = base_model_path.parent / f"{base_model_path.stem}_{run_stamp}"
+    run_dir.mkdir(parents=True, exist_ok=True)
+    run_model_path = run_dir / base_model_path.name
+
     # Check GPU availability
     device = "cpu" if args.no_gpu or not torch.cuda.is_available() else "cuda"
     print(f"Using device: {device}")
@@ -125,6 +135,7 @@ def main():
     print(f"  Number of parallel envs: {args.n_envs}")
     print(f"  Observation space: {env.observation_space}")
     print(f"  Action space: {env.action_space}")
+    print(f"  Run output directory: {run_dir}")
 
     if args.load:
         # Load existing model
@@ -164,11 +175,9 @@ def main():
         print(f"It's the best choice for 4GB GPU constraints.")
 
         # Create callbacks
-        Path(args.model_path).parent.mkdir(parents=True, exist_ok=True)
-
         checkpoint_callback = CheckpointCallback(
             save_freq=10000 // args.n_envs,  # Adjust for parallel envs
-            save_path=str(Path(args.model_path).parent / "checkpoints"),
+            save_path=str(run_dir / "checkpoints"),
             name_prefix="a2c_checkpoint",
         )
 
@@ -186,8 +195,8 @@ def main():
             print("\n\nTraining interrupted by user.")
 
         # Save model
-        print(f"\nSaving model to {args.model_path}...")
-        model.save(args.model_path)
+        print(f"\nSaving model to {run_model_path}...")
+        model.save(str(run_model_path))
         print("Model saved!")
 
     # Evaluate model
@@ -252,7 +261,7 @@ def main():
                     base_env = base_env.env
 
                 # Render and save the city map
-                map_filename = f"{args.model_path}_final_city.png"
+                map_filename = str(run_dir / f"{base_model_path.stem}_final_city.png")
                 base_env.render(mode="save", output_file=map_filename)
                 print(f"City map saved to: {map_filename}")
             except Exception as e:
@@ -267,7 +276,8 @@ def main():
 
     print("\n" + "=" * 60)
     print("Training complete!")
-    print(f"Model saved to: {args.model_path}")
+    if not args.load:
+        print(f"Model saved to: {run_model_path}")
     try:
         if 'map_filename' in locals():
             print(f"City map saved to: {map_filename}")

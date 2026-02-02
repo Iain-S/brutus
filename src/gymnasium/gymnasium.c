@@ -3,6 +3,9 @@
 #include "city/finance.h"
 #include "city/ratings.h"
 #include "city/victory.h"
+#include "core/config.h"
+#include "core/file.h"
+#include "core/hotkey_config.h"
 #include "game/file.h"
 #include "game/game.h"
 #include "game/time.h"
@@ -15,6 +18,14 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+
+#ifdef _WIN32
+#include <direct.h>
+#define get_current_dir _getcwd
+#else
+#include <unistd.h>
+#define get_current_dir getcwd
+#endif
 
 /**
  * Internal environment state
@@ -38,6 +49,9 @@ struct julius_env {
     int prev_favor;
     int prev_treasury;
 };
+
+static char initial_cwd[FILE_NAME_MAX];
+static int initial_cwd_set = 0;
 
 /**
  * Calculate reward based on rating changes and other factors
@@ -126,6 +140,20 @@ julius_env_t *julius_env_create(const julius_env_config_t *config)
     julius_env_t *env = (julius_env_t *)calloc(1, sizeof(julius_env_t));
     if (!env) {
         return NULL;
+    }
+
+    if (!initial_cwd_set) {
+        if (get_current_dir(initial_cwd, sizeof(initial_cwd))) {
+            initial_cwd_set = 1;
+        }
+    }
+    if (initial_cwd_set) {
+        char config_path[FILE_NAME_MAX];
+        char hotkey_path[FILE_NAME_MAX];
+        snprintf(config_path, sizeof(config_path), "%s/%s", initial_cwd, "julius.ini");
+        snprintf(hotkey_path, sizeof(hotkey_path), "%s/%s", initial_cwd, "julius-hotkeys.ini");
+        config_set_file_path(config_path);
+        hotkey_config_set_file_path(hotkey_path);
     }
 
     // Copy configuration
