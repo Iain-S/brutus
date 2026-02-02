@@ -204,7 +204,7 @@ class SimplifyObservation(gym.ObservationWrapper):
                     "sentiment": obs["population_sentiment"],
                 },
                 "labor": {
-                    "unemployment_percentage": obs["labor_unemployment_percentage"],
+                    "unemployment_percentage": obs["labor_unemployment_pct"],
                 },
                 "resources": {
                     "food_stocks": obs["resources_food_stocks"],
