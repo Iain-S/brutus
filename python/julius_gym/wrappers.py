@@ -265,8 +265,70 @@ class RewardShaping(gym.Wrapper):
         return obs, shaped_reward, terminated, truncated, info
 
 
+class PopulationYearReward(gym.Wrapper):
+    """
+    Provide a sparse, population-focused reward once per in-game year.
+
+    - Reward is emitted only when the year window completes.
+    - Optionally uses delta population relative to episode start.
+    """
+
+    def __init__(self, env, months=12, use_delta=True):
+        super().__init__(env)
+        self.months = months
+        self.use_delta = use_delta
+        self._start_months = None
+        self._start_population = None
+
+    def _get_total_months(self, obs):
+        if "time" in obs and "total_months" in obs["time"]:
+            return obs["time"]["total_months"]
+        return obs.get("time_total_months")
+
+    def _get_population(self, obs):
+        if "population" in obs and "total" in obs["population"]:
+            return obs["population"]["total"]
+        return obs.get("population_total")
+
+    def reset(self, **kwargs):
+        obs, info = self.env.reset(**kwargs)
+        self._start_months = self._get_total_months(obs)
+        self._start_population = self._get_population(obs)
+        return obs, info
+
+    def step(self, action):
+        obs, reward, terminated, truncated, info = self.env.step(action)
+
+        current_months = self._get_total_months(obs)
+        current_population = self._get_population(obs)
+
+        elapsed = None
+        if self._start_months is not None and current_months is not None:
+            elapsed = current_months - self._start_months
+
+        year_complete = elapsed is not None and elapsed >= self.months
+        done = terminated or truncated or year_complete
+
+        if done and current_population is not None and self._start_population is not None:
+            reward = (
+                current_population - self._start_population
+                if self.use_delta
+                else current_population
+            )
+            info = dict(info)
+            info["population_end"] = current_population
+            info["population_start"] = self._start_population
+            info["population_year_complete"] = year_complete
+        else:
+            reward = 0.0
+
+        return obs, reward, done, truncated, info
+
+
 def make_efficient_env(data_directory, scenario_file=None, max_ticks=5000,
-                       lib_path=None, simplify=True, normalize=True, flatten=True, shape_rewards=True):
+                       lib_path=None, simplify=True, normalize=True, flatten=True,
+                       shape_rewards=True, population_year_reward=False,
+                       population_year_months=12, population_year_use_delta=True):
     """
     Create an environment with wrappers optimized for efficient RL training.
 
@@ -291,6 +353,13 @@ def make_efficient_env(data_directory, scenario_file=None, max_ticks=5000,
         max_ticks=max_ticks,
         lib_path=lib_path,
     )
+
+    if population_year_reward:
+        env = PopulationYearReward(
+            env,
+            months=population_year_months,
+            use_delta=population_year_use_delta,
+        )
 
     if simplify:
         env = SimplifyObservation(env)

@@ -15,7 +15,7 @@ from pathlib import Path
 
 try:
     from stable_baselines3 import A2C
-    from stable_baselines3.common.callbacks import CheckpointCallback
+    from stable_baselines3.common.callbacks import BaseCallback, CallbackList, CheckpointCallback
     from stable_baselines3.common.monitor import Monitor
     from stable_baselines3.common.vec_env import DummyVecEnv, SubprocVecEnv
     import torch
@@ -50,9 +50,31 @@ def make_env(data_dir, scenario, max_ticks, lib_path=None):
             normalize=True,
             flatten=True,
             shape_rewards=True,
+            population_year_reward=True,
         )
         return Monitor(env)
     return _init
+
+
+class PopulationEndCallback(BaseCallback):
+    """Log population at the end of each population-year episode."""
+
+    def _on_step(self) -> bool:
+        dones = self.locals.get("dones")
+        infos = self.locals.get("infos")
+        if dones is None or infos is None:
+            return True
+
+        values = []
+        for done, info in zip(dones, infos):
+            if done and isinstance(info, dict) and "population_end" in info:
+                values.append(info["population_end"])
+
+        if values:
+            avg_value = sum(values) / len(values)
+            self.logger.record("rollout/population_end", avg_value)
+
+        return True
 
 
 def main():
@@ -180,6 +202,8 @@ def main():
             save_path=str(run_dir / "checkpoints"),
             name_prefix="a2c_checkpoint",
         )
+        population_callback = PopulationEndCallback()
+        callbacks = CallbackList([checkpoint_callback, population_callback])
 
         # Train model
         print(f"\nTraining for {args.timesteps:,} timesteps...")
@@ -188,7 +212,7 @@ def main():
         try:
             model.learn(
                 total_timesteps=args.timesteps,
-                callback=checkpoint_callback,
+                callback=callbacks,
                 progress_bar=False,  # Requires tqdm/rich: pip install stable-baselines3[extra]
             )
         except KeyboardInterrupt:
@@ -223,6 +247,7 @@ def main():
             normalize=True,
             flatten=True,
             shape_rewards=True,
+            population_year_reward=True,
         )
         eval_env = Monitor(eval_env)
 
