@@ -39,6 +39,10 @@ local.properties
 /android/play-publisher.json
 /android/julius/src/main/play
 
+# Local run output
+julius.ini
+runs/
+
 # Python
 __pycache__/
 *.py[cod]
