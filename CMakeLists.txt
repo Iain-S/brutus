@@ -975,40 +975,41 @@ else()
 
     # Gymnasium shared library for Python bindings
     if(BUILD_GYMNASIUM_LIB)
-        # Create shared library with all game code
-        add_library(julius_gym SHARED ${SOURCE_FILES})
+    # Create shared library with all game code
+    add_library(julius_gym SHARED ${SOURCE_FILES})
 
-        # Set library properties
-        set_target_properties(julius_gym PROPERTIES
-            VERSION ${PROJECT_VERSION_MAJOR}.${PROJECT_VERSION_MINOR}.${PROJECT_VERSION_PATCH}
-            SOVERSION ${PROJECT_VERSION_MAJOR}
-            OUTPUT_NAME "julius_gym"
-            PREFIX "lib"
-        )
-
-        # Add same dependencies as main executable
-        target_include_directories(julius_gym PUBLIC ${CMAKE_SOURCE_DIR}/src)
-        target_link_libraries(julius_gym ${PNG_LIBRARY} ${ZLIB_LIBRARY} ${CMAKE_DL_LIBS} m)
-
-        if(NOT HEADLESS_BUILD)
-            target_link_libraries(julius_gym ${SDL2_LIBRARY} ${SDL2_MIXER_LIBRARY})
-        endif()
-
-        # Install library
-        install(TARGETS julius_gym
-            LIBRARY DESTINATION lib
-            ARCHIVE DESTINATION lib
-            RUNTIME DESTINATION bin
-        )
-
-        # Install headers
-        install(FILES
-            src/gymnasium/gymnasium.h
-            src/gymnasium/observation.h
-            src/gymnasium/action.h
-            DESTINATION include/julius_gym
-        )
+    # If using bundled PNG/zlib, add those sources too
+    if(NOT PNG_FOUND)
+        target_sources(julius_gym PRIVATE "${PNG_FILES}" "${ZLIB_FILES}")
+        target_include_directories(julius_gym PRIVATE "ext/png")
     endif()
+
+    set_target_properties(julius_gym PROPERTIES
+        VERSION ${PROJECT_VERSION_MAJOR}.${PROJECT_VERSION_MINOR}.${PROJECT_VERSION_PATCH}
+        SOVERSION ${PROJECT_VERSION_MAJOR}
+        OUTPUT_NAME "julius_gym"
+        PREFIX "lib"
+    )
+
+    target_include_directories(julius_gym PUBLIC ${CMAKE_SOURCE_DIR}/src)
+    
+    # Link against found libraries OR nothing (if using bundled sources)
+    if(PNG_FOUND)
+        target_link_libraries(julius_gym ${PNG_LIBRARIES})
+    endif()
+    
+    target_link_libraries(julius_gym ${CMAKE_DL_LIBS})
+    
+    if(UNIX)
+        target_link_libraries(julius_gym m)
+    endif()
+
+    if(NOT HEADLESS_BUILD)
+        target_link_libraries(julius_gym ${SDL2_LIBRARY} ${SDL2_MIXER_LIBRARY})
+    endif()
+    
+    # ... rest of install commands
+endif()
 
     # Unit tests
     if(${TARGET_PLATFORM} STREQUAL "default")
