@@ -8,6 +8,8 @@ string(TOLOWER ${TARGET_PLATFORM} TARGET_PLATFORM)
 
 option(DRAW_FPS "Draw FPS on the top left corner of the window." OFF)
 option(SYSTEM_LIBS "Use system libraries when available." ON)
+option(HEADLESS_BUILD "Build headless version without SDL2 for gymnasium integration." OFF)
+option(BUILD_GYMNASIUM_LIB "Build shared library for Python gymnasium integration." OFF)
 
 if(${TARGET_PLATFORM} STREQUAL "vita" AND NOT DEFINED CMAKE_TOOLCHAIN_FILE)
     if(DEFINED ENV{VITASDK})
@@ -177,6 +179,10 @@ if(DRAW_FPS)
   add_definitions(-DDRAW_FPS)
 endif()
 
+if(HEADLESS_BUILD)
+  add_definitions(-DHEADLESS_BUILD)
+endif()
+
 set(TINYFD_FILES
     ext/tinyfiledialogs/tinyfiledialogs.c
 )
@@ -199,24 +205,36 @@ set(ZLIB_FILES
     ext/zlib/zutil.c
 )
 
-set(PLATFORM_FILES
-    ${PROJECT_SOURCE_DIR}/src/platform/arguments.c
-    ${PROJECT_SOURCE_DIR}/src/platform/cursor.c
-    ${PROJECT_SOURCE_DIR}/src/platform/file_manager.c
-    ${PROJECT_SOURCE_DIR}/src/platform/file_manager_cache.c
-    ${PROJECT_SOURCE_DIR}/src/platform/joystick.c
-    ${PROJECT_SOURCE_DIR}/src/platform/julius.c
-    ${PROJECT_SOURCE_DIR}/src/platform/keyboard_input.c
-    ${PROJECT_SOURCE_DIR}/src/platform/log.c
-    ${PROJECT_SOURCE_DIR}/src/platform/mouse.c
-    ${PROJECT_SOURCE_DIR}/src/platform/platform.c
-    ${PROJECT_SOURCE_DIR}/src/platform/prefs.c
-    ${PROJECT_SOURCE_DIR}/src/platform/screen.c
-    ${PROJECT_SOURCE_DIR}/src/platform/sound_device.c
-    ${PROJECT_SOURCE_DIR}/src/platform/touch.c
-    ${PROJECT_SOURCE_DIR}/src/platform/version.c
-    ${PROJECT_SOURCE_DIR}/src/platform/virtual_keyboard.c
-)
+if(HEADLESS_BUILD)
+    set(PLATFORM_FILES
+        ${PROJECT_SOURCE_DIR}/src/platform/arguments.c
+        ${PROJECT_SOURCE_DIR}/src/platform/file_manager.c
+        ${PROJECT_SOURCE_DIR}/src/platform/file_manager_cache.c
+        ${PROJECT_SOURCE_DIR}/src/platform/headless.c
+        ${PROJECT_SOURCE_DIR}/src/platform/headless_stubs.c
+        ${PROJECT_SOURCE_DIR}/src/platform/log.c
+        ${PROJECT_SOURCE_DIR}/src/platform/version.c
+    )
+else()
+    set(PLATFORM_FILES
+        ${PROJECT_SOURCE_DIR}/src/platform/arguments.c
+        ${PROJECT_SOURCE_DIR}/src/platform/cursor.c
+        ${PROJECT_SOURCE_DIR}/src/platform/file_manager.c
+        ${PROJECT_SOURCE_DIR}/src/platform/file_manager_cache.c
+        ${PROJECT_SOURCE_DIR}/src/platform/joystick.c
+        ${PROJECT_SOURCE_DIR}/src/platform/julius.c
+        ${PROJECT_SOURCE_DIR}/src/platform/keyboard_input.c
+        ${PROJECT_SOURCE_DIR}/src/platform/log.c
+        ${PROJECT_SOURCE_DIR}/src/platform/mouse.c
+        ${PROJECT_SOURCE_DIR}/src/platform/platform.c
+        ${PROJECT_SOURCE_DIR}/src/platform/prefs.c
+        ${PROJECT_SOURCE_DIR}/src/platform/screen.c
+        ${PROJECT_SOURCE_DIR}/src/platform/sound_device.c
+        ${PROJECT_SOURCE_DIR}/src/platform/touch.c
+        ${PROJECT_SOURCE_DIR}/src/platform/version.c
+        ${PROJECT_SOURCE_DIR}/src/platform/virtual_keyboard.c
+    )
+endif()
 
 if (${TARGET_PLATFORM} STREQUAL "vita")
     set(PLATFORM_FILES
@@ -613,6 +631,11 @@ set(TRANSLATION_FILES
     ${PROJECT_SOURCE_DIR}/src/translation/traditional_chinese.c
     ${PROJECT_SOURCE_DIR}/src/translation/translation.c
 )
+set(GYMNASIUM_FILES
+    ${PROJECT_SOURCE_DIR}/src/gymnasium/observation.c
+    ${PROJECT_SOURCE_DIR}/src/gymnasium/action.c
+    ${PROJECT_SOURCE_DIR}/src/gymnasium/gymnasium.c
+)
 
 set(MACOSX_FILES "")
 if(APPLE AND NOT ${TARGET_PLATFORM} STREQUAL "ios")
@@ -643,6 +666,7 @@ set(SOURCE_FILES
     ${FIGURE_FILES}
     ${FIGURETYPE_FILES}
     ${GAME_FILES}
+    ${GYMNASIUM_FILES}
     ${INPUT_FILES}
     ${MAP_FILES}
     ${SCENARIO_FILES}
@@ -680,28 +704,30 @@ function(GET_SDL_EXT_DIR result module)
     endforeach()
 endfunction()
 
-if(${TARGET_PLATFORM} STREQUAL "emscripten")
-    set(USE_FLAGS "-s USE_SDL=2 -s USE_SDL_MIXER=2 -s SDL2_MIXER_FORMATS=[\"mp3\"] -s USE_MPG123=1")
-    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${USE_FLAGS}")
-    set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} ${USE_FLAGS}")
+if(NOT HEADLESS_BUILD)
+    if(${TARGET_PLATFORM} STREQUAL "emscripten")
+        set(USE_FLAGS "-s USE_SDL=2 -s USE_SDL_MIXER=2 -s SDL2_MIXER_FORMATS=[\"mp3\"] -s USE_MPG123=1")
+        set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${USE_FLAGS}")
+        set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} ${USE_FLAGS}")
 
-elseif(${TARGET_PLATFORM} STREQUAL "ios")
-    GET_SDL_EXT_DIR(SDL_EXT_DIR "")
-    add_subdirectory(${SDL_EXT_DIR})
-    find_library(SDL2 NAMES SDL2-static SDL2main)
-    list(APPEND SDL2_LIBRARY
-        # We don't need to add SDL2-static here because SDL2_mixer will include it
-        SDL2main
-    )
-    GET_SDL_EXT_DIR(SDL_MIXER_EXT_DIR "mixer")
-    add_subdirectory(${SDL_MIXER_EXT_DIR})
-    find_library(SDL2_mixer NAMES SDL2_mixer-static)
-    list(APPEND SDL2_MIXER_LIBRARY
-        SDL2_mixer
-    )
-else()
-    find_package(SDL2 REQUIRED)
-    find_package(SDL2_mixer REQUIRED)
+    elseif(${TARGET_PLATFORM} STREQUAL "ios")
+        GET_SDL_EXT_DIR(SDL_EXT_DIR "")
+        add_subdirectory(${SDL_EXT_DIR})
+        find_library(SDL2 NAMES SDL2-static SDL2main)
+        list(APPEND SDL2_LIBRARY
+            # We don't need to add SDL2-static here because SDL2_mixer will include it
+            SDL2main
+        )
+        GET_SDL_EXT_DIR(SDL_MIXER_EXT_DIR "mixer")
+        add_subdirectory(${SDL_MIXER_EXT_DIR})
+        find_library(SDL2_mixer NAMES SDL2_mixer-static)
+        list(APPEND SDL2_MIXER_LIBRARY
+            SDL2_mixer
+        )
+    else()
+        find_package(SDL2 REQUIRED)
+        find_package(SDL2_mixer REQUIRED)
+    endif()
 endif()
 
 if(${TARGET_PLATFORM} STREQUAL "android")
@@ -809,11 +835,13 @@ if(${TARGET_PLATFORM} STREQUAL "ios")
         MACOSX_PACKAGE_LOCATION Resources)
 endif()
 
-if(SDL2_INCLUDE_DIR)
-    include_directories(SYSTEM ${SDL2_INCLUDE_DIR})
-endif()
-if(SDL2_MIXER_INCLUDE_DIR)
-    include_directories(SYSTEM ${SDL2_MIXER_INCLUDE_DIR})
+if(NOT HEADLESS_BUILD)
+    if(SDL2_INCLUDE_DIR)
+        include_directories(SYSTEM ${SDL2_INCLUDE_DIR})
+    endif()
+    if(SDL2_MIXER_INCLUDE_DIR)
+        include_directories(SYSTEM ${SDL2_MIXER_INCLUDE_DIR})
+    endif()
 endif()
 
 if(SYSTEM_LIBS)
@@ -929,7 +957,9 @@ else()
         )
     endif()
 
-    target_link_libraries(${SHORT_NAME} ${SDL2_LIBRARY} ${SDL2_MIXER_LIBRARY})
+    if(NOT HEADLESS_BUILD)
+        target_link_libraries(${SHORT_NAME} ${SDL2_LIBRARY} ${SDL2_MIXER_LIBRARY})
+    endif()
     if(NOT APPLE AND NOT ${TARGET_PLATFORM} STREQUAL "android")
         install(TARGETS ${SHORT_NAME} RUNTIME DESTINATION bin)
     endif()
@@ -942,6 +972,44 @@ else()
         install(FILES "res/julius_256.png" DESTINATION "share/icons/hicolor/256x256/apps" RENAME "com.github.bvschaik.julius.png")
         install(FILES "res/julius_512.png" DESTINATION "share/icons/hicolor/512x512/apps" RENAME "com.github.bvschaik.julius.png")
     endif()
+
+    # Gymnasium shared library for Python bindings
+    if(BUILD_GYMNASIUM_LIB)
+    # Create shared library with all game code
+    add_library(julius_gym SHARED ${SOURCE_FILES})
+
+    # If using bundled PNG/zlib, add those sources too
+    if(NOT PNG_FOUND)
+        target_sources(julius_gym PRIVATE "${PNG_FILES}" "${ZLIB_FILES}")
+        target_include_directories(julius_gym PRIVATE "ext/png")
+    endif()
+
+    set_target_properties(julius_gym PROPERTIES
+        VERSION ${PROJECT_VERSION_MAJOR}.${PROJECT_VERSION_MINOR}.${PROJECT_VERSION_PATCH}
+        SOVERSION ${PROJECT_VERSION_MAJOR}
+        OUTPUT_NAME "julius_gym"
+        PREFIX "lib"
+    )
+
+    target_include_directories(julius_gym PUBLIC ${CMAKE_SOURCE_DIR}/src)
+    
+    # Link against found libraries OR nothing (if using bundled sources)
+    if(PNG_FOUND)
+        target_link_libraries(julius_gym ${PNG_LIBRARIES})
+    endif()
+    
+    target_link_libraries(julius_gym ${CMAKE_DL_LIBS})
+    
+    if(UNIX)
+        target_link_libraries(julius_gym m)
+    endif()
+
+    if(NOT HEADLESS_BUILD)
+        target_link_libraries(julius_gym ${SDL2_LIBRARY} ${SDL2_MIXER_LIBRARY})
+    endif()
+    
+    # ... rest of install commands
+endif()
 
     # Unit tests
     if(${TARGET_PLATFORM} STREQUAL "default")

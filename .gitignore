@@ -21,6 +21,7 @@ out/
 cmake-build-debug
 /data
 ext/SDL2/*/
+Testing/
 
 # Android
 *.iml
@@ -37,3 +38,20 @@ local.properties
 /android/julius.keystore
 /android/play-publisher.json
 /android/julius/src/main/play
+
+# Local run output
+julius.ini
+runs/
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+*.egg
+*.egg-info/
+dist/
+build/
+.pytest_cache/
+.coverage
+htmlcov/
