@@ -614,8 +614,19 @@ class JuliusEnv(gym.Env):
             truncated: Whether episode was cut off (max steps)
             info: Additional information dict
         """
-        # Convert action to C structure
+        return self.step_at(action, 50, 50)
+
+    def step_at(
+        self, action: int, x: int, y: int
+    ) -> Tuple[Dict[str, Any], float, bool, bool, Dict[str, Any]]:
+        """Execute an action at an explicit map coordinate.
+
+        ``step()`` retains its legacy fixed-coordinate behaviour. Spatial
+        wrappers should use this method rather than mutating ctypes objects.
+        """
         c_action = self._action_to_c(action)
+        c_action.x = x
+        c_action.y = y
 
         # Execute step
         result = StepResult()

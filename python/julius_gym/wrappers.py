@@ -8,6 +8,130 @@ import gymnasium as gym
 import numpy as np
 from gymnasium import spaces
 
+from .env import ActionType, JuliusEnv
+
+
+TERRAIN_ROAD = 0x40
+TERRAIN_NOT_CLEAR = 0xD77F
+
+
+class RoadHousingCandidateActions(gym.Wrapper):
+    """Masked spatial road-and-house candidate actions for a fixed scenario."""
+
+    def __init__(self, env: JuliusEnv, candidate_count=16):
+        super().__init__(env)
+        if candidate_count < 1:
+            raise ValueError("candidate_count must be positive")
+        self.candidate_count = candidate_count
+        self.candidates = []
+        self.action_space = spaces.Discrete(1 + 2 * candidate_count)
+
+    @staticmethod
+    def _is_clear(terrain, x, y):
+        return (int(terrain[y, x]) & TERRAIN_NOT_CLEAR) == 0
+
+    def _choose_candidates(self):
+        terrain, _, width, height = self.env.get_map_data()
+        possible = []
+        for y in range(1, height - 1):
+            for x in range(1, width - 2):
+                if self._is_clear(terrain, x, y) and self._is_clear(terrain, x + 1, y):
+                    possible.append(((x, y), (x + 1, y)))
+        if len(possible) < self.candidate_count:
+            raise RuntimeError(
+                f"Map has only {len(possible)} clear road/house pairs; need {self.candidate_count}"
+            )
+        indexes = np.linspace(0, len(possible) - 1, self.candidate_count, dtype=int)
+        self.candidates = [possible[index] for index in indexes]
+
+    def reset(self, **kwargs):
+        observation, info = self.env.reset(**kwargs)
+        self._choose_candidates()
+        return observation, info
+
+    def action_masks(self):
+        terrain, _, _, _ = self.env.get_map_data()
+        mask = np.zeros(self.action_space.n, dtype=bool)
+        mask[0] = True
+        for index, (road, house) in enumerate(self.candidates):
+            road_x, road_y = road
+            house_x, house_y = house
+            mask[1 + index] = self._is_clear(terrain, road_x, road_y)
+            road_exists = (int(terrain[road_y, road_x]) & TERRAIN_ROAD) != 0
+            mask[1 + self.candidate_count + index] = (
+                road_exists and self._is_clear(terrain, house_x, house_y)
+            )
+        return mask
+
+    def step(self, action):
+        action = int(action)
+        if action == 0:
+            observation, reward, terminated, truncated, info = self.env.step(ActionType.NONE)
+            info = dict(info)
+            info.update({"placement_kind": "wait", "placement_success": False})
+            return observation, reward, terminated, truncated, info
+        if action < 1 or action >= self.action_space.n:
+            raise ValueError(f"Invalid candidate action {action}")
+        if action <= self.candidate_count:
+            candidate_index = action - 1
+            action_type = ActionType.BUILD_ROAD
+            coordinate = self.candidates[candidate_index][0]
+            kind = "road"
+        else:
+            candidate_index = action - 1 - self.candidate_count
+            action_type = ActionType.BUILD_HOUSING
+            coordinate = self.candidates[candidate_index][1]
+            kind = "housing"
+        observation, reward, terminated, truncated, info = self.env.step_at(
+            action_type, *coordinate
+        )
+        info = dict(info)
+        message = info.get("message", "")
+        info.update(
+            {
+                "placement_kind": kind,
+                "candidate_index": candidate_index,
+                "placement_success": message == "Road built" or message.startswith("Built "),
+            }
+        )
+        return observation, reward, terminated, truncated, info
+
+
+class ConnectedHousingReward(gym.Wrapper):
+    """Reward valid road-then-housing sequences for the placement curriculum."""
+
+    def __init__(self, env, target_houses=3):
+        super().__init__(env)
+        self.target_houses = target_houses
+        self.houses_built = 0
+
+    def reset(self, **kwargs):
+        self.houses_built = 0
+        return self.env.reset(**kwargs)
+
+    def step(self, action):
+        observation, _, terminated, truncated, info = self.env.step(action)
+        reward = -0.01
+        if info.get("placement_success"):
+            if info.get("placement_kind") == "road":
+                reward = 0.1
+            elif info.get("placement_kind") == "housing":
+                self.houses_built += 1
+                reward = 1.0
+                if self.houses_built >= self.target_houses:
+                    reward += 5.0
+                    terminated = True
+                    info = dict(info)
+                    info["placement_goal_reached"] = True
+        return observation, reward, terminated, truncated, info
+
+
+class ActionMaskForwarder(gym.Wrapper):
+    """Expose inner action masks through observation wrappers to SB3-contrib."""
+
+    def action_masks(self):
+        return self.env.get_wrapper_attr("action_masks")()
+
 
 class FlattenObservation(gym.ObservationWrapper):
     """
@@ -418,3 +542,26 @@ def make_efficient_env(data_directory, scenario_file=None, max_ticks=5000,
         env = FlattenObservation(env)
 
     return env
+
+
+def make_road_housing_curriculum_env(
+    data_directory,
+    scenario_file,
+    max_ticks=200,
+    lib_path=None,
+    candidate_count=16,
+    target_houses=3,
+):
+    """Create a masked spatial placement task for one fixed scenario."""
+    env = JuliusEnv(
+        data_directory=data_directory,
+        scenario_file=scenario_file,
+        max_ticks=max_ticks,
+        lib_path=lib_path,
+    )
+    env = RoadHousingCandidateActions(env, candidate_count=candidate_count)
+    env = ConnectedHousingReward(env, target_houses=target_houses)
+    env = SimplifyObservation(env)
+    env = NormalizeObservation(env)
+    env = FlattenObservation(env)
+    return ActionMaskForwarder(env)

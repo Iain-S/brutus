@@ -49,6 +49,10 @@ Implementation outline:
 
 ## Priority 1: decision interface
 
+Status: the first road/housing candidate-site curriculum is implemented. It
+uses a small fixed-scenario action space and legal-action masking; it is a
+validated learning milestone, not yet the general Caesar III interface.
+
 Replace fixed-coordinate actions with a manageable spatial decision interface.
 Start with a small, scenario-derived candidate-site set and macro-actions:
 

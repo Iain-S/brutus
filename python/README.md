@@ -197,6 +197,24 @@ python test_snapshot_restore.py \
 The script skips cleanly when these paths are not supplied, so it is safe to
 run in source-only environments.
 
+### Spatial placement curriculum
+
+`examples/train_road_housing.py` is a small, real-map training milestone. It
+uses `MaskablePPO` to select clear road/house candidate pairs, masks housing
+until its adjacent road has been built, and rewards three connected placements.
+It is deliberately not a full scenario-winning agent.
+
+```bash
+python examples/train_road_housing.py \
+  --data-dir /absolute/path/to/caesar3/data \
+  --scenario /absolute/path/to/scenario.map \
+  --lib-path /absolute/path/to/libjulius_gym.so \
+  --timesteps 5000
+```
+
+Run `test_road_housing_curriculum.py` with the same paths to check the action
+mask and real map mutations without a training run.
+
 Run tests:
 ```bash
 pytest tests/

@@ -7,6 +7,8 @@
 #include "city/labor.h"
 #include "city/warning.h"
 #include "map/grid.h"
+#include "map/terrain.h"
+#include "map/tiles.h"
 
 #include <stdio.h>
 #include <string.h>
@@ -280,6 +282,21 @@ int gymnasium_execute_action(const gymnasium_action_t *action, gymnasium_action_
                 set_result(result, 0, ACTION_ERROR_BLOCKED, "Nothing to clear at location");
                 return -1;
             }
+        }
+
+        case ACTION_BUILD_ROAD: {
+            int grid_offset = map_grid_offset(action->x, action->y);
+            if (map_terrain_is(grid_offset, TERRAIN_NOT_CLEAR)) {
+                set_result(result, 0, ACTION_ERROR_BLOCKED,
+                    "Road location is occupied or unsuitable");
+                return -1;
+            }
+            if (map_tiles_set_road(action->x, action->y)) {
+                set_result(result, 1, ACTION_ERROR_NONE, "Road built");
+                return 0;
+            }
+            set_result(result, 0, ACTION_ERROR_BLOCKED, "Road already exists");
+            return -1;
         }
 
         default:
