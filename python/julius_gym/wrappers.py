@@ -228,13 +228,24 @@ class RewardShaping(gym.Wrapper):
         self.prev_avg_rating = 0
         self.prev_treasury = 0
 
+    def _to_scalar(self, value):
+        if isinstance(value, np.ndarray):
+            if value.size == 1:
+                return float(value.item())
+            return float(value.squeeze()[0])
+        if isinstance(value, (int, float)):
+            return float(value)
+        return float(value)
+
     def reset(self, **kwargs):
         obs, info = self.env.reset(**kwargs)
 
         # Initialize previous values
-        self.prev_population = obs["population"]["total"]
-        self.prev_avg_rating = sum(obs["ratings"].values()) / 4
-        self.prev_treasury = obs["finance"]["treasury"]
+        self.prev_population = self._to_scalar(obs["population"]["total"])
+        self.prev_avg_rating = (
+            sum(self._to_scalar(v) for v in obs["ratings"].values()) / 4
+        )
+        self.prev_treasury = self._to_scalar(obs["finance"]["treasury"])
 
         return obs, info
 
@@ -242,27 +253,45 @@ class RewardShaping(gym.Wrapper):
         obs, reward, terminated, truncated, info = self.env.step(action)
 
         # Add shaped rewards
-        shaped_reward = reward
+        shaped_reward = float(reward)
 
         # Reward population growth
-        pop_delta = obs["population"]["total"] - self.prev_population
+        current_population = self._to_scalar(obs["population"]["total"])
+        pop_delta = current_population - self.prev_population
         shaped_reward += pop_delta * self.population_weight * 0.01
 
         # Reward improving average rating
-        avg_rating = sum(obs["ratings"].values()) / 4
+        avg_rating = (
+            sum(self._to_scalar(v) for v in obs["ratings"].values()) / 4
+        )
         rating_delta = avg_rating - self.prev_avg_rating
         shaped_reward += rating_delta * self.rating_weight * 0.1
 
         # Small reward for maintaining treasury
-        if obs["finance"]["treasury"] > 1000:
+        current_treasury = self._to_scalar(obs["finance"]["treasury"])
+        if current_treasury > 1000:
             shaped_reward += self.treasury_weight * 0.01
 
         # Update previous values
-        self.prev_population = obs["population"]["total"]
+        self.prev_population = current_population
         self.prev_avg_rating = avg_rating
-        self.prev_treasury = obs["finance"]["treasury"]
+        self.prev_treasury = current_treasury
 
         return obs, shaped_reward, terminated, truncated, info
+
+
+class RestrictActions(gym.ActionWrapper):
+    """
+    Restrict the action space to a subset of discrete actions.
+    """
+
+    def __init__(self, env, allowed_actions):
+        super().__init__(env)
+        self.allowed_actions = list(allowed_actions)
+        self.action_space = spaces.Discrete(len(self.allowed_actions))
+
+    def action(self, action):
+        return self.allowed_actions[int(action)]
 
 
 class PopulationYearReward(gym.Wrapper):
@@ -290,17 +319,28 @@ class PopulationYearReward(gym.Wrapper):
             return obs["population"]["total"]
         return obs.get("population_total")
 
+    def _to_scalar(self, value):
+        if value is None:
+            return None
+        if isinstance(value, np.ndarray):
+            if value.size == 1:
+                return float(value.item())
+            return float(value.squeeze()[0])
+        if isinstance(value, (int, float)):
+            return float(value)
+        return float(value)
+
     def reset(self, **kwargs):
         obs, info = self.env.reset(**kwargs)
-        self._start_months = self._get_total_months(obs)
-        self._start_population = self._get_population(obs)
+        self._start_months = self._to_scalar(self._get_total_months(obs))
+        self._start_population = self._to_scalar(self._get_population(obs))
         return obs, info
 
     def step(self, action):
         obs, reward, terminated, truncated, info = self.env.step(action)
 
-        current_months = self._get_total_months(obs)
-        current_population = self._get_population(obs)
+        current_months = self._to_scalar(self._get_total_months(obs))
+        current_population = self._to_scalar(self._get_population(obs))
 
         elapsed = None
         if self._start_months is not None and current_months is not None:
@@ -328,7 +368,8 @@ class PopulationYearReward(gym.Wrapper):
 def make_efficient_env(data_directory, scenario_file=None, max_ticks=5000,
                        lib_path=None, simplify=True, normalize=True, flatten=True,
                        shape_rewards=True, population_year_reward=False,
-                       population_year_months=12, population_year_use_delta=True):
+                       population_year_months=12, population_year_use_delta=True,
+                       restrict_actions=None):
     """
     Create an environment with wrappers optimized for efficient RL training.
 
@@ -360,6 +401,9 @@ def make_efficient_env(data_directory, scenario_file=None, max_ticks=5000,
             months=population_year_months,
             use_delta=population_year_use_delta,
         )
+
+    if restrict_actions is not None:
+        env = RestrictActions(env, restrict_actions)
 
     if simplify:
         env = SimplifyObservation(env)

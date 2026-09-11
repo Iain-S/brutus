@@ -9,6 +9,7 @@ Memory usage: ~500MB-1GB GPU RAM during training
 """
 
 import argparse
+import os
 import sys
 from datetime import datetime
 from pathlib import Path
@@ -27,6 +28,7 @@ except ImportError:
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
 from julius_gym.wrappers import make_efficient_env
+from julius_gym.env import ActionType
 
 
 def tensorboard_available():
@@ -38,9 +40,16 @@ def tensorboard_available():
         return False
 
 
-def make_env(data_dir, scenario, max_ticks, lib_path=None):
+def make_env(data_dir, scenario, max_ticks, lib_path=None, log_dir=None, rank=0, restrict_actions=None):
     """Create a single environment (for vectorization)"""
     def _init():
+        if log_dir and rank > 0:
+            os.makedirs(log_dir, exist_ok=True)
+            log_path = Path(log_dir) / f"worker_{rank}.log"
+            log_file = open(log_path, "a", buffering=1)
+            sys.stdout = log_file
+            sys.stderr = log_file
+
         env = make_efficient_env(
             data_directory=data_dir,
             scenario_file=scenario,
@@ -51,6 +60,7 @@ def make_env(data_dir, scenario, max_ticks, lib_path=None):
             flatten=True,
             shape_rewards=True,
             population_year_reward=True,
+            restrict_actions=restrict_actions,
         )
         return Monitor(env)
     return _init
@@ -125,6 +135,11 @@ def main():
         action="store_true",
         help="Force CPU training",
     )
+    parser.add_argument(
+        "--building-only",
+        action="store_true",
+        help="Restrict actions to building and clear-land actions",
+    )
     args = parser.parse_args()
 
     run_stamp = datetime.now().strftime("%Y%m%d_%H%M%S")
@@ -147,10 +162,73 @@ def main():
     print(f"  Data directory: {args.data_dir}")
     print(f"  Max ticks per episode: {args.max_ticks}")
 
-    # Use DummyVecEnv for easier debugging, SubprocVecEnv for better performance
-    env = DummyVecEnv([
-        make_env(args.data_dir, args.scenario, args.max_ticks, args.lib_path)
-        for _ in range(args.n_envs)
+    restrict_actions = None
+    if args.building_only:
+        restrict_actions = [
+            ActionType.BUILD_HOUSING,
+            ActionType.BUILD_ROAD,
+            ActionType.BUILD_PLAZA,
+            ActionType.BUILD_GARDEN,
+            ActionType.BUILD_STATUE,
+            ActionType.BUILD_PREFECTURE,
+            ActionType.BUILD_ENGINEERS_POST,
+            ActionType.BUILD_DOCTOR,
+            ActionType.BUILD_HOSPITAL,
+            ActionType.BUILD_BATHHOUSE,
+            ActionType.BUILD_BARBER,
+            ActionType.BUILD_SCHOOL,
+            ActionType.BUILD_ACADEMY,
+            ActionType.BUILD_LIBRARY,
+            ActionType.BUILD_THEATER,
+            ActionType.BUILD_AMPHITHEATER,
+            ActionType.BUILD_COLOSSEUM,
+            ActionType.BUILD_HIPPODROME,
+            ActionType.BUILD_TEMPLE_SMALL,
+            ActionType.BUILD_TEMPLE_LARGE,
+            ActionType.BUILD_ORACLE,
+            ActionType.BUILD_MARKET,
+            ActionType.BUILD_GRANARY,
+            ActionType.BUILD_WAREHOUSE,
+            ActionType.BUILD_FOUNTAIN,
+            ActionType.BUILD_WELL,
+            ActionType.BUILD_FORUM,
+            ActionType.BUILD_SENATE,
+            ActionType.BUILD_GOVERNORS_VILLA,
+            ActionType.BUILD_GOVERNORS_PALACE,
+            ActionType.BUILD_WHEAT_FARM,
+            ActionType.BUILD_VEGETABLE_FARM,
+            ActionType.BUILD_FRUIT_FARM,
+            ActionType.BUILD_OLIVE_FARM,
+            ActionType.BUILD_VINES_FARM,
+            ActionType.BUILD_PIG_FARM,
+            ActionType.BUILD_CLAY_PIT,
+            ActionType.BUILD_TIMBER_YARD,
+            ActionType.BUILD_IRON_MINE,
+            ActionType.BUILD_MARBLE_QUARRY,
+            ActionType.BUILD_WINE_WORKSHOP,
+            ActionType.BUILD_OIL_WORKSHOP,
+            ActionType.BUILD_WEAPONS_WORKSHOP,
+            ActionType.BUILD_FURNITURE_WORKSHOP,
+            ActionType.BUILD_POTTERY_WORKSHOP,
+            ActionType.BUILD_ACTOR_COLONY,
+            ActionType.BUILD_GLADIATOR_SCHOOL,
+            ActionType.BUILD_LION_HOUSE,
+            ActionType.BUILD_CHARIOT_MAKER,
+            ActionType.CLEAR_LAND,
+        ]
+
+    # Use SubprocVecEnv to leverage multiple CPU cores
+    env = SubprocVecEnv([
+        make_env(
+            args.data_dir,
+            args.scenario,
+            args.max_ticks,
+            args.lib_path,
+            log_dir=str(run_dir / "worker_logs"),
+            rank=i,
+            restrict_actions=restrict_actions,
+        )
+        for i in range(args.n_envs)
     ])
 
     print(f"Environments created!")
@@ -180,7 +258,7 @@ def main():
             rms_prop_eps=1e-5,
             use_rms_prop=True,
             policy_kwargs=dict(
-                net_arch=[dict(pi=[128, 128], vf=[128, 128])],  # Small network
+                net_arch=dict(pi=[128, 128], vf=[128, 128]),  # Small network
             ),
             verbose=1,
             device=device,
