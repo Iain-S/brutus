@@ -20,7 +20,16 @@ followed by `mingw32-make.exe julius_gym`.
 
 Change out of `build/` and into `python/` with `cd ../python`.
 
-Activate the venv with `.\venv\Scripts\Activate.ps1`.
+Use the dedicated Conda training environment (the local absolute prefix is
+recorded in ignored `local.md`):
+
+```powershell
+conda activate <BRUTUS_CONDA_PREFIX>
+python -m pip install -e <REPO_ROOT>\python
+```
+
+`python\venv` is a legacy duplicate and is not the default environment for
+new work.
 
 Run some training with 
 

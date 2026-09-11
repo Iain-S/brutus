@@ -48,6 +48,20 @@ struct julius_env {
     int prev_peace;
     int prev_favor;
     int prev_treasury;
+
+    unsigned int next_snapshot_id;
+};
+
+struct julius_snapshot {
+    julius_env_t *owner;
+    char filename[2 * FILE_NAME_MAX];
+    int current_tick;
+    int episode_active;
+    int prev_culture;
+    int prev_prosperity;
+    int prev_peace;
+    int prev_favor;
+    int prev_treasury;
 };
 
 static char initial_cwd[FILE_NAME_MAX];
@@ -257,6 +271,94 @@ int julius_env_reset(julius_env_t *env, gymnasium_observation_t *observation)
     }
 
     return 0;
+}
+
+julius_snapshot_t *julius_env_snapshot_create(julius_env_t *env)
+{
+    if (!env || !env->initialized || !env->episode_active) {
+        if (env) {
+            snprintf(env->error_message, sizeof(env->error_message),
+                "Cannot snapshot an inactive environment");
+        }
+        return NULL;
+    }
+
+    if (!initial_cwd_set) {
+        snprintf(env->error_message, sizeof(env->error_message),
+            "Unable to determine a writable snapshot directory");
+        return NULL;
+    }
+
+    julius_snapshot_t *snapshot = calloc(1, sizeof(*snapshot));
+    if (!snapshot) {
+        snprintf(env->error_message, sizeof(env->error_message),
+            "Unable to allocate snapshot");
+        return NULL;
+    }
+
+    snapshot->owner = env;
+    int filename_length = snprintf(snapshot->filename, sizeof(snapshot->filename),
+        "%s/julius-gym-snapshot-%p-%u.sav", initial_cwd, (void *)env,
+        env->next_snapshot_id++);
+    if (filename_length < 0 || filename_length >= (int)sizeof(snapshot->filename)) {
+        snprintf(env->error_message, sizeof(env->error_message),
+            "Snapshot path is too long");
+        free(snapshot);
+        return NULL;
+    }
+
+    if (!game_file_write_saved_game(snapshot->filename)) {
+        snprintf(env->error_message, sizeof(env->error_message),
+            "Failed to save snapshot");
+        free(snapshot);
+        return NULL;
+    }
+
+    snapshot->current_tick = env->current_tick;
+    snapshot->episode_active = env->episode_active;
+    snapshot->prev_culture = env->prev_culture;
+    snapshot->prev_prosperity = env->prev_prosperity;
+    snapshot->prev_peace = env->prev_peace;
+    snapshot->prev_favor = env->prev_favor;
+    snapshot->prev_treasury = env->prev_treasury;
+    return snapshot;
+}
+
+int julius_env_snapshot_restore(julius_env_t *env, const julius_snapshot_t *snapshot)
+{
+    if (!env || !env->initialized || !snapshot || snapshot->owner != env) {
+        if (env) {
+            snprintf(env->error_message, sizeof(env->error_message),
+                "Snapshot does not belong to this environment");
+        }
+        return -1;
+    }
+
+    if (!game_file_load_saved_game(snapshot->filename)) {
+        snprintf(env->error_message, sizeof(env->error_message),
+            "Failed to restore snapshot");
+        return -1;
+    }
+
+    env->current_tick = snapshot->current_tick;
+    env->episode_active = snapshot->episode_active;
+    env->prev_culture = snapshot->prev_culture;
+    env->prev_prosperity = snapshot->prev_prosperity;
+    env->prev_peace = snapshot->prev_peace;
+    env->prev_favor = snapshot->prev_favor;
+    env->prev_treasury = snapshot->prev_treasury;
+    env->error_message[0] = '\0';
+    return 0;
+}
+
+void julius_env_snapshot_destroy(julius_snapshot_t *snapshot)
+{
+    if (!snapshot) {
+        return;
+    }
+
+    game_file_delete_saved_game(snapshot->filename);
+    free(snapshot);
 }
 
 int julius_env_step(julius_env_t *env, const gymnasium_action_t *action,

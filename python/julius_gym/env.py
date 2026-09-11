@@ -13,6 +13,32 @@ import numpy as np
 from gymnasium import spaces
 
 
+class JuliusSnapshot:
+    """An opaque, file-backed snapshot of a :class:`JuliusEnv` state."""
+
+    def __init__(self, env: "JuliusEnv", handle: c_void_p):
+        self._env = env
+        self._handle = handle
+
+    def restore(self) -> None:
+        """Restore the parent environment to this snapshot."""
+        if self._handle is None:
+            raise RuntimeError("Snapshot has already been closed")
+        self._env._restore_snapshot(self._handle)
+
+    def close(self) -> None:
+        """Release the snapshot and remove its temporary save file."""
+        if self._handle is not None:
+            self._env.lib.julius_env_snapshot_destroy(self._handle)
+            self._handle = None
+
+    def __enter__(self) -> "JuliusSnapshot":
+        return self
+
+    def __exit__(self, exc_type, exc_value, traceback) -> None:
+        self.close()
+
+
 # C structure definitions matching gymnasium/observation.h
 class CityRatings(Structure):
     _fields_ = [
@@ -439,6 +465,35 @@ class JuliusEnv(gym.Env):
             POINTER(c_int32),
         ]
         self.lib.julius_env_get_map_data.restype = c_int32
+
+        self.lib.julius_env_snapshot_create.argtypes = [c_void_p]
+        self.lib.julius_env_snapshot_create.restype = c_void_p
+
+        self.lib.julius_env_snapshot_restore.argtypes = [c_void_p, c_void_p]
+        self.lib.julius_env_snapshot_restore.restype = c_int32
+
+        self.lib.julius_env_snapshot_destroy.argtypes = [c_void_p]
+        self.lib.julius_env_snapshot_destroy.restype = None
+
+    def snapshot(self) -> JuliusSnapshot:
+        """Capture the current active episode for later restoration.
+
+        Snapshots are backed by a private temporary save file and must be
+        closed (or used as a context manager) when no longer required.
+        """
+        handle = self.lib.julius_env_snapshot_create(self.env_handle)
+        if not handle:
+            error = self.lib.julius_env_get_error(self.env_handle)
+            detail = error.decode() if error else "unknown error"
+            raise RuntimeError(f"Failed to create snapshot: {detail}")
+        return JuliusSnapshot(self, handle)
+
+    def _restore_snapshot(self, handle: c_void_p) -> None:
+        result = self.lib.julius_env_snapshot_restore(self.env_handle, handle)
+        if result != 0:
+            error = self.lib.julius_env_get_error(self.env_handle)
+            detail = error.decode() if error else "unknown error"
+            raise RuntimeError(f"Failed to restore snapshot: {detail}")
 
     def _obs_to_dict(self, obs: Observation) -> Dict[str, Any]:
         """Convert C observation structure to Python dict (flattened)"""

@@ -14,6 +14,12 @@ extern "C" {
 typedef struct julius_env julius_env_t;
 
 /**
+ * Saved environment state. The representation is intentionally opaque so the
+ * backing store can move from a temporary save file to memory later.
+ */
+typedef struct julius_snapshot julius_snapshot_t;
+
+/**
  * Environment configuration
  */
 typedef struct {
@@ -55,6 +61,31 @@ void julius_env_destroy(julius_env_t *env);
  * @return 0 on success, -1 on error
  */
 int julius_env_reset(julius_env_t *env, gymnasium_observation_t *observation);
+
+/**
+ * Capture the current environment state.
+ *
+ * Snapshots are valid only for the environment that created them. Call
+ * julius_env_snapshot_destroy() when the snapshot is no longer needed.
+ *
+ * @param env Environment handle
+ * @return Snapshot handle, or NULL on error
+ */
+julius_snapshot_t *julius_env_snapshot_create(julius_env_t *env);
+
+/**
+ * Restore a previously captured environment state.
+ * @param env Environment handle that created the snapshot
+ * @param snapshot Snapshot handle
+ * @return 0 on success, -1 on error
+ */
+int julius_env_snapshot_restore(julius_env_t *env, const julius_snapshot_t *snapshot);
+
+/**
+ * Destroy a snapshot and remove its private temporary save file.
+ * @param snapshot Snapshot handle (may be NULL)
+ */
+void julius_env_snapshot_destroy(julius_snapshot_t *snapshot);
 
 /**
  * Execute one step in the environment

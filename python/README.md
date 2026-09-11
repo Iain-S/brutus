@@ -171,6 +171,32 @@ JuliusEnv(
 
 ## Development
 
+### Snapshot and reset regression test
+
+`JuliusEnv.snapshot()` captures an active episode and can later restore it.
+Snapshots use temporary Julius save files internally; use them as a context
+manager so the temporary file is removed promptly:
+
+```python
+env.reset()
+with env.snapshot() as snapshot:
+    # Explore an action branch.
+    env.step(0)
+    snapshot.restore()
+```
+
+To check reset and snapshot determinism against licensed game data, run:
+
+```bash
+python test_snapshot_restore.py \
+  --data-dir /absolute/path/to/caesar3/data \
+  --scenario /absolute/path/to/scenario.map \
+  --lib-path /absolute/path/to/libjulius_gym.so
+```
+
+The script skips cleanly when these paths are not supplied, so it is safe to
+run in source-only environments.
+
 Run tests:
 ```bash
 pytest tests/
