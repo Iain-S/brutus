@@ -25,6 +25,14 @@ class RoadHousingCandidateActions(gym.Wrapper):
         self.candidate_count = candidate_count
         self.candidates = []
         self.action_space = spaces.Discrete(1 + 2 * candidate_count)
+        self.map_width = 162
+        self.map_height = 162
+        self.observation_space = spaces.Box(
+            low=-100.0,
+            high=100.0,
+            shape=(10 + 4 * candidate_count,),
+            dtype=np.float32,
+        )
 
     @staticmethod
     def _is_clear(terrain, x, y):
@@ -43,11 +51,45 @@ class RoadHousingCandidateActions(gym.Wrapper):
             )
         indexes = np.linspace(0, len(possible) - 1, self.candidate_count, dtype=int)
         self.candidates = [possible[index] for index in indexes]
+        self.map_width = width
+        self.map_height = height
+
+    @staticmethod
+    def _scalar(observation, key):
+        return float(np.asarray(observation[key]).item())
+
+    def _observation_vector(self, observation):
+        """Combine compact city state with candidate coordinates and status."""
+        features = [
+            self._scalar(observation, "ratings_culture") / 100.0,
+            self._scalar(observation, "ratings_prosperity") / 100.0,
+            self._scalar(observation, "ratings_peace") / 100.0,
+            self._scalar(observation, "ratings_favor") / 100.0,
+            self._scalar(observation, "finance_treasury") / 10000.0,
+            self._scalar(observation, "finance_tax_percentage") / 25.0,
+            self._scalar(observation, "population_total") / 5000.0,
+            self._scalar(observation, "population_sentiment") / 100.0,
+            self._scalar(observation, "labor_unemployment_pct") / 100.0,
+            self._scalar(observation, "resources_food_stocks") / 1000.0,
+        ]
+        terrain, _, _, _ = self.env.get_map_data()
+        for road, house in self.candidates:
+            road_x, road_y = road
+            house_x, house_y = house
+            features.extend(
+                [
+                    road_x / max(1, self.map_width - 1),
+                    road_y / max(1, self.map_height - 1),
+                    float((int(terrain[road_y, road_x]) & TERRAIN_ROAD) != 0),
+                    float(self._is_clear(terrain, house_x, house_y)),
+                ]
+            )
+        return np.asarray(features, dtype=np.float32)
 
     def reset(self, **kwargs):
         observation, info = self.env.reset(**kwargs)
         self._choose_candidates()
-        return observation, info
+        return self._observation_vector(observation), info
 
     def action_masks(self):
         terrain, _, _, _ = self.env.get_map_data()
@@ -69,7 +111,7 @@ class RoadHousingCandidateActions(gym.Wrapper):
             observation, reward, terminated, truncated, info = self.env.step(ActionType.NONE)
             info = dict(info)
             info.update({"placement_kind": "wait", "placement_success": False})
-            return observation, reward, terminated, truncated, info
+            return self._observation_vector(observation), reward, terminated, truncated, info
         if action < 1 or action >= self.action_space.n:
             raise ValueError(f"Invalid candidate action {action}")
         if action <= self.candidate_count:
@@ -94,7 +136,7 @@ class RoadHousingCandidateActions(gym.Wrapper):
                 "placement_success": message == "Road built" or message.startswith("Built "),
             }
         )
-        return observation, reward, terminated, truncated, info
+        return self._observation_vector(observation), reward, terminated, truncated, info
 
 
 class ConnectedHousingReward(gym.Wrapper):
@@ -561,7 +603,4 @@ def make_road_housing_curriculum_env(
     )
     env = RoadHousingCandidateActions(env, candidate_count=candidate_count)
     env = ConnectedHousingReward(env, target_houses=target_houses)
-    env = SimplifyObservation(env)
-    env = NormalizeObservation(env)
-    env = FlattenObservation(env)
     return ActionMaskForwarder(env)

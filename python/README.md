@@ -200,8 +200,9 @@ run in source-only environments.
 ### Spatial placement curriculum
 
 `examples/train_road_housing.py` is a small, real-map training milestone. It
-uses `MaskablePPO` to select clear road/house candidate pairs, masks housing
-until its adjacent road has been built, and rewards three connected placements.
+exposes normalized city state plus each candidate pair's coordinates and build
+status to `MaskablePPO`, masks housing until its adjacent road has been built,
+and rewards three connected placements.
 It is deliberately not a full scenario-winning agent.
 
 ```bash

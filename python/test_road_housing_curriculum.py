@@ -43,7 +43,7 @@ def main():
     )
     try:
         observation, _ = env.reset()
-        assert observation.shape == (10,)
+        assert observation.shape == (26,)
         initial_mask = env.action_masks()
         assert initial_mask[1]
         assert not initial_mask[1 + 4]
