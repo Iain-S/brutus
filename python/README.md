@@ -216,6 +216,27 @@ python examples/train_road_housing.py \
 Run `test_road_housing_curriculum.py` with the same paths to check the action
 mask and real map mutations without a training run.
 
+### Fixed-scenario evaluation
+
+Use `examples/evaluate_scenario.py` to measure the real scenario outcome,
+elapsed Gym ticks, and each active victory criterion.  It reports those
+independently of cumulative shaped reward and accepts a short, coordinate-aware
+plan before advancing with no-op ticks:
+
+```bash
+python examples/evaluate_scenario.py \
+  --data-dir /absolute/path/to/caesar3/data \
+  --scenario /absolute/path/to/scenario.map \
+  --lib-path /absolute/path/to/libjulius_gym.so \
+  --max-ticks 5000 \
+  --action 'BUILD_ROAD@18,1' \
+  --action 'BUILD_HOUSING@19,1'
+```
+
+Pass `--json-out report.json` to save a machine-readable report.  Run
+`test_scenario_evaluator.py` with the same paths for a short reset/evaluation
+repeatability check.
+
 Run tests:
 ```bash
 pytest tests/
