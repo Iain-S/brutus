@@ -219,9 +219,9 @@ mask and real map mutations without a training run.
 ### Fixed-scenario evaluation
 
 Use `examples/evaluate_scenario.py` to measure the real scenario outcome,
-elapsed Gym ticks, and each active victory criterion.  It reports those
-independently of cumulative shaped reward and accepts a short, coordinate-aware
-plan before advancing with no-op ticks:
+elapsed Gym ticks, active victory criteria, and compact final city diagnostics.
+It reports those independently of cumulative shaped reward and accepts a short,
+coordinate-aware plan before advancing with no-op ticks:
 
 ```bash
 python examples/evaluate_scenario.py \

@@ -42,6 +42,25 @@ def goal_progress(observation: dict[str, Any]) -> dict[str, dict[str, int | floa
     return result
 
 
+def final_city_state(observation: dict[str, Any]) -> dict[str, int]:
+    """Return compact diagnostics useful when a plan does not make progress."""
+    keys = (
+        "time_year",
+        "time_month",
+        "time_total_months",
+        "population_total",
+        "population_sentiment",
+        "buildings_housing",
+        "buildings_housing_capacity",
+        "resources_food_stocks",
+        "resources_food_supply_months",
+        "finance_treasury",
+        "labor_workers_needed",
+        "labor_workers_employed",
+    )
+    return {key.removeprefix("time_"): _scalar(observation, key) for key in keys}
+
+
 def evaluate_action_plan(env, actions: Iterable[tuple[int, int, int]], max_steps: int):
     """Run a finite coordinate-aware plan, then wait until an outcome/boundary.
 
@@ -89,5 +108,6 @@ def evaluate_action_plan(env, actions: Iterable[tuple[int, int, int]], max_steps
         "cumulative_reward": float(total_reward),
         "last_message": info.get("message", ""),
         "goals": goal_progress(observation),
+        "final_state": final_city_state(observation),
         "actions": events,
     }
