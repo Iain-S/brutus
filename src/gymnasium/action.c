@@ -1,6 +1,7 @@
 #include "action.h"
 
-#include "building/construction_building.h"
+#include "building/construction.h"
+#include "building/menu.h"
 #include "building/construction_clear.h"
 #include "building/type.h"
 #include "city/finance.h"
@@ -8,7 +9,6 @@
 #include "city/warning.h"
 #include "map/grid.h"
 #include "map/terrain.h"
-#include "map/tiles.h"
 
 #include <stdio.h>
 #include <string.h>
@@ -202,6 +202,10 @@ int gymnasium_validate_action(const gymnasium_action_t *action, gymnasium_action
             set_result(result, 0, ACTION_ERROR_NOT_IMPLEMENTED, "Building type not mapped");
             return 0;
         }
+        if (!building_menu_is_enabled(type)) {
+            set_result(result, 0, ACTION_ERROR_BLOCKED, "Building unavailable in this mission");
+            return 0;
+        }
     }
 
     set_result(result, 1, ACTION_ERROR_NONE, "Valid action");
@@ -219,6 +223,33 @@ int gymnasium_execute_action(const gymnasium_action_t *action, gymnasium_action_
 
     // First validate the action
     if (!gymnasium_validate_action(action, result)) {
+        return -1;
+    }
+
+    if (is_building_action(action->type)) {
+        building_type type = action_to_building_type(action->type);
+        int treasury = city_finance_treasury();
+        int offset = map_grid_offset(action->x, action->y);
+        if (city_finance_out_of_money()) {
+            set_result(result, 0, ACTION_ERROR_NO_MONEY, "Construction unavailable: out of money");
+            return -1;
+        }
+        // Use the normal construction pipeline for costs, resources and routing.
+        building_construction_set_type(type);
+        building_construction_start(action->x, action->y, offset);
+        if (building_construction_in_progress()) {
+            building_construction_update(action->x, action->y, offset);
+            building_construction_place();
+        }
+        building_construction_clear_type();
+        if (city_finance_treasury() < treasury) {
+            char message[256];
+            snprintf(message, sizeof(message), "Built %s at (%d, %d)",
+                gymnasium_action_name(action->type), action->x, action->y);
+            set_result(result, 1, ACTION_ERROR_NONE, message);
+            return 0;
+        }
+        set_result(result, 0, ACTION_ERROR_BLOCKED, "Construction failed: terrain, occupancy, or resources");
         return -1;
     }
 
@@ -284,42 +315,7 @@ int gymnasium_execute_action(const gymnasium_action_t *action, gymnasium_action_
             }
         }
 
-        case ACTION_BUILD_ROAD: {
-            int grid_offset = map_grid_offset(action->x, action->y);
-            if (map_terrain_is(grid_offset, TERRAIN_NOT_CLEAR)) {
-                set_result(result, 0, ACTION_ERROR_BLOCKED,
-                    "Road location is occupied or unsuitable");
-                return -1;
-            }
-            if (map_tiles_set_road(action->x, action->y)) {
-                set_result(result, 1, ACTION_ERROR_NONE, "Road built");
-                return 0;
-            }
-            set_result(result, 0, ACTION_ERROR_BLOCKED, "Road already exists");
-            return -1;
-        }
-
         default:
-            // Handle building construction
-            if (is_building_action(action->type)) {
-                building_type type = action_to_building_type(action->type);
-                int success = building_construction_place_building(type, action->x, action->y);
-
-                if (success) {
-                    char msg[256];
-                    snprintf(msg, sizeof(msg), "Built %s at (%d, %d)",
-                            gymnasium_action_name(action->type), action->x, action->y);
-                    set_result(result, 1, ACTION_ERROR_NONE, msg);
-                    return 0;
-                } else {
-                    // Building construction failed - could be many reasons
-                    // The game shows warnings which we can't easily access here
-                    set_result(result, 0, ACTION_ERROR_BLOCKED,
-                              "Building construction failed (blocked, no money, or terrain unsuitable)");
-                    return -1;
-                }
-            }
-
             set_result(result, 0, ACTION_ERROR_NOT_IMPLEMENTED, "Action not yet implemented");
             return -1;
     }

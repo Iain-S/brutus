@@ -62,6 +62,16 @@ void julius_env_destroy(julius_env_t *env);
  */
 int julius_env_reset(julius_env_t *env, gymnasium_observation_t *observation);
 
+/** Select a peaceful campaign rank (0..11) for subsequent resets.
+ * Rejects environments configured with a scenario filename. Does not load yet.
+ */
+int julius_env_select_campaign(julius_env_t *env, int rank);
+
+/** Write JSON mission identity and scheduled combat events to a caller buffer.
+ * Returns -1 for an inactive episode or an insufficient buffer.
+ */
+int julius_env_get_mission_info(julius_env_t *env, char *output, int capacity);
+
 /**
  * Capture the current environment state.
  *

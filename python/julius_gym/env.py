@@ -3,6 +3,7 @@ JuliusEnv - Gymnasium environment for Julius (Caesar III) city-building game
 """
 
 import ctypes
+import json
 import os
 from ctypes import POINTER, Structure, c_char, c_char_p, c_float, c_int32, c_void_p
 from pathlib import Path
@@ -300,6 +301,7 @@ class JuliusEnv(gym.Env):
         scenario_file: Optional[str] = None,
         max_ticks: int = 0,
         lib_path: Optional[str] = None,
+        campaign_rank: Optional[int] = None,
     ):
         """
         Initialize Julius environment.
@@ -309,8 +311,16 @@ class JuliusEnv(gym.Env):
             scenario_file: Optional path to scenario file to load
             max_ticks: Maximum ticks per episode (0 = unlimited)
             lib_path: Optional path to libjulius_gym.so (auto-detected if None)
+            campaign_rank: Optional zero-based peaceful campaign rank (Tarraco=3).
+                Mutually exclusive with scenario_file; requires an updated library.
         """
         super().__init__()
+        if campaign_rank is not None:
+            if type(campaign_rank) is not int or not 0 <= campaign_rank <= 11:
+                raise ValueError("campaign_rank must be an integer from 0 to 11")
+            if scenario_file:
+                raise ValueError("campaign_rank and scenario_file are mutually exclusive")
+        self.campaign_rank = campaign_rank
 
         # Load the shared library
         if lib_path is None:
@@ -334,6 +344,16 @@ class JuliusEnv(gym.Env):
         self.env_handle = self.lib.julius_env_create(ctypes.byref(config))
         if not self.env_handle:
             raise RuntimeError("Failed to create Julius environment")
+        if campaign_rank is not None:
+            try:
+                select = self.lib.julius_env_select_campaign
+                select.argtypes = [c_void_p, c_int32]
+                select.restype = c_int32
+                if select(self.env_handle, campaign_rank) != 0:
+                    raise RuntimeError(self.lib.julius_env_get_error(self.env_handle).decode())
+            except Exception:
+                self.close()
+                raise
 
         # Define observation space (flattened for stable-baselines3 compatibility)
         self.observation_space = spaces.Dict(
@@ -596,7 +616,22 @@ class JuliusEnv(gym.Env):
             error = self.lib.julius_env_get_error(self.env_handle)
             raise RuntimeError(f"Failed to reset environment: {error.decode()}")
 
-        return self._obs_to_dict(obs), {}
+        info = {"mission": self.get_mission_info()} if self.campaign_rank is not None else {}
+        return self._obs_to_dict(obs), info
+
+    def get_mission_info(self) -> Dict[str, Any]:
+        """Read mission identity and scheduled combat events without advancing time.
+
+        Event types: 1 uprising, 2 enemy army, 3 Caesar, 4 distant battle.
+        This schedule does not rule out attacks caused by low imperial favor.
+        """
+        read = self.lib.julius_env_get_mission_info
+        read.argtypes = [c_void_p, POINTER(c_char), c_int32]
+        read.restype = c_int32
+        output = ctypes.create_string_buffer(8192)
+        if read(self.env_handle, output, len(output)) != 0:
+            raise RuntimeError("Cannot read mission info: reset an active environment first")
+        return json.loads(output.value)
 
     def step(
         self, action: int

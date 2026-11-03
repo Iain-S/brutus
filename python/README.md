@@ -1,5 +1,41 @@
 # Julius Gymnasium Environment
 
+## Peaceful Campaign Selection
+
+With a rebuilt headless library, select a campaign using `campaign_rank` instead
+of `scenario_file`. Ranks are zero-based and select the peaceful branch:
+
+```python
+env = julius_gym.JuliusEnv(
+    data_directory=data_dir,
+    lib_path=lib_path,
+    campaign_rank=3,  # Tarraco; mission index 4
+)
+obs, info = env.reset()
+print(info["mission"])
+```
+
+Every reset reloads the campaign from the original `mission1.pak`.
+`env.get_mission_info()` returns campaign identity, tutorial classification,
+scheduled combat events (including distant battles), and the gladiator revolt
+flag. Event types are 1=uprising, 2=enemy army, 3=Caesar, 4=distant battle;
+years are offsets from the returned start year, months are engine month values.
+An empty schedule does not prevent attacks triggered by poor imperial favor.
+The existing configuration struct ABI and scenario-file usage are unchanged.
+
+Run the campaign audit and reset/snapshot replay smoke test with explicit paths:
+
+```shell
+python test_campaign.py --data-dir <ABSOLUTE_CAESAR3_DATA_DIR> --lib-path <ABSOLUTE_LIBRARY_PATH>
+```
+
+The default target is Tarraco: no tutorial classification, population goal 2500,
+culture 45, prosperity 25, peace 30, and favor 70 in the tested original data.
+The test rejects scheduled combat or tutorial behavior and checks repeated
+1600-tick no-op traces, actual game-time progression, and snapshot replay.
+This is an interface smoke test, not a winning controller. See
+`examples/README.md` for the deterministic starter settlement runner.
+
 OpenAI Gymnasium environment for training reinforcement learning agents on Julius, an open-source re-implementation of Caesar III.
 
 ## Installation

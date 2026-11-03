@@ -8,12 +8,16 @@
 #include "core/hotkey_config.h"
 #include "game/file.h"
 #include "game/game.h"
+#include "game/mission.h"
 #include "game/time.h"
+#include "game/tick.h"
 #include "map/building.h"
 #include "map/grid.h"
 #include "map/terrain.h"
 #include "platform/file_manager.h"
 #include "scenario/criteria.h"
+#include "scenario/data.h"
+#include "scenario/property.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -41,6 +45,8 @@ struct julius_env {
     // Episode state
     int current_tick;
     int episode_active;
+    int campaign_rank;
+    int campaign_selected;
 
     // Previous ratings for reward calculation
     int prev_culture;
@@ -238,8 +244,17 @@ int julius_env_reset(julius_env_t *env, gymnasium_observation_t *observation)
         return -1;
     }
 
-    // Load scenario if specified
-    if (env->config.scenario_file) {
+    if (env->campaign_selected) {
+        scenario_set_custom(0);
+        scenario_set_campaign_rank(env->campaign_rank);
+        scenario_set_campaign_mission(game_mission_peaceful());
+        // The campaign path ignores the filename and loads mission1.pak.
+        if (!game_file_start_scenario("")) {
+            env->episode_active = 0;
+            snprintf(env->error_message, sizeof(env->error_message), "Failed to load campaign rank %d", env->campaign_rank);
+            return -1;
+        }
+    } else if (env->config.scenario_file) {
         if (!game_file_start_scenario(env->config.scenario_file)) {
             snprintf(env->error_message, sizeof(env->error_message),
                     "Failed to load scenario: %s", env->config.scenario_file);
@@ -271,6 +286,57 @@ int julius_env_reset(julius_env_t *env, gymnasium_observation_t *observation)
     }
 
     return 0;
+}
+
+int julius_env_select_campaign(julius_env_t *env, int rank)
+{
+    if (!env || !env->initialized) {
+        return -1;
+    }
+    if (rank < 0 || rank > 11 || env->config.scenario_file) {
+        snprintf(env->error_message, sizeof(env->error_message),
+            "Campaign rank must be 0..11 and cannot be combined with a scenario file");
+        return -1;
+    }
+    env->campaign_rank = rank;
+    env->campaign_selected = 1;
+    env->episode_active = 0;
+    return 0;
+}
+
+int julius_env_get_mission_info(julius_env_t *env, char *output, int capacity)
+{
+    if (!env || !env->initialized || !env->episode_active || !output || capacity <= 0) {
+        return -1;
+    }
+    int used = snprintf(output, capacity,
+        "{\"campaign_rank\":%d,\"campaign_mission\":%d,\"is_custom\":%d,"
+        "\"is_tutorial\":%d,\"start_year\":%d,\"gladiator_revolt\":%d,"
+        "\"entry\":[%d,%d],\"combat_events\":[",
+        scenario_campaign_rank(), scenario_campaign_mission(), scenario_is_custom(),
+        scenario_is_tutorial_1() || scenario_is_tutorial_2() || scenario_is_tutorial_3(),
+        scenario.start_year, scenario.gladiator_revolt.enabled,
+        scenario.entry_point.x, scenario.entry_point.y);
+    if (used < 0 || used >= capacity) {
+        return -1;
+    }
+    int count = 0;
+    for (int i = 0; i < MAX_INVASIONS; i++) {
+        const invasion_t *event = &scenario.invasions[i];
+        if (!event->type) {
+            continue;
+        }
+        int written = snprintf(output + used, capacity - used,
+            "%s{\"type\":%d,\"year_offset\":%d,\"month\":%d,\"amount\":%d}",
+            count ? "," : "", event->type, event->year, event->month, event->amount);
+        if (written < 0 || written >= capacity - used) {
+            return -1;
+        }
+        used += written;
+        count++;
+    }
+    int written = snprintf(output + used, capacity - used, "]}");
+    return written < 0 || written >= capacity - used ? -1 : 0;
 }
 
 julius_snapshot_t *julius_env_snapshot_create(julius_env_t *env)
@@ -391,7 +457,7 @@ int julius_env_step(julius_env_t *env, const gymnasium_action_t *action,
     }
 
     // Run one game tick
-    game_run();
+    game_tick_run();
     env->current_tick++;
 
     // Calculate reward based on state changes
@@ -460,8 +526,13 @@ int julius_env_get_map_data(julius_env_t *env, uint16_t *terrain_data,
     // Extract terrain and building data for each grid cell
     for (int y = 0; y < GRID_SIZE; y++) {
         for (int x = 0; x < GRID_SIZE; x++) {
-            int grid_offset = map_grid_offset(x, y);
             int index = y * GRID_SIZE + x;
+            if (x >= *width || y >= *height) {
+                terrain_data[index] = 0;
+                building_data[index] = 0;
+                continue;
+            }
+            int grid_offset = map_grid_offset(x, y);
 
             // Get terrain flags
             terrain_data[index] = (uint16_t) map_terrain_get(grid_offset);

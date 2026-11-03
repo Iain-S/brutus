@@ -1,5 +1,39 @@
 # Julius RL Training Examples
 
+## Deterministic Tarraco Starter
+
+Run the construction baseline without a model or training:
+
+```shell
+python examples/run_baseline.py --data-dir <ABSOLUTE_CAESAR3_DATA_DIR> --lib-path <ABSOLUTE_LIBRARY_PATH>
+```
+
+Run from `python/` with the dedicated training interpreter and a rebuilt library.
+The script selects peaceful campaign rank 3, checks its event schedule, finds a
+clear site connected to the entry road, and places a street, nine housing lots,
+a well, prefecture and engineer's post. It then waits, reporting population and
+victory state. Every placement uses normal construction costs and rules.
+
+The default 3000-tick run produced 49 residents with no failed placements in the
+tested original game data. This is a starter settlement, not a mission-winning
+policy: it does not yet provide food or grow the city to the victory thresholds.
+Use `--max-ticks` to set the horizon and `--log` for an alternate JSONL log path.
+Resolve the output path from the launch directory; the default is
+`runs/baseline.jsonl`. The log records each action, treasury, population and
+termination state. The runner stops on a construction failure and rejects a
+run with no population growth.
+
+Regression checks with licensed data:
+
+```shell
+python test_baseline.py --data-dir <ABSOLUTE_CAESAR3_DATA_DIR> --lib-path <ABSOLUTE_LIBRARY_PATH>
+python test_campaign.py --data-dir <ABSOLUTE_CAESAR3_DATA_DIR> --lib-path <ABSOLUTE_LIBRARY_PATH>
+```
+
+Gym steps now advance exactly one simulation tick, independent of GUI windows
+or wall-clock timing. Existing trained policies may behave differently after
+this correction. Normal graphical play continues to use the graphical loop.
+
 This directory contains example RL agents for training on Julius, optimized for 4GB GPU memory constraints.
 
 ## Quick Start
