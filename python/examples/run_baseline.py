@@ -45,14 +45,15 @@ def main():
             phases += ["bridge", (ActionType.BUILD_WHEAT_FARM, 3, True),
                        "workers",
                        (ActionType.BUILD_GRANARY, 3, False),
-                       (ActionType.BUILD_MARKET, 2, False)]
+                       (ActionType.BUILD_MARKET, 2, False), "supply"]
         initial_population = int(obs["population_total"].item())
         peak_population = initial_population
         failed = 0
+        supply = {}
         with log_path.open("w", encoding="utf-8") as log:
             log.write(json.dumps({"mission": mission, "planned_actions": len(actions)}) + "\n")
             for tick in range(args.max_ticks):
-                if tick == len(actions) and phases:
+                while tick == len(actions) and phases:
                     phase = phases.pop(0)
                     terrain, buildings, width, height = env.get_map_data()
                     if phase is None:
@@ -62,11 +63,24 @@ def main():
                     elif phase == "workers":
                         actions += starter_plan(terrain, buildings, width, height,
                                                 mission["entry"], anchor=farm)
+                    elif phase == "supply":
+                        # One local market per housing block; mobile sellers may miss
+                        # branches of the shared entry road for long periods.
+                        records = env.get_buildings()
+                        wells = []
+                        for b in records:
+                            if b["type"] == 92 and all(abs(b["x"] - x) + abs(b["y"] - y) > 6 for x, y in wells):
+                                wells.append((b["x"], b["y"]))
+                        phases = [(ActionType.BUILD_PREFECTURE, 1, False, farm),
+                                  (ActionType.BUILD_ENGINEERS_POST, 1, False, farm)] + [
+                            (ActionType.BUILD_MARKET, 2, False, well) for well in wells] + phases
                     else:
-                        kind, size, meadow = phase
+                        kind, size, meadow = phase[:3]
+                        anchor = phase[3] if len(phase) > 3 else (
+                            None if meadow else farm if kind == ActionType.BUILD_GRANARY else home)
                         planned = building_plan(terrain, buildings, width, height,
                                                 mission["entry"], kind, size, meadow,
-                                                anchor=farm if kind == ActionType.BUILD_GRANARY else home)
+                                                anchor=anchor)
                         actions += planned
                         if kind == ActionType.BUILD_WHEAT_FARM:
                             farm = planned[-1][1:]
@@ -75,14 +89,29 @@ def main():
                 obs, reward, terminated, truncated, result = env.step_at(*action)
                 population = int(obs["population_total"].item())
                 peak_population = max(peak_population, population)
-                if action[0] and not result["message"].startswith("Built "):
+                if tick % 800 == 0 or terminated or truncated:
+                    buildings = env.get_buildings()
+                    supply = {
+                        "supply_sample_tick": tick + 1,
+                        **env.get_population_info(),
+                        "residents_with_food": sum(b["population"] for b in buildings if b["food"] > 0),
+                        "residents_with_water": sum(b["population"] for b in buildings if b["well"] or b["fountain"]),
+                        "occupied_houses": sum(b["population"] > 0 for b in buildings),
+                        "farms": sum(b["type"] == 100 for b in buildings),
+                    }
+                construction = action[0] >= ActionType.BUILD_HOUSING
+                if construction and not result["message"].startswith("Built "):
                     failed += 1
                     raise RuntimeError(f"Placement failed at tick {tick + 1}: {action}: {result}")
-                if action[0] and int(obs["finance_treasury"].item()) >= treasury:
+                if construction and int(obs["finance_treasury"].item()) >= treasury:
                     raise RuntimeError("Successful construction did not charge treasury")
                 log.write(json.dumps({"tick": tick + 1, "action": action,
                     "population": population, "treasury": int(obs["finance_treasury"].item()),
                     "food_stocks": int(obs["resources_food_stocks"].item()),
+                    "sentiment": int(obs["population_sentiment"].item()),
+                    "tax": int(obs["finance_tax_percentage"].item()),
+                    "unemployment": int(obs["labor_unemployment_pct"].item()),
+                    **supply,
                     "reward": reward, "terminated": terminated, "truncated": truncated,
                     **result}) + "\n")
                 if terminated or truncated:
@@ -90,8 +119,12 @@ def main():
         summary = {"ticks": tick + 1, "population": population,
                    "peak_population": peak_population, "failed_actions": failed,
                    "food_stocks": int(obs["resources_food_stocks"].item()),
+                   **supply,
+                   "diagnostics": str(log_path.with_suffix(".buildings.json")),
                    "won": bool(obs["victory_has_won"].item()), "log": str(log_path)}
         print(json.dumps(summary, indent=2))
+        log_path.with_suffix(".buildings.json").write_text(
+            json.dumps(env.get_buildings(), indent=2), encoding="utf-8")
         if peak_population <= initial_population:
             raise RuntimeError("Starter settlement did not attract immigrants")
     finally:

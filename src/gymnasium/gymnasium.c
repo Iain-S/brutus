@@ -1,4 +1,6 @@
 #include "gymnasium.h"
+#include "building/building.h"
+#include "city/data_private.h"
 
 #include "city/finance.h"
 #include "city/ratings.h"
@@ -9,6 +11,7 @@
 #include "game/file.h"
 #include "game/game.h"
 #include "game/mission.h"
+#include "game/resource.h"
 #include "game/time.h"
 #include "game/tick.h"
 #include "map/building.h"
@@ -315,6 +318,57 @@ int julius_env_bridge_span(julius_env_t *env, int x, int y, int *direction)
     int valid = map_bridge_calculate_length_direction(x, y, &length, direction);
     map_bridge_reset_building_length();
     return valid ? length : 0;
+}
+
+int julius_env_get_population_info(julius_env_t *env, char *output, int capacity)
+{
+    if (!env || !env->initialized || !output || capacity <= 0) {
+        return -1;
+    }
+    int written = snprintf(output, capacity,
+        "{\"yearly_deaths\":%d,\"yearly_births\":%d,\"lost_homeless\":%d,"
+        "\"lost_removal\":%d,\"health\":%d}",
+        city_data.population.yearly_deaths, city_data.population.yearly_births,
+        city_data.population.lost_homeless, city_data.population.lost_removal,
+        city_data.health.value);
+    return written < 0 || written >= capacity ? -1 : 0;
+}
+
+int julius_env_get_buildings(julius_env_t *env, char *output, int capacity)
+{
+    if (!env || !env->initialized || !output || capacity < 3) {
+        return -1;
+    }
+    int used = 1, count = 0;
+    output[0] = '[';
+    for (int i = 1; i < MAX_BUILDINGS; i++) {
+        const building *b = building_get(i);
+        if (b->state != BUILDING_STATE_IN_USE) {
+            continue;
+        }
+        int house = building_is_house(b->type);
+        int food = 0;
+        if (house) {
+            for (int j = INVENTORY_MIN_FOOD; j < INVENTORY_MAX_FOOD; j++) {
+                food += b->data.house.inventory[j];
+            }
+        }
+        int written = snprintf(output + used, capacity - used,
+            "%s{\"id\":%d,\"type\":%d,\"x\":%d,\"y\":%d,\"size\":%d,"
+            "\"workers\":%d,\"houses_covered\":%d,\"population\":%d,\"food\":%d,"
+            "\"well\":%d,\"fountain\":%d,\"level\":%d}",
+            count ? "," : "", b->id, b->type, b->x, b->y, b->size,
+            b->num_workers, b->houses_covered, house ? b->house_population : 0, food,
+            house ? b->has_well_access : 0, house ? b->has_water_access : 0,
+            house ? b->subtype.house_level : -1);
+        if (written < 0 || written >= capacity - used) {
+            return -1;
+        }
+        used += written;
+        count++;
+    }
+    int written = snprintf(output + used, capacity - used, "]");
+    return written < 0 || written >= capacity - used ? -1 : 0;
 }
 
 int julius_env_get_mission_info(julius_env_t *env, char *output, int capacity)

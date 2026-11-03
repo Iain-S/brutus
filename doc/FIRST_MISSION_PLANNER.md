@@ -159,3 +159,10 @@ construction; complete logs matched across two fresh runs. Food stocks establish
 harvesting and storage, not sufficient delivery to every house. Food produced
 and consumed-last-month observation fields are placeholders in the C exporter.
 No autonomous win or LLM-controlled episode has been demonstrated.
+
+The subsequent delivery baseline fixes granary center-edge access, keeps bridge
+landings open, and places local markets and farm safety services. Read-only
+building diagnostics distinguish stored food from food actually delivered to
+houses. A 24000-tick, five-block run peaked at 262 residents and ended at 181,
+with 2200 stored food, 51 residents holding food, and one surviving farm.
+The decline in population and incomplete service coverage still need work.

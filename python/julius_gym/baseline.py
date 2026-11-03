@@ -8,6 +8,14 @@ ROAD = 0x40
 NOT_CLEAR = 0xD77F
 
 
+def local_roads(roads, anchor):
+    if anchor is None or not roads:
+        return roads
+    distance = lambda p: abs(p[0] - anchor[0]) + abs(p[1] - anchor[1])
+    nearest = min(map(distance, roads))
+    return {point for point in roads if distance(point) <= nearest + 2}
+
+
 def neighbors(point, width, height):
     x, y = point
     for nx, ny in ((x - 1, y), (x + 1, y), (x, y - 1), (x, y + 1)):
@@ -38,8 +46,9 @@ def starter_plan(terrain, buildings, width, height, entry, length=6, anchor=None
     roads = connected_roads(terrain, width, height, entry)
     if not roads:
         raise RuntimeError("No road connected to the entry; refusing an isolated settlement")
-    parents = {point: None for point in roads}
-    pending = deque(sorted(roads, key=lambda p: (abs(p[0] - anchor[0]) + abs(p[1] - anchor[1]), p)
+    roots = local_roads(roads, anchor)
+    parents = {point: None for point in roots}
+    pending = deque(sorted(roots, key=lambda p: (abs(p[0] - anchor[0]) + abs(p[1] - anchor[1]), p)
                            if anchor else (0, p)))
 
     def clear(point):
@@ -65,14 +74,14 @@ def starter_plan(terrain, buildings, width, height, entry, length=6, anchor=None
             actions += [(ActionType.BUILD_ROAD, *tile(i, 0)) for i in range(1, length + 1)]
             # Reserve road-front positions for wells and staffed safety services.
             services = {2: ActionType.BUILD_WELL, 3: ActionType.BUILD_PREFECTURE,
-                        5: ActionType.BUILD_ENGINEERS_POST}
+                        5: ActionType.BUILD_ENGINEERS_POST, 6: ActionType.BUILD_WELL}
             actions += [(kind, *tile(i, 1)) for i, kind in services.items() if i <= length]
             actions += [(ActionType.BUILD_HOUSING, *tile(i, side))
                         for i in range(1, length + 1) for side in (-1, 1)
                         if side == -1 or i not in services]
             return actions
         for point in neighbors(origin, width, height):
-            if point not in parents and clear(point):
+            if point not in parents and (clear(point) or point in roads):
                 parents[point] = origin
                 pending.append(point)
     raise RuntimeError("No connected clear strip found for starter settlement")
@@ -81,8 +90,9 @@ def starter_plan(terrain, buildings, width, height, entry, length=6, anchor=None
 def building_plan(terrain, buildings, width, height, entry, kind, size, meadow=False, anchor=None):
     """Place a footprint beside an entry-connected road, adding a short access road."""
     roads = connected_roads(terrain, width, height, entry)
-    parents = {point: None for point in roads}
-    pending = deque(sorted(roads, key=lambda p: (abs(p[0] - anchor[0]) + abs(p[1] - anchor[1]), p)
+    roots = local_roads(roads, anchor)
+    parents = {point: None for point in roots}
+    pending = deque(sorted(roots, key=lambda p: (abs(p[0] - anchor[0]) + abs(p[1] - anchor[1]), p)
                            if anchor else (0, p)))
 
     def clear(x, y):
@@ -97,7 +107,14 @@ def building_plan(terrain, buildings, width, height, entry, kind, size, meadow=F
         while cursor is not None and cursor not in roads:
             path.append(cursor)
             cursor = parents[cursor]
-        for x, y in ((rx + 1, ry), (rx - size, ry), (rx, ry + 1), (rx, ry - size)):
+        sites = ((rx + 1, ry), (rx - size, ry), (rx, ry + 1), (rx, ry - size))
+        if kind == ActionType.BUILD_GRANARY:
+            # Granaries accept access at the middle of an edge, not a corner.
+            sites = ((rx + 1, ry - 1), (rx - size, ry - 1),
+                     (rx - 1, ry + 1), (rx - 1, ry - size))
+        for x, y in sites:
+            if meadow and any(terrain[ny, nx] & 4 for nx, ny in neighbors(road, width, height)):
+                continue  # Keep the narrow bridge landing open for the farm district.
             footprint = [(x + dx, y + dy) for dx in range(size) for dy in range(size)]
             if not all(clear(tx, ty) for tx, ty in footprint):
                 continue
@@ -114,7 +131,7 @@ def building_plan(terrain, buildings, width, height, entry, kind, size, meadow=F
                     + [(ActionType.BUILD_ROAD, *point) for point in reversed(path)]
                     + [(kind, x, y)])
         for point in neighbors(road, width, height):
-            if point not in parents and clear(*point):
+            if point not in parents and (clear(*point) or point in roads):
                 parents[point] = road
                 pending.append(point)
     raise RuntimeError(f"No connected footprint for action {kind}")

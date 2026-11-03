@@ -10,11 +10,11 @@ python examples/run_baseline.py --data-dir <ABSOLUTE_CAESAR3_DATA_DIR> --lib-pat
 
 Run from `python/` with the dedicated training interpreter and a rebuilt library.
 The script selects peaceful campaign rank 3, checks its event schedule, finds a
-clear site connected to the entry road, and places a street, nine housing lots,
-a well, prefecture and engineer's post. It then waits, reporting population and
+clear site connected to the entry road, and places a street, eight housing lots,
+two wells, prefecture and engineer's post. It then waits, reporting population and
 victory state. Every placement uses normal construction costs and rules.
 
-The default 3000-tick run produced 49 residents with no failed placements in the
+The default 3000-tick run produced 46 residents with no failed placements in the
 tested original game data. This is a starter settlement, not a mission-winning
 policy: it does not yet provide food or grow the city to the victory thresholds.
 Use `--max-ticks` to set the horizon and `--log` for an alternate JSONL log path.
@@ -46,6 +46,37 @@ low bridge to Tarraco's farmland, a wheat farm, a worker settlement, granary and
 market. Forest clearing and bridge construction use normal costs. The tested
 12000-tick run reached 182 residents and 1300 stored food with no failed builds.
 The integration test compares complete logs from two fresh runs.
+
+### Delivery Diagnostics
+
+The food mode also adds local markets and safety services for the farm district.
+Placement preserves access beyond the bridge landing and connects granaries at
+the middle of an edge, as required by the engine. An anchor now restricts the
+initial road search to the neighborhood of the target, while allowing traversal
+along the connected road network when nearby sites are occupied.
+
+`env.get_buildings()` returns active building footprints, types, employment,
+labor-seeker coverage, house population, current household food inventory, house
+level, and well/fountain access. It reads engine state without advancing time or
+changing the existing observation struct. Types use `src/building/type.h` IDs;
+non-house records use level -1. Diagnostic food stock means current inventory,
+not a prediction of future food security.
+
+The runner samples resident food/water coverage every 800 ticks and at episode
+end. Each log row includes `supply_sample_tick` so cached coverage is not mistaken
+for a current measurement. A companion `.buildings.json` contains the final
+building diagnostics.
+
+The tested `--food --blocks 5 --max-ticks 24000` run peaked at 262 residents and
+ended with 181 residents, 2200 stored food, 51 residents with food in their homes,
+and a surviving farm. Storage and markets were staffed. The population decline
+and incomplete food/water coverage remain unresolved; this is not a sustainable
+city or a winning policy. The earlier 182-resident result above describes the
+previous construction-only food baseline.
+
+`test_food_baseline.py` now checks 24000 ticks, household food delivery, staffed
+storage/markets, farm survival and replay equality. Run the small geometry tests
+without game data using `python test_baseline_planning.py`.
 
 Food stocks establish production and storage, not adequate delivery to every
 house. The controller still needs service coverage, expansion and rating

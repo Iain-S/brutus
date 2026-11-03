@@ -77,6 +77,12 @@ int julius_env_get_mission_info(julius_env_t *env, char *output, int capacity);
  */
 int julius_env_bridge_span(julius_env_t *env, int x, int y, int *direction);
 
+/** Read active buildings as JSON for supply/service diagnostics; no time advance.
+ * Returns -1 on invalid handle or insufficient buffer. Existing ABI unchanged.
+ */
+int julius_env_get_buildings(julius_env_t *env, char *output, int capacity);
+int julius_env_get_population_info(julius_env_t *env, char *output, int capacity);
+
 /**
  * Capture the current environment state.
  *

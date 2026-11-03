@@ -620,6 +620,30 @@ class JuliusEnv(gym.Env):
         info = {"mission": self.get_mission_info()} if self.campaign_rank is not None else {}
         return self._obs_to_dict(obs), info
 
+    def get_population_info(self):
+        """Read engine demographic loss counters and health without advancing time."""
+        query = self.lib.julius_env_get_population_info
+        query.argtypes = [c_void_p, POINTER(c_char), c_int32]
+        query.restype = c_int32
+        output = ctypes.create_string_buffer(1024)
+        if query(self.env_handle, output, len(output)) != 0:
+            raise RuntimeError("Cannot read population diagnostics")
+        return json.loads(output.value)
+
+    def get_buildings(self):
+        """Read active building footprints, employment and household food/water.
+
+        House food is current inventory, not a guarantee of future coverage.
+        Non-house records have population/food zero and level -1.
+        """
+        query = self.lib.julius_env_get_buildings
+        query.argtypes = [c_void_p, POINTER(c_char), c_int32]
+        query.restype = c_int32
+        output = ctypes.create_string_buffer(1024 * 1024)
+        if query(self.env_handle, output, len(output)) != 0:
+            raise RuntimeError("Cannot read building diagnostics")
+        return json.loads(output.value)
+
     def bridge_span(self, x: int, y: int):
         """Return (length, engine direction) for a legal bridge start, else (0, 0)."""
         query = self.lib.julius_env_bridge_span
