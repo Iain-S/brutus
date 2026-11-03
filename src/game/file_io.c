@@ -508,7 +508,11 @@ int game_file_io_read_scenario(const char *filename)
 {
     log_info("Loading scenario", filename, 0);
     init_scenario_data();
-    FILE *fp = file_open(dir_get_file(filename, NOT_LOCALIZED), "rb");
+    // Saved games may be supplied as an absolute path by the Gym snapshot
+    // interface. file_open supports both absolute and working-directory
+    // relative paths, while dir_get_file always prefixes the current game-data
+    // directory and therefore cannot resolve an absolute path correctly.
+    FILE *fp = file_open(filename, "rb");
     if (!fp) {
         return 0;
     }
