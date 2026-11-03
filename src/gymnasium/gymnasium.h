@@ -72,6 +72,11 @@ int julius_env_select_campaign(julius_env_t *env, int rank);
  */
 int julius_env_get_mission_info(julius_env_t *env, char *output, int capacity);
 
+/** Query a valid bridge span; returns length, or zero for an invalid site.
+ * Direction uses engine cardinal directions 0,2,4,6. Requires active episode.
+ */
+int julius_env_bridge_span(julius_env_t *env, int x, int y, int *direction);
+
 /**
  * Capture the current environment state.
  *

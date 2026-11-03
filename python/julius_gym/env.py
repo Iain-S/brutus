@@ -265,7 +265,8 @@ class ActionType:
     BUILD_LION_HOUSE = 52
     BUILD_CHARIOT_MAKER = 53
     CLEAR_LAND = 54
-    COUNT = 55
+    BUILD_LOW_BRIDGE = 55
+    COUNT = 56
 
 
 class JuliusEnv(gym.Env):
@@ -618,6 +619,15 @@ class JuliusEnv(gym.Env):
 
         info = {"mission": self.get_mission_info()} if self.campaign_rank is not None else {}
         return self._obs_to_dict(obs), info
+
+    def bridge_span(self, x: int, y: int):
+        """Return (length, engine direction) for a legal bridge start, else (0, 0)."""
+        query = self.lib.julius_env_bridge_span
+        query.argtypes = [c_void_p, c_int32, c_int32, POINTER(c_int32)]
+        query.restype = c_int32
+        direction = c_int32()
+        length = query(self.env_handle, x, y, ctypes.byref(direction))
+        return (length, direction.value) if length else (0, 0)
 
     def get_mission_info(self) -> Dict[str, Any]:
         """Read mission identity and scheduled combat events without advancing time.

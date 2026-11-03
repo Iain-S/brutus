@@ -152,4 +152,10 @@ Construction now uses the normal cost, resource, placement and routing pipeline.
 `python/examples/run_baseline.py` builds an entry-connected starter settlement
 and writes a per-tick JSONL log. A 3000-tick run reached 49 residents with no failed
 placements. Food production, further expansion, and rating management remain
-unimplemented. No autonomous win or LLM-controlled episode has been demonstrated.
+unimplemented in the starter mode. The optional `--food --blocks 3` mode now
+builds a low bridge to farmland, farm worker housing, a granary and market.
+A 12000-tick run reached 182 residents and 1300 stored food without failed
+construction; complete logs matched across two fresh runs. Food stocks establish
+harvesting and storage, not sufficient delivery to every house. Food produced
+and consumed-last-month observation fields are placeholders in the C exporter.
+No autonomous win or LLM-controlled episode has been demonstrated.

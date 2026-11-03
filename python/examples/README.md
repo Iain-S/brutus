@@ -34,6 +34,29 @@ Gym steps now advance exactly one simulation tick, independent of GUI windows
 or wall-clock timing. Existing trained policies may behave differently after
 this correction. Normal graphical play continues to use the graphical loop.
 
+### Expansion and Food
+
+```shell
+python examples/run_baseline.py --data-dir <ABSOLUTE_CAESAR3_DATA_DIR> --lib-path <ABSOLUTE_LIBRARY_PATH> --blocks 3 --food --max-ticks 12000
+python test_food_baseline.py --data-dir <ABSOLUTE_CAESAR3_DATA_DIR> --lib-path <ABSOLUTE_LIBRARY_PATH>
+```
+
+`--blocks` places additional housing blocks. `--food` adds an engine-validated
+low bridge to Tarraco's farmland, a wheat farm, a worker settlement, granary and
+market. Forest clearing and bridge construction use normal costs. The tested
+12000-tick run reached 182 residents and 1300 stored food with no failed builds.
+The integration test compares complete logs from two fresh runs.
+
+Food stocks establish production and storage, not adequate delivery to every
+house. The controller still needs service coverage, expansion and rating
+management to win. Food produced/consumed-last-month observation fields are
+currently placeholders and should not be used to evaluate this chain.
+
+Low bridge is action 55, appended without renumbering existing actions; the
+discrete action count is now 56. Models trained with the old 55-action space
+need an explicit compatibility wrapper or retraining. `env.bridge_span(x, y)`
+queries the engine for a legal bridge length and cardinal direction.
+
 This directory contains example RL agents for training on Julius, optimized for 4GB GPU memory constraints.
 
 ## Quick Start

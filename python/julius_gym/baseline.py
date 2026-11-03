@@ -29,7 +29,7 @@ def connected_roads(terrain, width, height, entry):
     return roads
 
 
-def starter_plan(terrain, buildings, width, height, entry, length=6):
+def starter_plan(terrain, buildings, width, height, entry, length=6, anchor=None):
     """Find a clear three-tile-wide strip reachable from the entry road.
 
     A single street serves houses, a well and safety services on both sides.
@@ -39,7 +39,8 @@ def starter_plan(terrain, buildings, width, height, entry, length=6):
     if not roads:
         raise RuntimeError("No road connected to the entry; refusing an isolated settlement")
     parents = {point: None for point in roads}
-    pending = deque(sorted(roads))
+    pending = deque(sorted(roads, key=lambda p: (abs(p[0] - anchor[0]) + abs(p[1] - anchor[1]), p)
+                           if anchor else (0, p)))
 
     def clear(point):
         x, y = point
@@ -75,3 +76,97 @@ def starter_plan(terrain, buildings, width, height, entry, length=6):
                 parents[point] = origin
                 pending.append(point)
     raise RuntimeError("No connected clear strip found for starter settlement")
+
+
+def building_plan(terrain, buildings, width, height, entry, kind, size, meadow=False, anchor=None):
+    """Place a footprint beside an entry-connected road, adding a short access road."""
+    roads = connected_roads(terrain, width, height, entry)
+    parents = {point: None for point in roads}
+    pending = deque(sorted(roads, key=lambda p: (abs(p[0] - anchor[0]) + abs(p[1] - anchor[1]), p)
+                           if anchor else (0, p)))
+
+    def clear(x, y):
+        return (0 < x < width - 1 and 0 < y < height - 1
+                and not terrain[y, x] & (NOT_CLEAR & ~0x11) and not buildings[y, x])
+
+    while pending:
+        road = pending.popleft()
+        rx, ry = road
+        path = []
+        cursor = road
+        while cursor is not None and cursor not in roads:
+            path.append(cursor)
+            cursor = parents[cursor]
+        for x, y in ((rx + 1, ry), (rx - size, ry), (rx, ry + 1), (rx, ry - size)):
+            footprint = [(x + dx, y + dy) for dx in range(size) for dy in range(size)]
+            if not all(clear(tx, ty) for tx, ty in footprint):
+                continue
+            # Match the engine: farms need meadow within one tile of the footprint.
+            if meadow and not any(terrain[ty, tx] & 0x800
+                                  for tx in range(max(0, x - 1), min(width, x + size + 1))
+                                  for ty in range(max(0, y - 1), min(height, y + size + 1))):
+                continue
+            if any(point in footprint for point in path):
+                continue
+            clearing = sorted({point for point in footprint + path
+                               if terrain[point[1], point[0]] & 0x11})
+            return ([(ActionType.CLEAR_LAND, *point) for point in clearing]
+                    + [(ActionType.BUILD_ROAD, *point) for point in reversed(path)]
+                    + [(kind, x, y)])
+        for point in neighbors(road, width, height):
+            if point not in parents and clear(*point):
+                parents[point] = road
+                pending.append(point)
+    raise RuntimeError(f"No connected footprint for action {kind}")
+
+
+def bridge_plan(env, entry):
+    """Find an engine-valid crossing from reachable land toward meadow."""
+    terrain, buildings, width, height = env.get_map_data()
+    roads = connected_roads(terrain, width, height, entry)
+    parents = {point: None for point in roads}
+    pending = deque(sorted(roads))
+    while pending:
+        point = pending.popleft()
+        for neighbor in neighbors(point, width, height):
+            x, y = neighbor
+            if neighbor in parents or not (0 < x < width - 1 and 0 < y < height - 1):
+                continue
+            if terrain[y, x] & 4:
+                length, direction = env.bridge_span(x, y)
+                if not length:
+                    continue
+                dx, dy = {0: (0, -1), 2: (1, 0), 4: (0, 1), 6: (-1, 0)}[direction]
+                if (x - dx, y - dy) != point:
+                    continue
+                landing = x + length * dx, y + length * dy
+                lx, ly = landing
+                if not (0 < lx < width - 1 and 0 < ly < height - 1):
+                    continue
+                if terrain[ly, lx] & NOT_CLEAR or buildings[ly, lx]:
+                    continue
+                path = []
+                cursor = point
+                while cursor is not None and cursor not in roads:
+                    path.append(cursor)
+                    cursor = parents[cursor]
+                # Prefer a crossing that makes a farm site reachable in the map model.
+                preview = terrain.copy()
+                for px, py in path + [landing]:
+                    preview[py, px] = ROAD
+                for i in range(length):
+                    preview[y + i * dy, x + i * dx] |= ROAD
+                try:
+                    building_plan(preview, buildings, width, height, entry,
+                                  ActionType.BUILD_WHEAT_FARM, 3, True)
+                except RuntimeError:
+                    continue
+                clearing = [p for p in path if terrain[p[1], p[0]] & 0x11]
+                return ([(ActionType.CLEAR_LAND, *p) for p in clearing]
+                        + [(ActionType.BUILD_ROAD, *p) for p in reversed(path)]
+                        + [(ActionType.BUILD_LOW_BRIDGE, x, y),
+                           (ActionType.BUILD_ROAD, *landing)])
+            if not terrain[y, x] & (NOT_CLEAR & ~0x11) and not buildings[y, x]:
+                parents[neighbor] = point
+                pending.append(neighbor)
+    raise RuntimeError("No valid bridge to accessible farmland found")

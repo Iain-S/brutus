@@ -87,7 +87,7 @@ done = False
 total_reward = 0
 
 while not done:
-    # Choose action (0-54)
+    # Choose action (0-55)
     action = env.action_space.sample()  # Random action
 
     # Execute action
@@ -148,7 +148,7 @@ The observation space is a dictionary containing:
 
 ## Action Space
 
-Discrete action space with 55 actions:
+Discrete action space with 56 actions:
 
 ### Administrative Actions (0-4)
 - `NONE` (0): No action
@@ -163,6 +163,10 @@ Discrete action space with 55 actions:
 
 ### Destruction (54)
 - `CLEAR_LAND` (54): Clear land/demolish buildings
+
+### Bridge (55)
+
+- `BUILD_LOW_BRIDGE` (55): Build an engine-validated low bridge from a shoreline water tile.
 
 ## Reward Structure
 

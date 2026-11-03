@@ -12,6 +12,7 @@
 #include "game/time.h"
 #include "game/tick.h"
 #include "map/building.h"
+#include "map/bridge.h"
 #include "map/grid.h"
 #include "map/terrain.h"
 #include "platform/file_manager.h"
@@ -302,6 +303,18 @@ int julius_env_select_campaign(julius_env_t *env, int rank)
     env->campaign_selected = 1;
     env->episode_active = 0;
     return 0;
+}
+
+int julius_env_bridge_span(julius_env_t *env, int x, int y, int *direction)
+{
+    if (!env || !env->episode_active || !direction || x <= 0 || y <= 0 ||
+        x >= map_grid_width() - 1 || y >= map_grid_height() - 1) {
+        return 0;
+    }
+    int length = 0;
+    int valid = map_bridge_calculate_length_direction(x, y, &length, direction);
+    map_bridge_reset_building_length();
+    return valid ? length : 0;
 }
 
 int julius_env_get_mission_info(julius_env_t *env, char *output, int capacity)

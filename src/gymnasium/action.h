@@ -76,6 +76,7 @@ typedef enum {
 
     // Destruction
     ACTION_CLEAR_LAND,              // Clear/demolish at specified coordinates
+    ACTION_BUILD_LOW_BRIDGE,        // Build from a shoreline water tile
 
     ACTION_COUNT                    // Total number of actions
 } gymnasium_action_type_t;

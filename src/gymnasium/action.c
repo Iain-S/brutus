@@ -8,6 +8,7 @@
 #include "city/labor.h"
 #include "city/warning.h"
 #include "map/grid.h"
+#include "map/bridge.h"
 #include "map/terrain.h"
 
 #include <stdio.h>
@@ -19,6 +20,7 @@ static building_type action_to_building_type(gymnasium_action_type_t action)
     switch (action) {
         case ACTION_BUILD_HOUSING: return BUILDING_HOUSE_VACANT_LOT;
         case ACTION_BUILD_ROAD: return BUILDING_ROAD;
+        case ACTION_BUILD_LOW_BRIDGE: return BUILDING_LOW_BRIDGE;
         case ACTION_BUILD_PLAZA: return BUILDING_PLAZA;
         case ACTION_BUILD_GARDEN: return BUILDING_GARDENS;
         case ACTION_BUILD_STATUE: return BUILDING_SMALL_STATUE;
@@ -72,6 +74,9 @@ static building_type action_to_building_type(gymnasium_action_type_t action)
 
 const char *gymnasium_action_name(gymnasium_action_type_t type)
 {
+    if (type == ACTION_BUILD_LOW_BRIDGE) {
+        return "BUILD_LOW_BRIDGE";
+    }
     switch (type) {
         case ACTION_NONE: return "NONE";
         case ACTION_ADJUST_TAX_UP: return "ADJUST_TAX_UP";
@@ -148,7 +153,7 @@ static int is_administrative_action(gymnasium_action_type_t type)
 
 static int is_building_action(gymnasium_action_type_t type)
 {
-    return type >= ACTION_BUILD_HOUSING && type < ACTION_CLEAR_LAND;
+    return (type >= ACTION_BUILD_HOUSING && type < ACTION_CLEAR_LAND) || type == ACTION_BUILD_LOW_BRIDGE;
 }
 
 int gymnasium_validate_action(const gymnasium_action_t *action, gymnasium_action_result_t *result)
@@ -226,8 +231,8 @@ int gymnasium_execute_action(const gymnasium_action_t *action, gymnasium_action_
         return -1;
     }
 
-    if (is_building_action(action->type)) {
-        building_type type = action_to_building_type(action->type);
+    if (is_building_action(action->type) || action->type == ACTION_CLEAR_LAND) {
+        building_type type = action->type == ACTION_CLEAR_LAND ? BUILDING_CLEAR_LAND : action_to_building_type(action->type);
         int treasury = city_finance_treasury();
         int offset = map_grid_offset(action->x, action->y);
         if (city_finance_out_of_money()) {
@@ -236,6 +241,14 @@ int gymnasium_execute_action(const gymnasium_action_t *action, gymnasium_action_
         }
         // Use the normal construction pipeline for costs, resources and routing.
         building_construction_set_type(type);
+        if (type == BUILDING_LOW_BRIDGE) {
+            int length, direction;
+            if (!map_bridge_calculate_length_direction(action->x, action->y, &length, &direction)) {
+                building_construction_clear_type();
+                set_result(result, 0, ACTION_ERROR_TERRAIN, "Invalid bridge span");
+                return -1;
+            }
+        }
         building_construction_start(action->x, action->y, offset);
         if (building_construction_in_progress()) {
             building_construction_update(action->x, action->y, offset);
@@ -301,18 +314,6 @@ int gymnasium_execute_action(const gymnasium_action_t *action, gymnasium_action_
             city_labor_change_wages(-1);
             set_result(result, 1, ACTION_ERROR_NONE, "Wages decreased");
             return 0;
-        }
-
-        case ACTION_CLEAR_LAND: {
-            // Clear a single tile (can be expanded to area later)
-            int cleared = building_construction_clear_land(0, action->x, action->y, action->x, action->y);
-            if (cleared > 0) {
-                set_result(result, 1, ACTION_ERROR_NONE, "Land cleared");
-                return 0;
-            } else {
-                set_result(result, 0, ACTION_ERROR_BLOCKED, "Nothing to clear at location");
-                return -1;
-            }
         }
 
         default:
