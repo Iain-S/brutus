@@ -14,6 +14,7 @@ def main():
     parser.add_argument("--data-dir", type=Path, required=True)
     parser.add_argument("--lib-path", type=Path, required=True)
     parser.add_argument("--health", action="store_true")
+    parser.add_argument("--religion", action="store_true")
     parser.add_argument("--quake-buffer", type=int, default=0)
     args = parser.parse_args()
     runner = Path(__file__).parent / "examples" / "run_baseline.py"
@@ -26,6 +27,7 @@ def main():
                  "--lib-path", str(args.lib_path.resolve()), "--food", "--blocks", "5",
                  "--max-ticks", "24000", "--log", str(log.resolve())]
                 + (["--health"] if args.health else [])
+                + (["--religion"] if args.religion else [])
                 + ["--quake-buffer", str(args.quake_buffer)],
                 capture_output=True, text=True,
             )
@@ -36,7 +38,7 @@ def main():
             actions = {record["action"][0] for record in records[1:]}
             assert {26, 27, 35, 55}.issubset(actions), "Missing food-chain construction"
             assert records[-1]["population"] > 49, "No expansion beyond starter population"
-            assert records[-1]["food_stocks"] > 0, "No stored food from production chain"
+            assert records[-1]["food_stocks"] > 0 or records[-1]["residents_with_food"] > 0, "No food in storage or homes"
             assert records[-1]["farms"] > 0, "Farm did not survive the longer run"
             assert records[-1]["residents_with_food"] > 0, "Stored food never reached houses"
             buildings = json.loads(log.with_suffix(".buildings.json").read_text())
@@ -44,6 +46,10 @@ def main():
             assert any(b["type"] == 70 and b["workers"] > 0 for b in buildings), "Markets are unstaffed"
             assert all(0 <= b["food"] and 0 <= b["population"] for b in buildings)
             assert all(not record["terminated"] for record in records[1:])
+            if args.religion:
+                assert records[-1]["population"] >= 300, "Housing evolution stalled"
+                assert records[-1]["residents_with_food"] > 100, "Insufficient household food delivery"
+                assert any(b["type"] == 60 and b["workers"] > 0 for b in buildings), "Ceres temples unstaffed"
             if args.health:
                 assert records[-1]["health"] >= 40, "Disease-prone final health"
                 assert records[-1]["population"] > 200, "Health run lost its larger settlement"

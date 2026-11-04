@@ -21,6 +21,7 @@ def main():
     parser.add_argument("--log", type=Path, default=Path("runs/baseline.jsonl"))
     parser.add_argument("--food", action="store_true", help="Add a farm, granary and market")
     parser.add_argument("--health", action="store_true", help="Add local doctors to the food baseline")
+    parser.add_argument("--religion", action="store_true", help="Add local Ceres temples")
     parser.add_argument("--quake-buffer", type=int, default=0, help="Avoid new land construction within this radius of the quake origin")
     parser.add_argument("--blocks", type=int, default=1, help="Number of starter housing blocks")
     args = parser.parse_args()
@@ -30,6 +31,8 @@ def main():
         parser.error("--quake-buffer must be nonnegative")
     if args.health and not args.food:
         parser.error("--health currently requires --food")
+    if args.religion and not args.food:
+        parser.error("--religion requires --food")
     if not 1 <= args.blocks <= 8:
         parser.error("--blocks must be from 1 to 8")
     log_path = args.log.resolve()
@@ -85,6 +88,8 @@ def main():
                             (ActionType.BUILD_MARKET, 2, False, well) for well in wells] + phases
                         if args.health:
                             phases = [(ActionType.BUILD_DOCTOR, 1, False, well) for well in wells] + phases
+                        if args.religion:
+                            phases = [(ActionType.BUILD_TEMPLE_SMALL, 2, False, well) for well in wells] + phases
                     else:
                         kind, size, meadow = phase[:3]
                         anchor = phase[3] if len(phase) > 3 else (

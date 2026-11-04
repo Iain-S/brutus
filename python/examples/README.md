@@ -107,6 +107,14 @@ The controller does not rebuild damage. Food delivery remains incomplete.
 Pass `--health --quake-buffer 14` to `test_food_baseline.py` to check replay
 equality and absence of recorded occupied-housing losses over this horizon.
 
+Add `--religion` to place local small Ceres temples. With five blocks, food,
+health and a quake buffer of 14, the tested 24000-tick run reached 318 residents,
+health 94, and 236 residents holding food, with no occupied-house losses.
+Granary stocks were zero at the endpoint, so this does not establish a food
+surplus. The earlier site-search attempt for a second farm failed and is not
+exposed as a runner option. A larger production district still needs planning.
+Add `--religion` to the food replay test to check the evolved settlement.
+
 Food stocks establish production and storage, not adequate delivery to every
 house. The controller still needs service coverage, expansion and rating
 management to win. Food produced/consumed-last-month observation fields are
