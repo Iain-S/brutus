@@ -20,10 +20,13 @@ def main():
     parser.add_argument("--max-ticks", type=int, default=3000)
     parser.add_argument("--log", type=Path, default=Path("runs/baseline.jsonl"))
     parser.add_argument("--food", action="store_true", help="Add a farm, granary and market")
+    parser.add_argument("--health", action="store_true", help="Add local doctors to the food baseline")
     parser.add_argument("--blocks", type=int, default=1, help="Number of starter housing blocks")
     args = parser.parse_args()
     if args.max_ticks < 100:
         parser.error("--max-ticks must be at least 100")
+    if args.health and not args.food:
+        parser.error("--health currently requires --food")
     if not 1 <= args.blocks <= 8:
         parser.error("--blocks must be from 1 to 8")
     log_path = args.log.resolve()
@@ -50,6 +53,7 @@ def main():
         peak_population = initial_population
         failed = 0
         supply = {}
+        previous_buildings = {}
         with log_path.open("w", encoding="utf-8") as log:
             log.write(json.dumps({"mission": mission, "planned_actions": len(actions)}) + "\n")
             for tick in range(args.max_ticks):
@@ -74,6 +78,8 @@ def main():
                         phases = [(ActionType.BUILD_PREFECTURE, 1, False, farm),
                                   (ActionType.BUILD_ENGINEERS_POST, 1, False, farm)] + [
                             (ActionType.BUILD_MARKET, 2, False, well) for well in wells] + phases
+                        if args.health:
+                            phases = [(ActionType.BUILD_DOCTOR, 1, False, well) for well in wells] + phases
                     else:
                         kind, size, meadow = phase[:3]
                         anchor = phase[3] if len(phase) > 3 else (
@@ -89,8 +95,14 @@ def main():
                 obs, reward, terminated, truncated, result = env.step_at(*action)
                 population = int(obs["population_total"].item())
                 peak_population = max(peak_population, population)
-                if tick % 800 == 0 or terminated or truncated:
+                changes = []
+                if tick % 50 == 0 or terminated or truncated:
                     buildings = env.get_buildings()
+                    current_buildings = {b["id"]: b for b in buildings}
+                    changes = [{**b, "replacement": current_buildings.get(bid)} for bid, b in previous_buildings.items()
+                               if bid not in current_buildings or current_buildings[bid]["type"] == 99
+                               and b["type"] != 99]
+                    previous_buildings = current_buildings
                     supply = {
                         "supply_sample_tick": tick + 1,
                         **env.get_population_info(),
@@ -112,6 +124,7 @@ def main():
                     "tax": int(obs["finance_tax_percentage"].item()),
                     "unemployment": int(obs["labor_unemployment_pct"].item()),
                     **supply,
+                    "removed_buildings": changes,
                     "reward": reward, "terminated": terminated, "truncated": truncated,
                     **result}) + "\n")
                 if terminated or truncated:

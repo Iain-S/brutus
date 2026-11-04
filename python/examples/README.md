@@ -62,7 +62,7 @@ changing the existing observation struct. Types use `src/building/type.h` IDs;
 non-house records use level -1. Diagnostic food stock means current inventory,
 not a prediction of future food security.
 
-The runner samples resident food/water coverage every 800 ticks and at episode
+The runner samples resident food/water coverage every 50 ticks and at episode
 end. Each log row includes `supply_sample_tick` so cached coverage is not mistaken
 for a current measurement. A companion `.buildings.json` contains the final
 building diagnostics.
@@ -77,6 +77,20 @@ previous construction-only food baseline.
 `test_food_baseline.py` now checks 24000 ticks, household food delivery, staffed
 storage/markets, farm survival and replay equality. Run the small geometry tests
 without game data using `python test_baseline_planning.py`.
+
+### Health Coverage
+
+Add `--health` alongside `--food` to place local doctors. In the tested five-block,
+24000-tick run this increased final population from 181 to 246, with final health
+87 and no recorded plague-marked building losses. Other housing losses remain;
+the city still does not meet the mission's victory conditions.
+
+`python test_food_baseline.py --data-dir <ABSOLUTE_CAESAR3_DATA_DIR> --lib-path <ABSOLUTE_LIBRARY_PATH> --health`
+checks replay equality, health and absence of plague destruction. Omitting the
+flag retains the comparison baseline. Building-removal logs include the previous
+record and its replacement, including the engine's plague flag and damage/fire
+risk. Population loss counters are engine diagnostics and may reset over time;
+they are not lifetime cumulative loss totals.
 
 Food stocks establish production and storage, not adequate delivery to every
 house. The controller still needs service coverage, expansion and rating

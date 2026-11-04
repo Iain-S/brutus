@@ -356,11 +356,11 @@ int julius_env_get_buildings(julius_env_t *env, char *output, int capacity)
         int written = snprintf(output + used, capacity - used,
             "%s{\"id\":%d,\"type\":%d,\"x\":%d,\"y\":%d,\"size\":%d,"
             "\"workers\":%d,\"houses_covered\":%d,\"population\":%d,\"food\":%d,"
-            "\"well\":%d,\"fountain\":%d,\"level\":%d}",
+            "\"well\":%d,\"fountain\":%d,\"level\":%d,\"damage_risk\":%d,\"fire_risk\":%d,\"plague\":%d}",
             count ? "," : "", b->id, b->type, b->x, b->y, b->size,
             b->num_workers, b->houses_covered, house ? b->house_population : 0, food,
             house ? b->has_well_access : 0, house ? b->has_water_access : 0,
-            house ? b->subtype.house_level : -1);
+            house ? b->subtype.house_level : -1, b->damage_risk, b->fire_risk, b->ruin_has_plague);
         if (written < 0 || written >= capacity - used) {
             return -1;
         }

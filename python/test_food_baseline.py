@@ -13,6 +13,7 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--data-dir", type=Path, required=True)
     parser.add_argument("--lib-path", type=Path, required=True)
+    parser.add_argument("--health", action="store_true")
     args = parser.parse_args()
     runner = Path(__file__).parent / "examples" / "run_baseline.py"
     traces = []
@@ -22,7 +23,8 @@ def main():
             result = subprocess.run(
                 [sys.executable, str(runner.resolve()), "--data-dir", str(args.data_dir.resolve()),
                  "--lib-path", str(args.lib_path.resolve()), "--food", "--blocks", "5",
-                 "--max-ticks", "24000", "--log", str(log.resolve())],
+                 "--max-ticks", "24000", "--log", str(log.resolve())]
+                + (["--health"] if args.health else []),
                 capture_output=True, text=True,
             )
             if result.returncode:
@@ -40,6 +42,11 @@ def main():
             assert any(b["type"] == 70 and b["workers"] > 0 for b in buildings), "Markets are unstaffed"
             assert all(0 <= b["food"] and 0 <= b["population"] for b in buildings)
             assert all(not record["terminated"] for record in records[1:])
+            if args.health:
+                assert records[-1]["health"] >= 40, "Disease-prone final health"
+                assert records[-1]["population"] > 200, "Health run lost its larger settlement"
+                assert not any(b.get("replacement") and b["replacement"]["plague"]
+                               for r in records[1:] for b in r["removed_buildings"]), "Plague destroyed housing"
         assert traces[0] == traces[1], "Expanded baseline traces diverged across fresh runs"
     print("Bridge, staffed storage, household food delivery, farm survival and replay passed.")
 
