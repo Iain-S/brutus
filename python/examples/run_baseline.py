@@ -10,7 +10,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 from julius_gym import JuliusEnv
 from julius_gym.env import ActionType
-from julius_gym.baseline import bridge_plan, building_plan, starter_plan
+from julius_gym.baseline import bridge_plan, building_plan, exclude_hazard, starter_plan
 
 
 def main():
@@ -21,10 +21,13 @@ def main():
     parser.add_argument("--log", type=Path, default=Path("runs/baseline.jsonl"))
     parser.add_argument("--food", action="store_true", help="Add a farm, granary and market")
     parser.add_argument("--health", action="store_true", help="Add local doctors to the food baseline")
+    parser.add_argument("--quake-buffer", type=int, default=0, help="Avoid new land construction within this radius of the quake origin")
     parser.add_argument("--blocks", type=int, default=1, help="Number of starter housing blocks")
     args = parser.parse_args()
     if args.max_ticks < 100:
         parser.error("--max-ticks must be at least 100")
+    if args.quake_buffer < 0:
+        parser.error("--quake-buffer must be nonnegative")
     if args.health and not args.food:
         parser.error("--health currently requires --food")
     if not 1 <= args.blocks <= 8:
@@ -40,6 +43,7 @@ def main():
         if mission["is_tutorial"] or mission["combat_events"] or mission["gladiator_revolt"]:
             raise RuntimeError("Target is unsuitable for this peaceful baseline")
         terrain, buildings, width, height = env.get_map_data()
+        terrain = exclude_hazard(terrain, mission["earthquake"], args.quake_buffer)
         actions = starter_plan(terrain, buildings, width, height, mission["entry"])
         home = next((x, y) for kind, x, y in actions if kind == ActionType.BUILD_HOUSING)
         farm = None
@@ -60,10 +64,11 @@ def main():
                 while tick == len(actions) and phases:
                     phase = phases.pop(0)
                     terrain, buildings, width, height = env.get_map_data()
+                    terrain = exclude_hazard(terrain, mission["earthquake"], args.quake_buffer)
                     if phase is None:
                         actions += starter_plan(terrain, buildings, width, height, mission["entry"])
                     elif phase == "bridge":
-                        actions += bridge_plan(env, mission["entry"])
+                        actions += bridge_plan(env, mission["entry"], mission["earthquake"], args.quake_buffer)
                     elif phase == "workers":
                         actions += starter_plan(terrain, buildings, width, height,
                                                 mission["entry"], anchor=farm)

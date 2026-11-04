@@ -14,6 +14,7 @@ def main():
     parser.add_argument("--data-dir", type=Path, required=True)
     parser.add_argument("--lib-path", type=Path, required=True)
     parser.add_argument("--health", action="store_true")
+    parser.add_argument("--quake-buffer", type=int, default=0)
     args = parser.parse_args()
     runner = Path(__file__).parent / "examples" / "run_baseline.py"
     traces = []
@@ -24,7 +25,8 @@ def main():
                 [sys.executable, str(runner.resolve()), "--data-dir", str(args.data_dir.resolve()),
                  "--lib-path", str(args.lib_path.resolve()), "--food", "--blocks", "5",
                  "--max-ticks", "24000", "--log", str(log.resolve())]
-                + (["--health"] if args.health else []),
+                + (["--health"] if args.health else [])
+                + ["--quake-buffer", str(args.quake_buffer)],
                 capture_output=True, text=True,
             )
             if result.returncode:
@@ -47,6 +49,9 @@ def main():
                 assert records[-1]["population"] > 200, "Health run lost its larger settlement"
                 assert not any(b.get("replacement") and b["replacement"]["plague"]
                                for r in records[1:] for b in r["removed_buildings"]), "Plague destroyed housing"
+            if args.health and args.quake_buffer:
+                assert not any(b["population"] > 0 for r in records[1:]
+                               for b in r["removed_buildings"]), "Occupied housing was lost"
         assert traces[0] == traces[1], "Expanded baseline traces diverged across fresh runs"
     print("Bridge, staffed storage, household food delivery, farm survival and replay passed.")
 

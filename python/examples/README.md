@@ -92,6 +92,21 @@ record and its replacement, including the engine's plague flag and damage/fire
 risk. Population loss counters are engine diagnostics and may reset over time;
 they are not lifetime cumulative loss totals.
 
+Mission metadata now includes the earthquake's severity, year offset and origin.
+The tested Tarraco data schedules a large earthquake in year two at (32, 9),
+near the farm district. Later direct building removals are consistent with this
+hazard; the controller does not yet reserve a safe area or rebuild quake damage.
+
+Use `--quake-buffer 14` with `--food --health --blocks 5 --max-ticks 24000`
+to reserve a square around the scheduled earthquake origin in the planner's map.
+The engine and mission data remain unchanged. In the tested run, population
+finished at its peak of 262, with health 90 and water access for all residents.
+This is a conservative placement heuristic, not a guaranteed quake-path model:
+existing roads and water remain usable, and later earthquakes may differ.
+The controller does not rebuild damage. Food delivery remains incomplete.
+Pass `--health --quake-buffer 14` to `test_food_baseline.py` to check replay
+equality and absence of recorded occupied-housing losses over this horizon.
+
 Food stocks establish production and storage, not adequate delivery to every
 house. The controller still needs service coverage, expansion and rating
 management to win. Food produced/consumed-last-month observation fields are

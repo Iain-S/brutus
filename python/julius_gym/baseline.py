@@ -8,6 +8,22 @@ ROAD = 0x40
 NOT_CLEAR = 0xD77F
 
 
+def exclude_hazard(terrain, earthquake, radius):
+    """Mask new land construction near the quake origin; leave engine state alone.
+
+    This is a conservative siting heuristic, not a prediction of the quake path.
+    Existing roads remain usable, so access routes still need runtime monitoring.
+    """
+    result = terrain.copy()
+    if radius and earthquake.get("severity"):
+        cx, cy = earthquake["x"], earthquake["y"]
+        for y in range(max(0, cy - radius), min(result.shape[0], cy + radius + 1)):
+            for x in range(max(0, cx - radius), min(result.shape[1], cx + radius + 1)):
+                if not result[y, x] & (ROAD | 4):
+                    result[y, x] |= 2
+    return result
+
+
 def local_roads(roads, anchor):
     if anchor is None or not roads:
         return roads
@@ -137,9 +153,10 @@ def building_plan(terrain, buildings, width, height, entry, kind, size, meadow=F
     raise RuntimeError(f"No connected footprint for action {kind}")
 
 
-def bridge_plan(env, entry):
+def bridge_plan(env, entry, earthquake=None, radius=0):
     """Find an engine-valid crossing from reachable land toward meadow."""
     terrain, buildings, width, height = env.get_map_data()
+    terrain = exclude_hazard(terrain, earthquake or {}, radius)
     roads = connected_roads(terrain, width, height, entry)
     parents = {point: None for point in roads}
     pending = deque(sorted(roads))

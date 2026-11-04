@@ -3,11 +3,22 @@
 import unittest
 import numpy as np
 
-from julius_gym.baseline import ROAD, building_plan, connected_roads
+from julius_gym.baseline import ROAD, building_plan, connected_roads, exclude_hazard
 from julius_gym.env import ActionType
 
 
 class PlacementTests(unittest.TestCase):
+    def test_hazard_mask_preserves_engine_map_and_access(self):
+        terrain = np.zeros((12, 12), dtype=np.uint16)
+        terrain[6, 6] = ROAD
+        terrain[7, 6] = 4
+        masked = exclude_hazard(terrain, {"severity": 3, "x": 6, "y": 6}, 2)
+        self.assertEqual(terrain[5, 5], 0)
+        self.assertEqual(masked[5, 5], 2)
+        self.assertEqual(masked[6, 6], ROAD)
+        self.assertEqual(masked[7, 6], 4)
+        self.assertEqual(masked[0, 0], 0)
+
     def setUp(self):
         self.terrain = np.zeros((30, 30), dtype=np.uint16)
         self.buildings = np.zeros_like(self.terrain)

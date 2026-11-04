@@ -379,11 +379,13 @@ int julius_env_get_mission_info(julius_env_t *env, char *output, int capacity)
     int used = snprintf(output, capacity,
         "{\"campaign_rank\":%d,\"campaign_mission\":%d,\"is_custom\":%d,"
         "\"is_tutorial\":%d,\"start_year\":%d,\"gladiator_revolt\":%d,"
-        "\"entry\":[%d,%d],\"combat_events\":[",
+        "\"entry\":[%d,%d],\"earthquake\":{\"severity\":%d,\"year_offset\":%d,\"x\":%d,\"y\":%d},\"combat_events\":[",
         scenario_campaign_rank(), scenario_campaign_mission(), scenario_is_custom(),
         scenario_is_tutorial_1() || scenario_is_tutorial_2() || scenario_is_tutorial_3(),
         scenario.start_year, scenario.gladiator_revolt.enabled,
-        scenario.entry_point.x, scenario.entry_point.y);
+        scenario.entry_point.x, scenario.entry_point.y,
+        scenario.earthquake.severity, scenario.earthquake.year,
+        scenario.earthquake_point.x, scenario.earthquake_point.y);
     if (used < 0 || used >= capacity) {
         return -1;
     }
