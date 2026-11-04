@@ -1,5 +1,7 @@
 # Julius RL Training Examples
 
+The local-model planner interface is documented in [PLANNER.md](PLANNER.md).
+
 ## Deterministic Tarraco Starter
 
 Run the construction baseline without a model or training:
