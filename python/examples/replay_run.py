@@ -1,0 +1,74 @@
+#!/usr/bin/env python3
+"""Verify a campaign action log from reset without model calls or preview branches."""
+
+import argparse
+import json
+from pathlib import Path
+import sys
+
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+from julius_gym import JuliusEnv
+from julius_gym.run_artifacts import DEFAULT_RUNS, RunArtifacts
+
+
+def recorded_steps(rows):
+    for row in rows:
+        if "result" in row:
+            yield from row["result"]["steps"]
+        elif "action" in row:
+            yield row
+
+
+def main():
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("run", type=Path)
+    parser.add_argument("--data-dir", type=Path, required=True)
+    parser.add_argument("--lib-path", type=Path, required=True)
+    parser.add_argument("--runs-dir", type=Path, default=DEFAULT_RUNS)
+    args = parser.parse_args()
+    source = args.run.resolve()
+    manifest = json.loads((source / "run.json").read_text(encoding="utf-8"))
+    rows = [json.loads(line) for line in Path(manifest["actions"]).read_text(encoding="utf-8").splitlines()]
+    expected_buildings = json.loads((source / "final.buildings.json").read_text(encoding="utf-8"))
+    steps = list(recorded_steps(rows))
+    if not steps or manifest.get("status") != "finished":
+        parser.error("Replay requires a finished run with recorded actions")
+    artifacts = RunArtifacts("replay", args.runs_dir, configuration={
+        "source_run": str(source), "max_ticks": manifest["configuration"]["max_ticks"]})
+    env = JuliusEnv(data_directory=str(args.data_dir.resolve()), lib_path=str(args.lib_path.resolve()),
+                    campaign_rank=manifest["mission"]["campaign_rank"],
+                    max_ticks=manifest["configuration"]["max_ticks"])
+    try:
+        observation, info = env.reset()
+        artifacts.ready = True
+        artifacts.metadata["mission"] = info["mission"]
+        with artifacts.log.open("w", encoding="utf-8") as log:
+            for index, expected in enumerate(steps, 1):
+                observation, reward, terminated, truncated, result = env.step_at(*expected["action"])
+                actual = {"tick": index, "action": expected["action"], "reward": reward,
+                          "terminated": terminated, "truncated": truncated, **result}
+                log.write(json.dumps(actual) + "\n")
+                if result["message"] != expected["message"] or abs(reward - expected["reward"]) > 1e-6:
+                    raise AssertionError(f"Replay diverged at tick {index}: expected {expected}, got {actual}")
+                if (terminated or truncated) and index != len(steps):
+                    raise AssertionError("Replay ended before the recorded trace")
+        if env.get_buildings() != expected_buildings:
+            raise AssertionError("Final building diagnostics differ from recorded run")
+        population = int(observation["population_total"].item())
+        if population != manifest["summary"]["population"]:
+            raise AssertionError("Final population differs from recorded run")
+        if env.get_victory_state() != manifest["victory_state"]:
+            raise AssertionError("Final victory state differs from recorded run")
+        summary = {"verified": True, "ticks": len(steps), "population": population,
+                   "source_run": str(source), "won": env.get_victory_state() == 1}
+        print(json.dumps(summary, indent=2))
+    finally:
+        error = sys.exc_info()[1]
+        try:
+            artifacts.finish(env, locals().get("summary"), error)
+        finally:
+            env.close()
+
+
+if __name__ == "__main__":
+    main()

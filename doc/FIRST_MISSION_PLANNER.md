@@ -302,3 +302,22 @@ The basic fallback-free local-control checkpoint is demonstrated, not mission
 competence. Next use a larger decision budget with an explicit simulation
 horizon to observe immigration and evaluate food/staffing decisions. Do not
 silently add uncharged waiting or equate valid construction with useful strategy.
+
+### Decision cadence and replay: 2026-11-09
+
+The committed zero-interval eight-decision run selected housing eight times,
+with no retries or fallback, but advanced only 164 ticks and attracted no
+residents before reaching its decision budget. This is not enough time to judge
+immigration or service effects.
+
+Commit `1bf08aa9` adds an optional charged observation interval, farm-local worker
+housing and safety actions, redundant-bridge suppression, and clearer labor
+summaries. A fixed four-decision trial with `--decision-interval 400` reached
+1600 ticks and 66 residents, with four accepted decisions and no fallback.
+Choices were housing twice and two Ceres temples. This proves population growth
+under the loop, not a balanced economy or strong strategy.
+
+`python/examples/replay_run.py` independently reproduced both the 164-tick and
+1600-tick runs from reset without model calls or snapshot previews. It checks
+per-action messages/rewards and final building diagnostics, population and
+victory state. Each replay retains its own manifest and final save.

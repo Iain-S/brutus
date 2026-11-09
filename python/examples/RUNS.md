@@ -17,8 +17,8 @@ runs/
         final.png                 (add manually after Julius capture)
 ```
 
-Date and timestamp use UTC. Mode is `baseline`, `planner-smoke`, or
-`planner-local`. The random suffix avoids collisions, including simultaneous
+Date and timestamp use UTC. Mode is `baseline`, `planner-smoke`,
+`planner-local`, or `replay`. The random suffix avoids collisions, including simultaneous
 runs. Filenames inside a run stay fixed so they are easy to compare.
 
 - `actions.jsonl`: action/decision records.
@@ -60,3 +60,18 @@ Keep the save for inspecting houses, service overlays and advisors.
 
 These conventions currently cover `run_baseline.py` and `run_planner.py`.
 Legacy RL training examples retain their own model/checkpoint layout.
+
+## Independent Replay
+
+```shell
+python examples/replay_run.py <ABSOLUTE_RUN_FOLDER> --data-dir <ABSOLUTE_DATA_DIRECTORY> --lib-path <ABSOLUTE_LIBRARY_PATH>
+```
+
+For finished campaign runs with manifests and logs, this starts the mission
+again and executes only the recorded actions. It makes no model calls and no
+snapshot previews. It checks each result message/reward and the final building
+diagnostics, population and authoritative victory state. A new `replay` folder
+contains its own final save and manifest, including any divergence error.
+Use matching game data, library and game settings. A replay failure is evidence
+to investigate, not something the script silently repairs. This verifies action
+execution determinism, not repeatability or quality of the model's decisions.
