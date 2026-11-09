@@ -36,6 +36,29 @@ The test rejects scheduled combat or tutorial behavior and checks repeated
 This is an interface smoke test, not a winning controller. See
 `examples/README.md` for the deterministic starter settlement runner.
 
+### Building Observation Counts
+
+Building aggregates use active and newly created engine records rather than
+periodically updated service/industry count buckets. Food buildings include
+farms and granaries; industrial buildings include workshops. Counts do not
+guarantee staffing or road access. `total_buildings` counts physical records,
+including linked parts; entertainment counts a linked hippodrome as one venue.
+The observation ABI is unchanged, but policies trained on incorrect zero counts
+can behave differently after rebuilding.
+
+The headless build includes an asset-free native regression:
+
+```shell
+cmake --build <ABSOLUTE_BUILD_DIRECTORY> --target gym_observation_counts_test
+ctest --test-dir <ABSOLUTE_BUILD_DIRECTORY> -R gym_observation_counts --output-on-failure
+```
+
+For an additional construction/reset check with licensed data:
+
+```shell
+python test_building_observations.py --data-dir <ABSOLUTE_DATA_DIRECTORY> --lib-path <ABSOLUTE_LIBRARY_PATH>
+```
+
 OpenAI Gymnasium environment for training reinforcement learning agents on Julius, an open-source re-implementation of Caesar III.
 
 ## Installation

@@ -51,7 +51,8 @@ class PlannerTests(unittest.TestCase):
         spec = importlib.util.spec_from_file_location("ollama_adapter", Path(__file__).parent / "examples" / "ollama_planner.py")
         adapter = importlib.util.module_from_spec(spec)
         spec.loader.exec_module(adapter)
-        body = adapter.request_body({"decision_id": 3, "state": {"buildings_housing_capacity": 80},
+        body = adapter.request_body({"decision_id": 3, "objective": "Win Tarraco in minimum simulation ticks",
+                                     "state": {"buildings_housing_capacity": 80},
                                      "candidates": [{"id": "wait"}]}, "local-test", 96)
         self.assertFalse(body["stream"])
         self.assertFalse(body["think"])
@@ -60,6 +61,7 @@ class PlannerTests(unittest.TestCase):
         self.assertEqual(body["format"]["properties"]["decision_id"]["enum"], [3])
         import json
         self.assertEqual(json.loads(body["prompt"])["state"]["housing_capacity"], 80)
+        self.assertEqual(json.loads(body["prompt"])["objective"], "Win Tarraco in minimum simulation ticks")
 
     def test_invalid_response_is_retained_for_review(self):
         audit = []

@@ -1,5 +1,47 @@
 # Peaceful campaign planner: Tarraco
 
+## GPU-backed 4B trial: 2026-11-09
+
+After repairing local GPU inference, an unchanged adapter trial used installed
+`qwen3:4b-thinking`, explicitly with `think=false`, a 256-token response cap,
+16 decisions, 800 charged ticks per decision, and 1600-tick forecasts. It ended
+at 12800 ticks with 355 residents, 16 accepted choices, zero fallback and no win.
+Inference took about 132.6 seconds, previewing 128.3 seconds. The run suffix is
+`planner-local_dd6a7645`; final saves and building diagnostics follow RUNS.md.
+Its recorded actions independently replayed exactly, including across New Year.
+
+Choices were eight housing expansions, a composed wheat supply, an additional
+farmland connection, then six extra granaries. The food choice occurred when
+housing expansion was unavailable, so it does not prove strategic foresight.
+The farm reached ten workers, 100 stored food was observed, and 19 residents
+held food at the endpoint. Seven granaries, one market and no doctors remained.
+This is initial production/delivery evidence, not a sustainable economy.
+
+At the same 12800-tick horizon, the five-block deterministic baseline with food,
+health, religion and quake buffer 14 had 318 residents, 100 stored food, health
+66 and 236 residents with food. Its independent replay also passed (run suffix
+`baseline_c86b33b2`). These controllers use different construction schedules;
+this comparison does not establish the model as faster or better.
+
+Audit found that compacting the model request dropped the fast-win objective;
+the adapter now preserves it. Separate C observation errors reported farms,
+workshops and total buildings through incorrect count buckets. Aggregates now
+use actual active/created records; tests cover positive construction categories,
+reset isolation and linked hippodrome venue semantics. These counters were not
+in the compact state aliases, so their correction alone does not explain or
+fix the model's repeated granary choices.
+
+Remaining executor limitations matter independently of model size: placement
+anchors do not guarantee nearby service coverage, detailed food inventories
+are not exposed, and the vocabulary has no education or entertainment actions.
+Religion alone cannot reach the culture goal of 45. Expand and validate those
+capabilities before presenting any full-mission run as a fair planning test.
+
+Two captured-context `think=true` probes produced no usable final JSON (one
+stopped with only a thinking field under structured output; another exhausted
+2048 tokens without grammar). Neither response was executed. Reasoning-mode
+support needs a separate bounded protocol test, not parsing thoughts as actions.
+
 ## Snapshot fidelity checkpoint: 2026-11-09
 
 The fixed-snapshot follow-up reached 245 residents at 6400 ticks, with eight

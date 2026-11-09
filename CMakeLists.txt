@@ -992,6 +992,13 @@ else()
     )
 
     target_include_directories(julius_gym PUBLIC ${CMAKE_SOURCE_DIR}/src)
+
+    if(HEADLESS_BUILD)
+        add_executable(gym_observation_counts_test test/gymnasium/observation_counts.c)
+        target_link_libraries(gym_observation_counts_test PRIVATE julius_gym)
+        enable_testing()
+        add_test(NAME gym_observation_counts COMMAND gym_observation_counts_test)
+    endif()
     
     # Link against found libraries OR nothing (if using bundled sources)
     if(PNG_FOUND)

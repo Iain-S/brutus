@@ -1,6 +1,5 @@
 #include "observation.h"
 
-#include "building/count.h"
 #include "building/building.h"
 #include "building/model.h"
 #include "city/culture.h"
@@ -81,58 +80,73 @@ int gymnasium_get_observation(gymnasium_observation_t *obs)
     // activation pass. Road connectivity and migration eligibility are separate.
     for (int id = 1; id < MAX_BUILDINGS; id++) {
         const building *b = building_get(id);
-        if ((b->state == BUILDING_STATE_IN_USE || b->state == BUILDING_STATE_CREATED) && b->house_size) {
+        if (b->state != BUILDING_STATE_IN_USE && b->state != BUILDING_STATE_CREATED) {
+            continue;
+        }
+        obs->buildings.total_buildings++;
+        if (b->house_size) {
             obs->buildings.housing++;
             obs->buildings.housing_capacity += model_get_house(b->subtype.house_level)->max_people *
                 (b->house_is_merged ? 4 : 1);
         }
+        switch (b->type) {
+            case BUILDING_WHEAT_FARM:
+            case BUILDING_VEGETABLE_FARM:
+            case BUILDING_FRUIT_FARM:
+            case BUILDING_OLIVE_FARM:
+            case BUILDING_VINES_FARM:
+            case BUILDING_PIG_FARM:
+            case BUILDING_GRANARY:
+                obs->buildings.food_buildings++;
+                break;
+            case BUILDING_WINE_WORKSHOP:
+            case BUILDING_OIL_WORKSHOP:
+            case BUILDING_WEAPONS_WORKSHOP:
+            case BUILDING_FURNITURE_WORKSHOP:
+            case BUILDING_POTTERY_WORKSHOP:
+                obs->buildings.industrial_buildings++;
+                break;
+            case BUILDING_THEATER:
+            case BUILDING_AMPHITHEATER:
+            case BUILDING_COLOSSEUM:
+            case BUILDING_GLADIATOR_SCHOOL:
+            case BUILDING_LION_HOUSE:
+            case BUILDING_ACTOR_COLONY:
+            case BUILDING_CHARIOT_MAKER:
+                obs->buildings.entertainment++;
+                break;
+            case BUILDING_HIPPODROME:
+                // Three linked records represent a single venue.
+                if (!b->prev_part_building_id) {
+                    obs->buildings.entertainment++;
+                }
+                break;
+            case BUILDING_SCHOOL:
+            case BUILDING_ACADEMY:
+            case BUILDING_LIBRARY:
+                obs->buildings.education++;
+                break;
+            case BUILDING_DOCTOR:
+            case BUILDING_HOSPITAL:
+            case BUILDING_BATHHOUSE:
+            case BUILDING_BARBER:
+                obs->buildings.health++;
+                break;
+            case BUILDING_SMALL_TEMPLE_CERES:
+            case BUILDING_SMALL_TEMPLE_NEPTUNE:
+            case BUILDING_SMALL_TEMPLE_MERCURY:
+            case BUILDING_SMALL_TEMPLE_MARS:
+            case BUILDING_SMALL_TEMPLE_VENUS:
+            case BUILDING_LARGE_TEMPLE_CERES:
+            case BUILDING_LARGE_TEMPLE_NEPTUNE:
+            case BUILDING_LARGE_TEMPLE_MERCURY:
+            case BUILDING_LARGE_TEMPLE_MARS:
+            case BUILDING_LARGE_TEMPLE_VENUS:
+            case BUILDING_ORACLE:
+                obs->buildings.religious++;
+                break;
+        }
     }
-
-    obs->buildings.food_buildings = building_count_total(BUILDING_WHEAT_FARM) +
-                                    building_count_total(BUILDING_VEGETABLE_FARM) +
-                                    building_count_total(BUILDING_FRUIT_FARM) +
-                                    building_count_total(BUILDING_OLIVE_FARM) +
-                                    building_count_total(BUILDING_VINES_FARM) +
-                                    building_count_total(BUILDING_PIG_FARM) +
-                                    building_count_total(BUILDING_GRANARY);
-
-    obs->buildings.industrial_buildings = building_count_total(BUILDING_WINE_WORKSHOP) +
-                                          building_count_total(BUILDING_OIL_WORKSHOP) +
-                                          building_count_total(BUILDING_WEAPONS_WORKSHOP) +
-                                          building_count_total(BUILDING_FURNITURE_WORKSHOP) +
-                                          building_count_total(BUILDING_POTTERY_WORKSHOP);
-
-    obs->buildings.entertainment = building_count_total(BUILDING_THEATER) +
-                                   building_count_total(BUILDING_AMPHITHEATER) +
-                                   building_count_total(BUILDING_COLOSSEUM) +
-                                   building_count_total(BUILDING_HIPPODROME) +
-                                   building_count_total(BUILDING_GLADIATOR_SCHOOL) +
-                                   building_count_total(BUILDING_LION_HOUSE) +
-                                   building_count_total(BUILDING_ACTOR_COLONY) +
-                                   building_count_total(BUILDING_CHARIOT_MAKER);
-
-    obs->buildings.education = building_count_total(BUILDING_SCHOOL) +
-                               building_count_total(BUILDING_ACADEMY) +
-                               building_count_total(BUILDING_LIBRARY);
-
-    obs->buildings.health = building_count_total(BUILDING_DOCTOR) +
-                            building_count_total(BUILDING_HOSPITAL) +
-                            building_count_total(BUILDING_BATHHOUSE) +
-                            building_count_total(BUILDING_BARBER);
-
-    obs->buildings.religious = building_count_total(BUILDING_SMALL_TEMPLE_CERES) +
-                               building_count_total(BUILDING_SMALL_TEMPLE_NEPTUNE) +
-                               building_count_total(BUILDING_SMALL_TEMPLE_MERCURY) +
-                               building_count_total(BUILDING_SMALL_TEMPLE_MARS) +
-                               building_count_total(BUILDING_SMALL_TEMPLE_VENUS) +
-                               building_count_total(BUILDING_LARGE_TEMPLE_CERES) +
-                               building_count_total(BUILDING_LARGE_TEMPLE_NEPTUNE) +
-                               building_count_total(BUILDING_LARGE_TEMPLE_MERCURY) +
-                               building_count_total(BUILDING_LARGE_TEMPLE_MARS) +
-                               building_count_total(BUILDING_LARGE_TEMPLE_VENUS) +
-                               building_count_total(BUILDING_ORACLE);
-
-    obs->buildings.total_buildings = building_count_total(BUILDING_NONE); // Gets total of all buildings
 
     // Extract migration data
     // Note: immigration/emigration amounts are internal to city_data and not exposed via API

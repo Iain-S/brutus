@@ -4,6 +4,12 @@
 require the scripted controller to win first. This is an initial planner interface,
 not a demonstrated LLM solution to Tarraco.
 
+The compact local request preserves the explicit objective: win in minimum
+simulation ticks. Treasury is relevant to feasibility, not a replacement
+optimization target. The current candidate vocabulary is still incomplete:
+it has no education or entertainment macros, so it cannot yet meet Tarraco's
+culture goal. Successful food construction or a higher population is not a win.
+
 Every invocation automatically retains a persistent end save and run manifest;
 see [RUNS.md](RUNS.md) for the naming convention and manual Julius PNG capture.
 
