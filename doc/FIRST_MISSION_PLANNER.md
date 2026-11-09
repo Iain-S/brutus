@@ -2,6 +2,20 @@
 
 ## Snapshot fidelity checkpoint: 2026-11-09
 
+The fixed-snapshot follow-up reached 245 residents at 6400 ticks, with eight
+accepted model decisions and no fallback (run suffix `planner-local_97a7f463`).
+Independent replay matched all action messages/rewards and final building,
+population and victory diagnostics. Choices were a farmland bridge and seven
+housing expansions; no food economy or win was demonstrated.
+
+Review of longer-lookahead boundaries also found transient annual fire-spread
+direction and victory/force-win flags outside the save format. Regressions
+reproduced a wind change surviving rollback and a speculative victory remaining
+visible after restore. Gym snapshots now preserve both without changing normal
+game saves. `python/test_snapshot_boundaries.py` exercises annual wind, actual
+force-win termination and injected transient defeat rollback; it does not alter
+campaign rules in production.
+
 Independent replay of a 3,200-tick local-model run exposed differing service
 coverage and fire-risk diagnostics despite matching action messages/rewards.
 A regression reproduced the difference using the same bridge/housing sequence

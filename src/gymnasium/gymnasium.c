@@ -1,5 +1,6 @@
 #include "gymnasium.h"
 #include "building/building.h"
+#include "building/maintenance.h"
 #include "city/data_private.h"
 
 #include "city/finance.h"
@@ -67,6 +68,8 @@ struct julius_env {
 
 struct julius_snapshot {
     random_snapshot *random;
+    city_victory_snapshot victory;
+    int fire_direction;
     uint64_t state_token;
     julius_env_t *owner;
     char filename[2 * FILE_NAME_MAX];
@@ -454,6 +457,8 @@ julius_snapshot_t *julius_env_snapshot_create(julius_env_t *env)
         free(snapshot);
         return NULL;
     }
+    city_victory_capture_state(&snapshot->victory);
+    snapshot->fire_direction = building_maintenance_fire_direction();
 
     if (!game_file_write_saved_game(snapshot->filename)) {
         snprintf(env->error_message, sizeof(env->error_message),
@@ -491,6 +496,8 @@ int julius_env_snapshot_restore(julius_env_t *env, const julius_snapshot_t *snap
     }
 
     random_snapshot_restore(snapshot->random);
+    city_victory_restore_state(&snapshot->victory);
+    building_maintenance_restore_fire_direction(snapshot->fire_direction);
     env->current_tick = snapshot->current_tick;
     env->state_token = snapshot->state_token;
     env->episode_active = snapshot->episode_active;
