@@ -23,6 +23,8 @@ def main():
     parser.add_argument("--max-ticks", type=int, default=3000)
     parser.add_argument("--max-decisions", type=int, default=10)
     parser.add_argument("--decision-interval", type=int, default=0, help="Minimum charged simulation ticks between model calls (0..800)")
+    parser.add_argument("--forecast-ticks", type=int, default=0,
+                        help="Optional no-further-construction preview horizon (0..8000, default disabled)")
     parser.add_argument("--model-timeout", type=int, default=60, help="Seconds per local command attempt (1..300)")
     parser.add_argument("--log", type=Path, help="Optional explicit log path (legacy/test override)")
     parser.add_argument("--runs-dir", type=Path, default=DEFAULT_RUNS)
@@ -37,6 +39,8 @@ def main():
         parser.error("--model-timeout must be from 1 to 300 seconds")
     if not 0 <= args.decision_interval <= 800:
         parser.error("--decision-interval must be from 0 to 800 ticks")
+    if not 0 <= args.forecast_ticks <= 8000:
+        parser.error("--forecast-ticks must be from 0 to 8000 ticks")
     artifacts = RunArtifacts("planner-local" if command else "planner-smoke", args.runs_dir, args.log, vars(args))
     log_path = artifacts.log
     # The engine changes cwd. Resolve user paths before constructing the env.
@@ -60,7 +64,8 @@ def main():
             for decision in range(args.max_decisions):
                 started = time.perf_counter()
                 context, candidates = decision_context(env, observation, mission, decision,
-                                                      args.max_ticks - ticks, last)
+                                                      args.max_ticks - ticks, last,
+                                                      forecast_ticks=args.forecast_ticks)
                 context["elapsed_ticks"] = ticks
                 context["minimum_decision_interval"] = args.decision_interval
                 timing["preview_seconds"] += time.perf_counter() - started

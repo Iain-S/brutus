@@ -32,6 +32,15 @@ def request_body(context, model, tokens):
                "last_status": (context.get("last_result") or {}).get("status"),
                "last_action": (context.get("last_result") or {}).get("candidate_id"),
                "validation_errors": context.get("validation_errors", [])}
+    if "forecast_policy" in context:
+        columns = ["ticks", "status", "population", "food_stocks", "residents_with_food",
+                   "health", "farm_workers", "treasury"]
+        compact["forecast_policy"] = context["forecast_policy"]
+        compact["forecast_columns"] = columns
+        compact["candidate_columns"].append("forecast")
+        for row, candidate in zip(compact["candidates"], context["candidates"]):
+            forecast = candidate.get("forecast", {})
+            row.append([forecast.get(key) for key in columns])
     return {"model": model, "stream": False, "think": False, "format": schema,
             "system": "You run Caesar III. Choose a candidate to advance goals without overspending. "
                       "Immigrants cannot arrive without houses. Workers come from residents, not empty lots. "

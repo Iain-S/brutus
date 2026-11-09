@@ -184,6 +184,41 @@ Feedback retains the last candidate ID even when observation no-ops follow a
 macro. Summaries include existing markets, granaries, staffed counts and Ceres
 temples, so low current ratings are not the only signal of recent construction.
 
+### Optional Outcome Forecasts
+
+`--forecast-ticks 1600` adds an optional no-further-construction continuation
+to each candidate preview, including waiting. The default is zero (disabled);
+the maximum is 8000. This is a minimum total preview duration, including the
+macro's construction ticks, clamped to the remaining episode budget. The actual
+duration and end status are reported. Longer macros can exceed a shorter
+requested duration, so compare the reported tick counts.
+
+Forecasts report population, treasury, food stocks, household food coverage,
+health and farm workers from the real simulator. Construction legality and net
+construction outlay remain separate. A legal macro whose continuation loses or
+truncates is still offered, with that forecast outcome visible. Forecasting
+never adds waiting to the selected macro or consumes live simulation ticks;
+`--decision-interval` remains the independent charged execution cadence.
+
+The compact local adapter carries forecast columns only when enabled. More
+lookahead increases preview cost and prompt size; it is not a long-term food
+security guarantee and does not assume any later model construction decisions.
+All branches restore their original state, including on exceptions. Test real
+engine rollback, outcome equality and budget limits with:
+
+```shell
+python test_forecast_engine.py --data-dir <ABSOLUTE_DATA_DIRECTORY> --lib-path <ABSOLUTE_LIBRARY_PATH>
+```
+
+A fixed three-decision local `qwen3:0.6b` trial with an 8000-tick requested
+forecast and 800-tick execution interval selected wait, housing, housing. It
+stopped at the decision budget after 2400 ticks with 49 residents, three accepted
+choices and no fallback. Independent action-log replay matched. The run folder
+ends `planner-local_511a20f1`; previewing took about 24.7 seconds and inference
+243.9 seconds. This demonstrates forecast transport and rollback, not improved
+strategy, food security or a mission win. Its budgets/token limit differ from
+the longer construction-only trial, so it is not a controlled quality benchmark.
+
 ### State and terminal-outcome corrections
 
 Rebuild the shared library after the state-token changes. Freshness now includes

@@ -286,6 +286,9 @@ int julius_env_reset(julius_env_t *env, gymnasium_observation_t *observation)
     env->prev_favor = city_rating_favor();
     env->prev_treasury = city_finance_treasury();
 
+    // New episodes start with the engine's initial wind, not a prior year's wind.
+    building_maintenance_restore_fire_direction(0);
+
     // Reset victory state
     city_victory_reset();
 

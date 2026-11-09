@@ -39,6 +39,16 @@ def main():
             snapshot.restore()
             assert env.get_victory_state() == 0, "Speculative defeat leaked after restore"
 
+        env.lib.city_victory_reset.argtypes = []
+        env.lib.city_victory_reset.restype = None
+        env.lib.city_victory_force_win()
+        with env.snapshot() as snapshot:
+            env.lib.city_victory_reset()
+            snapshot.restore()
+            _, _, terminated, _, _ = env.step(0)
+            assert terminated and env.get_victory_state() == 1, "Snapshot lost a preexisting force-win flag"
+        env.reset()
+
         wind = env.lib.building_maintenance_fire_direction
         wind.argtypes = []
         wind.restype = ctypes.c_int
@@ -50,6 +60,13 @@ def main():
             assert wind() != before, "Test did not exercise an annual wind change"
             snapshot.restore()
             assert wind() == before, "Speculative annual wind leaked after restore"
+
+        restore_wind = env.lib.building_maintenance_restore_fire_direction
+        restore_wind.argtypes = [ctypes.c_int]
+        restore_wind.restype = None
+        restore_wind(3)
+        env.reset()
+        assert wind() == 0, "Previous episode's wind leaked into a fresh mission"
     finally:
         env.close()
     print("Victory, defeat, force-win flag and year-boundary wind rollback passed.")

@@ -56,6 +56,40 @@ def preview_is_usable(result):
     return result["status"] in ("completed", "won")
 
 
+def forecast_state(env, observation, ticks, status):
+    buildings = env.get_buildings()
+    return {"ticks": ticks, "status": status,
+            "population": int(observation["population_total"].item()),
+            "treasury": int(observation["finance_treasury"].item()),
+            "food_stocks": int(observation["resources_food_stocks"].item()),
+            "residents_with_food": sum(b["population"] for b in buildings if b["food"] > 0),
+            "health": env.get_population_info()["health"],
+            "farm_workers": sum(b["workers"] for b in buildings if b["type"] == 100)}
+
+
+def preview_candidate(env, candidate, observation, budget, forecast_ticks=0):
+    """Validate construction, optionally continue without further building, then roll back."""
+    with env.snapshot() as snapshot:
+        try:
+            after, result, terminated, truncated = execute(env, candidate, observation, budget)
+            outlay = int(observation["finance_treasury"].item() - after["finance_treasury"].item())
+            forecast = None
+            if forecast_ticks and (preview_is_usable(result) or candidate.id == "wait"):
+                ticks = len(result["steps"])
+                status = result["status"]
+                wait_ticks = min(max(0, forecast_ticks - ticks), max(0, budget - ticks))
+                if wait_ticks and not terminated and not truncated:
+                    wait = Candidate("forecast_wait", [(A.NONE, 0, 0)] * wait_ticks,
+                                     fingerprint(env, after), {})
+                    after, continued, _, _ = execute(env, wait, after, wait_ticks)
+                    ticks += len(continued["steps"])
+                    status = continued["status"]
+                forecast = forecast_state(env, after, ticks, status)
+        finally:
+            snapshot.restore()
+    return result, outlay, forecast
+
+
 def execute_cycle(env, candidate, observation, budget, minimum_ticks=0):
     """Optionally observe effects before the next model call; charge every tick."""
     observation, result, terminated, truncated = execute(env, candidate, observation, budget)
@@ -161,7 +195,8 @@ def proposals(env, mission, radius):
                 terrain, buildings, width, height, entry, kind, size, anchor=anchor)
 
 
-def decision_context(env, observation, mission, decision_id, budget, last_result=None, radius=14):
+def decision_context(env, observation, mission, decision_id, budget, last_result=None, radius=14,
+                     forecast_ticks=0):
     """Dry-run candidates in snapshots; retain only engine-successful macros.
 
     Preview treasury change includes any simulation income/expenses during the
@@ -179,12 +214,7 @@ def decision_context(env, observation, mission, decision_id, budget, last_result
             unavailable.append({"id": name, "reason": "Macro exceeds remaining action budget"})
             continue
         candidate = Candidate(name, actions, state, {})
-        with env.snapshot() as snapshot:
-            try:
-                after, result, terminated, truncated = execute(env, candidate, observation, budget)
-                outlay = int(observation["finance_treasury"].item() - after["finance_treasury"].item())
-            finally:
-                snapshot.restore()
+        result, outlay, forecast = preview_candidate(env, candidate, observation, budget, forecast_ticks)
         if not preview_is_usable(result):
             unavailable.append({"id": name, "reason": result["steps"][-1]["message"]})
             continue
@@ -194,9 +224,14 @@ def decision_context(env, observation, mission, decision_id, budget, last_result
                              "preview_outcome": result["status"]}
         if name == "establish_wheat_supply":
             candidate.preview["benefit"] = "farm, worker housing, granary and market"
+        if forecast is not None:
+            candidate.preview["forecast"] = forecast
         candidates[name] = candidate
     wait = Candidate("wait", [(A.NONE, 0, 0)] * min(800, budget), state, {})
     wait.preview = {"ticks": len(wait.actions)}
+    if forecast_ticks:
+        _, _, forecast = preview_candidate(env, wait, observation, budget, forecast_ticks)
+        wait.preview["forecast"] = forecast
     candidates["wait"] = wait
     buildings = env.get_buildings()
     scalar = {k: int(v.item()) for k, v in observation.items()}
@@ -223,6 +258,9 @@ def decision_context(env, observation, mission, decision_id, budget, last_result
                "limitations": ["Food production/consumption monthly fields are placeholders",
                                "Quake buffer is heuristic; service coverage is not guaranteed by placement",
                                "Only Ceres temples and a small action vocabulary are currently supported"]}
+    if forecast_ticks:
+        context["forecast_policy"] = {"minimum_ticks": forecast_ticks,
+                                      "continuation": "No further construction; remaining episode budget applies"}
     return context, candidates
 
 

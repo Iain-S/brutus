@@ -36,13 +36,14 @@ def main():
             actual = advance(env, 1000)
         assert expected == actual, "Inhabited-city snapshot changed walkers or maintenance state"
         traces = []
-        for with_previews in (False, True):
+        for with_previews, forecast_ticks in ((False, 0), (True, 0), (True, 1600)):
             observation, info = env.reset()
             states = []
             ticks = 0
             for decision, name in enumerate(["connect_farmland"] + ["expand_housing"] * 7):
                 if with_previews:
-                    _, candidates = decision_context(env, observation, info["mission"], decision, 5000 - ticks)
+                    _, candidates = decision_context(env, observation, info["mission"], decision, 5000 - ticks,
+                                                     forecast_ticks=forecast_ticks)
                     candidate = candidates[name]
                 else:
                     make = dict(proposals(env, info["mission"], 14))[name]
@@ -52,7 +53,7 @@ def main():
                 ticks += len(result["steps"])
                 states.append(env.get_buildings())
             traces.append(states)
-        assert traces[0] == traces[1], "Candidate previews changed the inhabited city"
+        assert all(trace == traces[0] for trace in traces[1:]), "Candidate previews changed the inhabited city"
     finally:
         env.close()
     print("Inhabited-city snapshot replay passed.")
