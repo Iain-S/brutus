@@ -17,6 +17,7 @@ def fingerprint(env, observation):
     digest.update(f"{width},{height}".encode())
     digest.update(terrain.tobytes())
     digest.update(buildings.tobytes())
+    digest.update(f"{id(env)}:{env.get_state_token()}".encode())
     return digest.hexdigest()
 
 
@@ -44,9 +45,15 @@ def execute(env, candidate, observation, budget):
             break
     else:
         failed = False
-    status = ("failed" if failed else "terminated" if terminated else "truncated" if truncated
+    victory = env.get_victory_state() if terminated else 0
+    status = ("won" if victory == 1 else "lost" if victory == -1 else "failed" if failed
+              else "terminated" if terminated else "truncated" if truncated
               else "completed" if len(records) == len(candidate.actions) else "budget_exhausted")
     return observation, {"status": status, "steps": records}, terminated, truncated
+
+
+def preview_is_usable(result):
+    return result["status"] in ("completed", "won")
 
 
 def proposals(env, mission, radius):
@@ -92,12 +99,13 @@ def decision_context(env, observation, mission, decision_id, budget, last_result
                 outlay = int(observation["finance_treasury"].item() - after["finance_treasury"].item())
             finally:
                 snapshot.restore()
-        if result["status"] != "completed":
+        if not preview_is_usable(result):
             unavailable.append({"id": name, "reason": result["steps"][-1]["message"]})
             continue
-        candidate.preview = {"ticks": len(actions), "net_treasury_outlay": outlay,
+        candidate.preview = {"ticks": len(result["steps"]), "planned_ticks": len(actions), "net_treasury_outlay": outlay,
                              "action_counts": dict(Counter(str(a[0]) for a in actions)),
-                             "target": actions[-1], "engine_preview_passed": True}
+                             "target": actions[-1], "engine_preview_passed": True,
+                             "preview_outcome": result["status"]}
         candidates[name] = candidate
     wait = Candidate("wait", [(A.NONE, 0, 0)] * min(800, budget), state, {})
     wait.preview = {"ticks": len(wait.actions)}
@@ -130,10 +138,21 @@ def validate_choice(value, context, candidates):
     return candidates[value["candidate_id"]]
 
 
-def command_choice(command, context, timeout=60):
+def command_choice(command, context, timeout=60, audit=None):
     """One process per decision; bounded response time and output size."""
-    result = subprocess.run(command, input=json.dumps(context), text=True, capture_output=True,
-                            encoding="utf-8", errors="replace", timeout=timeout, shell=False)
+    try:
+        result = subprocess.run(command, input=json.dumps(context), text=True, capture_output=True,
+                                encoding="utf-8", errors="replace", timeout=timeout, shell=False)
+    except subprocess.TimeoutExpired as error:
+        if audit is not None:
+            def decoded(value):
+                return value.decode("utf-8", errors="replace") if isinstance(value, bytes) else value or ""
+            audit.append({"timed_out": True, "stdout": decoded(error.stdout)[:16384],
+                          "stderr": decoded(error.stderr)[:2048]})
+        raise
+    if audit is not None:
+        audit.append({"returncode": result.returncode, "stdout": result.stdout[:16384],
+                      "stderr": result.stderr[:2048]})
     if result.returncode:
         raise ValueError("Model command failed (nonzero exit status)")
     if len(result.stdout) > 16384:

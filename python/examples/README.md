@@ -1,6 +1,8 @@
 # Julius RL Training Examples
 
 The local-model planner interface is documented in [PLANNER.md](PLANNER.md).
+Baseline and planner runs automatically retain an end save and organized review
+artifacts; see [RUNS.md](RUNS.md) for folder names and real-assets screenshots.
 
 ## Deterministic Tarraco Starter
 
@@ -20,8 +22,8 @@ The default 3000-tick run produced 46 residents with no failed placements in the
 tested original game data. This is a starter settlement, not a mission-winning
 policy: it does not yet provide food or grow the city to the victory thresholds.
 Use `--max-ticks` to set the horizon and `--log` for an alternate JSONL log path.
-Resolve the output path from the launch directory; the default is
-`runs/baseline.jsonl`. The log records each action, treasury, population and
+Explicit `--log` paths resolve from the launch directory; otherwise a unique
+run folder is created under the checkout's `runs/` directory. The log records each action, treasury, population and
 termination state. The runner stops on a construction failure and rejects a
 run with no population growth.
 

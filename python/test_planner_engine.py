@@ -14,6 +14,21 @@ def main():
     env = JuliusEnv(data_directory=args.data_dir, lib_path=args.lib_path, campaign_rank=3, max_ticks=2000)
     try:
         observation, info = env.reset()
+        first_reset_token = env.get_state_token()
+        wait_token = fingerprint(env, observation)
+        observation, _, _, _, _ = env.step(0)
+        assert wait_token != fingerprint(env, observation), "Time-only state change was not detected"
+        observation, info = env.reset()
+        assert env.get_state_token() != first_reset_token, "Reset reused a state identity"
+        token = env.get_state_token()
+        with env.snapshot() as branch:
+            env.step(0)
+            first_branch_token = env.get_state_token()
+            branch.restore()
+            assert env.get_state_token() == token, "Restore did not recover saved identity"
+            env.step(0)
+            assert env.get_state_token() != first_branch_token, "Divergent branches reused an identity"
+            branch.restore()
         initial = fingerprint(env, observation)
         with env.snapshot() as start:
             expected = run_suffix(env, 100)

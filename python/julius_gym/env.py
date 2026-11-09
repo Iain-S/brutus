@@ -620,6 +620,34 @@ class JuliusEnv(gym.Env):
         info = {"mission": self.get_mission_info()} if self.campaign_rank is not None else {}
         return self._obs_to_dict(obs), info
 
+    def export_save(self, filename):
+        """Write a durable standard Julius save, even after an episode ends."""
+        path = Path(filename).resolve()
+        path.parent.mkdir(parents=True, exist_ok=True)
+        query = self.lib.julius_env_export_save
+        query.argtypes = [c_void_p, c_char_p]
+        query.restype = c_int32
+        if query(self.env_handle, str(path).encode("utf-8")) != 0:
+            raise RuntimeError("Failed to export final save")
+        return path
+
+    def get_state_token(self):
+        """Opaque identity for exact reset/step/snapshot state, not a tick count."""
+        query = self.lib.julius_env_get_state_token
+        query.argtypes = [c_void_p]
+        query.restype = ctypes.c_uint64
+        return int(query(self.env_handle))
+
+    def get_victory_state(self):
+        """Authoritative engine outcome: -1 lost, 0 ongoing, 1 won."""
+        query = self.lib.julius_env_get_victory_state
+        query.argtypes = [c_void_p]
+        query.restype = c_int32
+        result = query(self.env_handle)
+        if result == -2:
+            raise RuntimeError("Invalid environment handle")
+        return result
+
     def get_population_info(self):
         """Read engine demographic loss counters and health without advancing time."""
         query = self.lib.julius_env_get_population_info

@@ -4,6 +4,9 @@
 require the scripted controller to win first. This is an initial planner interface,
 not a demonstrated LLM solution to Tarraco.
 
+Every invocation automatically retains a persistent end save and run manifest;
+see [RUNS.md](RUNS.md) for the naming convention and manual Julius PNG capture.
+
 ## Run
 
 Use the dedicated training environment, original game data, and rebuilt library.
@@ -84,3 +87,58 @@ The installed local `qwen3:4b-thinking` model was tried for one live decision.
 Both attempts exceeded the default timeout, and the runner logged a wait fallback.
 This did not establish successful LLM control. Longer timeout/model tuning remains
 necessary for that local setup. Command output is explicitly decoded as UTF-8.
+
+### Token-limited local API adapter
+
+`ollama_planner.py` implements the same command interface using only Ollama's
+loopback API and the Python standard library. It requests no thinking output,
+sets a 96-token generation budget, trims the prompt to decision-relevant data,
+and supplies a JSON schema restricting the current decision and candidate IDs.
+It rejects token-budget exhaustion instead of treating partial text as a choice.
+The planner still validates the returned object before execution.
+
+```powershell
+$modelCommand = '["<ABSOLUTE_PYTHON_INTERPRETER>", "<REPO_ROOT>/python/examples/ollama_planner.py", "--model", "<INSTALLED_MODEL_NAME>"]'
+python examples/run_planner.py --data-dir <ABSOLUTE_DATA_DIRECTORY> --lib-path <ABSOLUTE_LIBRARY_PATH> --model-command $modelCommand --model-timeout 120 --max-decisions 3 --max-ticks 1600
+```
+
+Ollama must already be serving locally; the adapter never downloads a model.
+Adapter `--timeout` defaults to 110 seconds, below the runner's example timeout.
+`--max-tokens` accepts 32..1024. Thinking behavior depends on the model; a
+thinking-only model may not honor `think=false`. A smaller non-thinking model
+may be needed on CPU. Request fields follow the official
+[Ollama generate API](https://docs.ollama.com/api/generate).
+
+The runner reports accepted model decisions and fallback decisions separately,
+as well as preview, inference and execution wall-clock seconds. Decision logs
+retain bounded stdout/stderr excerpts even for rejected replies and timeouts.
+Timing data and local API token limits improve diagnostics; they do not establish
+successful LLM control by themselves.
+
+### First live control result
+
+The 2026-11-08 exploratory run with local `qwen3:0.6b` accepted three model
+decisions and used one fallback, ending with 19 residents at 854 ticks. Its first
+two choices were consecutive successful housing macros with no fallback. This
+demonstrates live command-to-game control, but not a reliable planner or a win.
+The loop remained CPU-latency-limited, and prompt compression was adjusted during
+the trial; do not treat it as a fixed-configuration model benchmark.
+Use an installed model with `ollama_planner.py --model qwen3:0.6b` to reproduce
+the connection with the current adapter. The 4B model remains installed; it was
+unloaded from memory after the timeout trial, not deleted.
+
+### State and terminal-outcome corrections
+
+Rebuild the shared library after the state-token changes. Freshness now includes
+an engine-issued identity for every reset and step. Snapshots restore their saved
+identity, while a non-restored issuance counter keeps new branches distinct.
+The identity is scoped to the Python environment instance. Time-only changes
+therefore invalidate old candidates even when the exported city metrics do not
+change. The observation/config struct ABI remains unchanged.
+
+Previews accept both completed macros and engine-confirmed wins; defeats,
+truncation and failed construction are not offered. Execution reports `won` or
+`lost` for authoritative victory outcomes instead of collapsing both into
+`terminated`. Other termination reasons remain separate from confirmed victory.
+The current runner summary still needs richer outcome and performance accounting
+before cross-model benchmarking.

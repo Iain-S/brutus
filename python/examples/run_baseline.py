@@ -11,6 +11,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 from julius_gym import JuliusEnv
 from julius_gym.env import ActionType
 from julius_gym.baseline import bridge_plan, building_plan, exclude_hazard, starter_plan
+from julius_gym.run_artifacts import DEFAULT_RUNS, RunArtifacts
 
 
 def main():
@@ -18,7 +19,8 @@ def main():
     parser.add_argument("--data-dir", required=True, type=Path)
     parser.add_argument("--lib-path", required=True, type=Path)
     parser.add_argument("--max-ticks", type=int, default=3000)
-    parser.add_argument("--log", type=Path, default=Path("runs/baseline.jsonl"))
+    parser.add_argument("--log", type=Path, help="Optional explicit log path (legacy/test override)")
+    parser.add_argument("--runs-dir", type=Path, default=DEFAULT_RUNS)
     parser.add_argument("--food", action="store_true", help="Add a farm, granary and market")
     parser.add_argument("--health", action="store_true", help="Add local doctors to the food baseline")
     parser.add_argument("--religion", action="store_true", help="Add local Ceres temples")
@@ -35,13 +37,15 @@ def main():
         parser.error("--religion requires --food")
     if not 1 <= args.blocks <= 8:
         parser.error("--blocks must be from 1 to 8")
-    log_path = args.log.resolve()
-    log_path.parent.mkdir(parents=True, exist_ok=True)
+    artifacts = RunArtifacts("baseline", args.runs_dir, args.log, vars(args))
+    log_path = artifacts.log
     env = JuliusEnv(data_directory=str(args.data_dir.resolve()),
                     lib_path=str(args.lib_path.resolve()), campaign_rank=3,
                     max_ticks=args.max_ticks)
     try:
         obs, info = env.reset()
+        artifacts.ready = True
+        artifacts.metadata["mission"] = info["mission"]
         mission = info["mission"]
         if mission["is_tutorial"] or mission["combat_events"] or mission["gladiator_revolt"]:
             raise RuntimeError("Target is unsuitable for this peaceful baseline")
@@ -151,7 +155,11 @@ def main():
         if peak_population <= initial_population:
             raise RuntimeError("Starter settlement did not attract immigrants")
     finally:
-        env.close()
+        error = sys.exc_info()[1]
+        try:
+            artifacts.finish(env, locals().get("summary"), error)
+        finally:
+            env.close()
 
 
 if __name__ == "__main__":

@@ -125,6 +125,17 @@ int julius_env_step(julius_env_t *env, const gymnasium_action_t *action, julius_
  */
 int julius_env_get_observation(julius_env_t *env, gymnasium_observation_t *observation);
 
+/** Opaque state identity. Advances on reset/step; snapshots restore their identity.
+ * The issuance counter is not restored, so divergent branches never share IDs.
+ */
+uint64_t julius_env_get_state_token(julius_env_t *env);
+/** Export a persistent standard save, including after termination/truncation.
+ * Caller supplies an absolute filename. Does not advance the simulation.
+ */
+int julius_env_export_save(julius_env_t *env, const char *filename);
+/** -1 lost, 0 ongoing, 1 won; -2 invalid handle. */
+int julius_env_get_victory_state(julius_env_t *env);
+
 /**
  * Get last error message
  * @param env Environment handle

@@ -60,9 +60,12 @@ struct julius_env {
     int prev_treasury;
 
     unsigned int next_snapshot_id;
+    uint64_t next_state_token;
+    uint64_t state_token;
 };
 
 struct julius_snapshot {
+    uint64_t state_token;
     julius_env_t *owner;
     char filename[2 * FILE_NAME_MAX];
     int current_tick;
@@ -268,6 +271,7 @@ int julius_env_reset(julius_env_t *env, gymnasium_observation_t *observation)
 
     // Reset episode state
     env->current_tick = 0;
+    env->state_token = ++env->next_state_token;
     env->episode_active = 1;
 
     // Initialize previous ratings for reward calculation
@@ -450,6 +454,7 @@ julius_snapshot_t *julius_env_snapshot_create(julius_env_t *env)
     }
 
     snapshot->current_tick = env->current_tick;
+    snapshot->state_token = env->state_token;
     snapshot->episode_active = env->episode_active;
     snapshot->prev_culture = env->prev_culture;
     snapshot->prev_prosperity = env->prev_prosperity;
@@ -476,6 +481,7 @@ int julius_env_snapshot_restore(julius_env_t *env, const julius_snapshot_t *snap
     }
 
     env->current_tick = snapshot->current_tick;
+    env->state_token = snapshot->state_token;
     env->episode_active = snapshot->episode_active;
     env->prev_culture = snapshot->prev_culture;
     env->prev_prosperity = snapshot->prev_prosperity;
@@ -528,6 +534,7 @@ int julius_env_step(julius_env_t *env, const gymnasium_action_t *action,
     // Run one game tick
     game_tick_run();
     env->current_tick++;
+    env->state_token = ++env->next_state_token;
 
     // Calculate reward based on state changes
     result->reward += calculate_reward(env);
@@ -552,6 +559,28 @@ int julius_env_step(julius_env_t *env, const gymnasium_action_t *action,
     }
 
     return 0;
+}
+
+uint64_t julius_env_get_state_token(julius_env_t *env)
+{
+    return env && env->initialized ? env->state_token : 0;
+}
+
+int julius_env_export_save(julius_env_t *env, const char *filename)
+{
+    if (!env || !env->initialized || !env->state_token || !filename || !filename[0]) {
+        return -1;
+    }
+    if (!game_file_write_saved_game(filename)) {
+        snprintf(env->error_message, sizeof(env->error_message), "Failed to export final save");
+        return -1;
+    }
+    return 0;
+}
+
+int julius_env_get_victory_state(julius_env_t *env)
+{
+    return env && env->initialized ? city_victory_state() : -2;
 }
 
 int julius_env_get_observation(julius_env_t *env, gymnasium_observation_t *observation)
