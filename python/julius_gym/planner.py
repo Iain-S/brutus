@@ -56,14 +56,52 @@ def preview_is_usable(result):
     return result["status"] in ("completed", "won")
 
 
+def execute_cycle(env, candidate, observation, budget, minimum_ticks=0):
+    """Optionally observe effects before the next model call; charge every tick."""
+    observation, result, terminated, truncated = execute(env, candidate, observation, budget)
+    macro_ticks = len(result["steps"])
+    result["macro_ticks"] = macro_ticks
+    result["observation_ticks"] = 0
+    if result["status"] != "completed" or terminated or truncated:
+        return observation, result, terminated, truncated
+    wait_ticks = min(max(0, minimum_ticks - macro_ticks), max(0, budget - macro_ticks))
+    if wait_ticks:
+        wait = Candidate("observe_effects", [(A.NONE, 0, 0)] * wait_ticks,
+                         fingerprint(env, observation), {})
+        observation, observed, terminated, truncated = execute(env, wait, observation, wait_ticks)
+        result["steps"].extend(observed["steps"])
+        result["observation_ticks"] = len(observed["steps"])
+        result["status"] = observed["status"]
+    if result["status"] == "completed" and len(result["steps"]) < minimum_ticks:
+        result["status"] = "budget_exhausted"
+    return observation, result, terminated, truncated
+
+
+def connect_if_needed(make_farm, make_bridge):
+    """A farmland connection is useful only when a farm site is not reachable."""
+    try:
+        make_farm()
+    except RuntimeError:
+        return make_bridge()
+    raise RuntimeError("Farmland is already reachable; a new bridge is not required")
+
+
 def proposals(env, mission, radius):
     terrain, buildings, width, height = env.get_map_data()
     terrain = exclude_hazard(terrain, mission["earthquake"], radius)
     entry = mission["entry"]
     yield "expand_housing", lambda: starter_plan(terrain, buildings, width, height, entry)
-    yield "connect_farmland", lambda: bridge_plan(env, entry, mission["earthquake"], radius)
-    yield "add_wheat_farm", lambda: building_plan(terrain, buildings, width, height, entry, A.BUILD_WHEAT_FARM, 3, True)
+    make_farm = lambda: building_plan(terrain, buildings, width, height, entry, A.BUILD_WHEAT_FARM, 3, True)
+    yield "connect_farmland", lambda: connect_if_needed(make_farm, lambda: bridge_plan(env, entry, mission["earthquake"], radius))
+    yield "add_wheat_farm", make_farm
     records = env.get_buildings()
+    for farm in (b for b in records if b["type"] == 100):
+        anchor = farm["x"], farm["y"]
+        yield f"house_farm_workers_{farm['id']}", lambda anchor=anchor: starter_plan(
+            terrain, buildings, width, height, entry, anchor=anchor)
+        for name, kind in (("prefecture", A.BUILD_PREFECTURE), ("engineers", A.BUILD_ENGINEERS_POST)):
+            yield f"protect_farm_{farm['id']}_{name}", lambda anchor=anchor, kind=kind: building_plan(
+                terrain, buildings, width, height, entry, kind, 1, anchor=anchor)
     anchors = []
     for b in records:
         if b["type"] == 92 and all(abs(b["x"] - x) + abs(b["y"] - y) > 6 for x, y in anchors):
@@ -116,7 +154,11 @@ def decision_context(env, observation, mission, decision_id, budget, last_result
                "rules": "Choose one listed candidate_id. Return JSON decision_id, candidate_id, reason only.",
                "remaining_ticks": budget, "state": scalar, "mission": mission,
                "services": {"residents_with_food": sum(b["population"] for b in buildings if b["food"] > 0),
-                            "residents_with_water": sum(b["population"] for b in buildings if b["well"] or b["fountain"])},
+                            "residents_with_water": sum(b["population"] for b in buildings if b["well"] or b["fountain"]),
+                            "health": env.get_population_info()["health"],
+                            "farms": sum(b["type"] == 100 for b in buildings),
+                            "farm_workers": sum(b["workers"] for b in buildings if b["type"] == 100),
+                            "farms_without_labor_coverage": sum(b["type"] == 100 and b["houses_covered"] == 0 for b in buildings)},
                "candidates": [{"id": c.id, **c.preview} for c in candidates.values()],
                "unavailable": unavailable,
                "last_result": ({"status": last_result["status"], "executed_ticks": len(last_result["steps"]),

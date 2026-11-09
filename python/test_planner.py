@@ -7,10 +7,45 @@ import importlib.util
 from pathlib import Path
 from io import BytesIO, StringIO
 from unittest.mock import patch
+from unittest.mock import Mock
 from julius_gym.planner import Candidate, command_choice, validate_choice, execute
 
 
 class PlannerTests(unittest.TestCase):
+    def test_observation_interval_stops_at_victory(self):
+        from types import SimpleNamespace
+        from julius_gym.planner import execute_cycle
+        step = Mock(side_effect=[({}, 0, False, False, {"message": "Built housing"}),
+                                 ({}, 100, True, False, {"message": "Victory achieved!"})])
+        env = SimpleNamespace(step_at=step, get_victory_state=lambda: 1)
+        candidate = Candidate("build", [(5, 1, 1)], "current", {})
+        with patch("julius_gym.planner.fingerprint", return_value="current"):
+            _, result, terminated, _ = execute_cycle(env, candidate, {}, 20, 10)
+        self.assertTrue(terminated)
+        self.assertEqual(result["status"], "won")
+        self.assertEqual(step.call_count, 2)
+
+    def test_observation_interval_charges_ticks_and_respects_budget(self):
+        from types import SimpleNamespace
+        from julius_gym.planner import execute_cycle
+        env = SimpleNamespace(step_at=lambda *a: ({}, 0, False, False, {"message": "No action taken"}),
+                              get_victory_state=lambda: 0)
+        candidate = Candidate("test_wait", [(0, 0, 0)], "current", {})
+        with patch("julius_gym.planner.fingerprint", return_value="current"):
+            _, result, _, _ = execute_cycle(env, candidate, {}, 5, 3)
+            self.assertEqual((result["macro_ticks"], result["observation_ticks"], len(result["steps"])), (1, 2, 3))
+            _, limited, _, _ = execute_cycle(env, candidate, {}, 2, 5)
+            self.assertEqual(len(limited["steps"]), 2)
+            self.assertEqual(limited["status"], "budget_exhausted")
+
+    def test_bridge_not_offered_for_already_reachable_farmland(self):
+        from julius_gym.planner import connect_if_needed
+        make_bridge = Mock(return_value=[(55, 1, 1)])
+        with self.assertRaisesRegex(RuntimeError, "already reachable"):
+            connect_if_needed(lambda: [(35, 1, 1)], make_bridge)
+        make_bridge.assert_not_called()
+        self.assertEqual(connect_if_needed(Mock(side_effect=RuntimeError("no site")), make_bridge), [(55, 1, 1)])
+
     def test_local_api_request_is_bounded_and_constrained(self):
         spec = importlib.util.spec_from_file_location("ollama_adapter", Path(__file__).parent / "examples" / "ollama_planner.py")
         adapter = importlib.util.module_from_spec(spec)

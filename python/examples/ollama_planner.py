@@ -16,10 +16,12 @@ def request_body(context, model, tokens):
     state = context.get("state", {})
     aliases = {"population": "population_total", "housing_capacity": "buildings_housing_capacity",
                "treasury": "finance_treasury", "sentiment": "population_sentiment",
-               "workers_available": "labor_workers_available", "workers_needed": "labor_workers_needed",
+               "unemployed_workers": "labor_workers_available", "job_vacancies": "labor_workers_needed",
+               "employed_workers": "labor_workers_employed",
                "food_stocks": "resources_food_stocks"}
     compact = {"decision_id": context["decision_id"], "remaining_ticks": context.get("remaining_ticks"),
                "elapsed_ticks": context.get("elapsed_ticks"), "ticks_per_month": 800,
+               "minimum_decision_interval": context.get("minimum_decision_interval", 0),
                "state": {short: state[key] for short, key in aliases.items() if key in state},
                "ratings": {key.removeprefix("ratings_"): value for key, value in state.items() if key.startswith("ratings_")},
                "goals": {key.removeprefix("victory_"): value for key, value in state.items() if key.endswith("_goal")},

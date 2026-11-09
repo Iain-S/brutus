@@ -11,7 +11,7 @@ import time
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 from julius_gym import JuliusEnv
-from julius_gym.planner import command_choice, decision_context, execute, rule_choice, validate_choice
+from julius_gym.planner import command_choice, decision_context, execute_cycle, rule_choice, validate_choice
 from julius_gym.run_artifacts import DEFAULT_RUNS, RunArtifacts
 
 
@@ -22,6 +22,7 @@ def main():
     parser.add_argument("--model-command", help='JSON argv array, e.g. ["python", "absolute/path/to/model_adapter.py"]')
     parser.add_argument("--max-ticks", type=int, default=3000)
     parser.add_argument("--max-decisions", type=int, default=10)
+    parser.add_argument("--decision-interval", type=int, default=0, help="Minimum charged simulation ticks between model calls (0..800)")
     parser.add_argument("--model-timeout", type=int, default=60, help="Seconds per local command attempt (1..300)")
     parser.add_argument("--log", type=Path, help="Optional explicit log path (legacy/test override)")
     parser.add_argument("--runs-dir", type=Path, default=DEFAULT_RUNS)
@@ -34,6 +35,8 @@ def main():
         parser.error("Budgets must be positive")
     if not 1 <= args.model_timeout <= 300:
         parser.error("--model-timeout must be from 1 to 300 seconds")
+    if not 0 <= args.decision_interval <= 800:
+        parser.error("--decision-interval must be from 0 to 800 ticks")
     artifacts = RunArtifacts("planner-local" if command else "planner-smoke", args.runs_dir, args.log, vars(args))
     log_path = artifacts.log
     # The engine changes cwd. Resolve user paths before constructing the env.
@@ -59,6 +62,7 @@ def main():
                 context, candidates = decision_context(env, observation, mission, decision,
                                                       args.max_ticks - ticks, last)
                 context["elapsed_ticks"] = ticks
+                context["minimum_decision_interval"] = args.decision_interval
                 timing["preview_seconds"] += time.perf_counter() - started
                 errors = []
                 attempts = []
@@ -89,7 +93,8 @@ def main():
                     candidate = candidates["wait"]
                     choice = {"decision_id": decision, "candidate_id": "wait", "reason": "Validation failure fallback"}
                 started = time.perf_counter()
-                observation, last, terminated, truncated = execute(env, candidate, observation, args.max_ticks - ticks)
+                observation, last, terminated, truncated = execute_cycle(
+                    env, candidate, observation, args.max_ticks - ticks, args.decision_interval)
                 timing["execution_seconds"] += time.perf_counter() - started
                 ticks += len(last["steps"])
                 log.write(json.dumps({"context": context, "choice": choice, "errors": errors,

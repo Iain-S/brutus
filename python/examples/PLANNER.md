@@ -139,6 +139,27 @@ immediate migration eligibility. Rebuild the library to use the correction.
 The local prompt explicitly states that immigration requires housing; factual
 game prerequisites are supplied to the model rather than forcing an action ID.
 
+### Observing macro effects
+
+`--decision-interval 400` advances at least 400 simulation ticks per decision
+cycle, except on failure, episode end or insufficient remaining budget. The
+default remains zero. Construction and automatic observation steps are logged
+separately as `macro_ticks` and `observation_ticks`; every step counts toward
+the simulation horizon. A selected wait macro already taking 800 ticks receives
+no extra observation. The model is told the interval in its context.
+
+This is a different execution cadence, not free time or evidence of a better
+model. Compare runs with the same interval and game horizon. In the original
+zero-interval eight-decision trial, the model chose housing eight times, consumed
+only 164 ticks and ended before immigrants arrived. Increasing only the decision
+budget did not ensure observation of meaningful game effects.
+
+Candidates now include housing and safety services near existing wheat farms.
+The farmland-connection macro is unavailable when a farm site is already reachable,
+so its name does not misleadingly offer redundant bridges as new access. Local
+summaries distinguish unemployed workers, employed workers and unfilled jobs,
+and include farm recruitment and city health diagnostics.
+
 ### State and terminal-outcome corrections
 
 Rebuild the shared library after the state-token changes. Freshness now includes
