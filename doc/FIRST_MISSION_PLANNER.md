@@ -10,6 +10,23 @@ disabled the flag does not invent them. Objects consume more context: three
 captured probes grew from 2506-2673 to 3447-3614 tokens of the current 4096.
 Check prompt counts and Ollama truncation logs before interpreting live results.
 
+The first live objects-mode trial (`planner-local_b502c162`, source `51aa6abd`)
+confirmed this headroom risk: six prompts of 4114-4204 tokens were truncated to
+4096 by Ollama. It ended at 12800 ticks with 90 residents, culture 40, 30
+food-holding residents, 97 household food units, 488 market units and no win.
+All 16 choices were accepted without fallback, but accepted JSON does not mean
+the model received the complete state. Ten choices were schools; no general
+housing expansion was chosen. Previewing took 131.2 seconds, inference 292.5,
+total wall 426.5. Strict independent action replay, including detailed food
+state, passed. The usual final save and runtime diagnostics are retained.
+
+Do not interpret this trajectory as a clean demonstration of improved strategy:
+later decisions used truncated inputs, and the run was stochastic. The adapter
+default remains rows. Next add an explicit audited context-budget setting,
+preflight the largest captured contexts, and verify no truncation before another
+comparison. Do not silently discard candidates or introduce a forced build order
+to make the prompt fit.
+
 In one paired sample at each of three saved decisions, named forecasts selected
 actions with higher forecast culture than the row form. This is input-format
 sensitivity and a reason for a bounded live test, not evidence of a faster win.

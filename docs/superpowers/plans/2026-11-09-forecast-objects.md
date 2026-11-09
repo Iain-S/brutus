@@ -28,8 +28,8 @@ check prompt counts/server truncation before interpreting any live result.
 
 - [x] Add failing round-trip tests for fields/nulls/order, missing forecasts, absent forecast policy and default compatibility.
 - [x] Add the opt-in request argument/CLI flag and audit metadata; run focused and complete planner tests.
-- [ ] Document the flag and limitations; review, commit and push source only.
-- [ ] Run one frozen 16-decision trial with only the format flag changed; verify strict independent replay and record prompt headroom/outcomes.
+- [x] Document the flag and limitations; review, commit and push source only.
+- [x] Run one frozen 16-decision trial with only the format flag changed; verify strict independent replay and record prompt headroom/outcomes.
 
 ## Verification
 
@@ -51,3 +51,30 @@ truncated continuations, order and unchanged output schema/settings. The CLI
 test verifies forwarding and stderr audit metadata. The implemented adapter
 also reproduced all six offline request bodies exactly apart from the probe's
 explicit seed. Default rows output remains unchanged.
+
+Read-only independent review found no blockers, confirmed default compatibility
+against HEAD, and passed all 37 planner tests. Implementation pushed as
+`51aa6abd`, excluding the user's staged model files.
+
+## Live Evidence And Next Checkpoint
+
+Run `planner-local_b502c162` finished at 12800 ticks with 90 residents, culture
+40, 30 food-holding residents and no win; all 16 decisions accepted, no fallback.
+Ten schools were chosen, no general housing expansions. Final household/market
+food was 97/488 units, granaries empty. Preview 131.2 seconds, inference 292.5,
+total wall 426.5. Strict independent replay `replay_101295f6` passed including
+the full food payload. Both bundles retain standard final saves; rendering
+remains manual.
+
+Six server warnings recorded original prompts of 4114-4204 tokens truncated to
+4096. The source bundle's runtime sidecar retains these warnings, model digest,
+GPU status and native-library hash. Accepted JSON is not evidence of intact
+input. This trial therefore fails the context-headroom check and cannot support
+a clean representation-only strategic comparison; completing the bounded run
+and replay does not resolve that limitation.
+
+Ruling: retain the default and stop spending live-run budget at this context
+size. Next expose an audited context-size option without changing facts or
+candidate availability; preflight the largest captured states with sufficient
+headroom, then rerun under a separately recorded configuration. Keep the model,
+adapter and executor frozen during each future live trial.
