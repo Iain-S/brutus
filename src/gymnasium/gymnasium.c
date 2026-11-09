@@ -8,6 +8,7 @@
 #include "core/config.h"
 #include "core/file.h"
 #include "core/hotkey_config.h"
+#include "core/random.h"
 #include "game/file.h"
 #include "game/game.h"
 #include "game/mission.h"
@@ -65,6 +66,7 @@ struct julius_env {
 };
 
 struct julius_snapshot {
+    random_snapshot *random;
     uint64_t state_token;
     julius_env_t *owner;
     char filename[2 * FILE_NAME_MAX];
@@ -446,9 +448,17 @@ julius_snapshot_t *julius_env_snapshot_create(julius_env_t *env)
         return NULL;
     }
 
+    snapshot->random = random_snapshot_create();
+    if (!snapshot->random) {
+        snprintf(env->error_message, sizeof(env->error_message), "Unable to allocate random snapshot");
+        free(snapshot);
+        return NULL;
+    }
+
     if (!game_file_write_saved_game(snapshot->filename)) {
         snprintf(env->error_message, sizeof(env->error_message),
             "Failed to save snapshot");
+        random_snapshot_destroy(snapshot->random);
         free(snapshot);
         return NULL;
     }
@@ -480,6 +490,7 @@ int julius_env_snapshot_restore(julius_env_t *env, const julius_snapshot_t *snap
         return -1;
     }
 
+    random_snapshot_restore(snapshot->random);
     env->current_tick = snapshot->current_tick;
     env->state_token = snapshot->state_token;
     env->episode_active = snapshot->episode_active;
@@ -499,6 +510,7 @@ void julius_env_snapshot_destroy(julius_snapshot_t *snapshot)
     }
 
     game_file_delete_saved_game(snapshot->filename);
+    random_snapshot_destroy(snapshot->random);
     free(snapshot);
 }
 

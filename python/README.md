@@ -225,6 +225,16 @@ with env.snapshot() as snapshot:
     snapshot.restore()
 ```
 
+Snapshots also retain the complete in-memory random generator state, including
+cached values and the population-age random pool, which ordinary game saves do
+not serialize. Rebuild the headless library after updating snapshot support.
+An inhabited-city regression compares identical construction sequences with
+and without candidate previews:
+
+```shell
+python test_inhabited_snapshots.py --data-dir <ABSOLUTE_DATA_DIRECTORY> --lib-path <ABSOLUTE_LIBRARY_PATH>
+```
+
 To check reset and snapshot determinism against licensed game data, run:
 
 ```bash

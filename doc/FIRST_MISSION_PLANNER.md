@@ -1,5 +1,28 @@
 # Peaceful campaign planner: Tarraco
 
+## Snapshot fidelity checkpoint: 2026-11-09
+
+Independent replay of a 3,200-tick local-model run exposed differing service
+coverage and fire-risk diagnostics despite matching action messages/rewards.
+A regression reproduced the difference using the same bridge/housing sequence
+with and without candidate previews. The normal save format stores random
+generator seeds but omits cached outputs, pool contents and pool position;
+loading a snapshot therefore allowed speculative branches to affect later
+population-age sampling and service behavior.
+
+Gym snapshots now separately capture and restore the complete transient random
+state after loading their standard save. The save format and normal graphical
+loading behavior are unchanged. Both inhabited replay and eight-decision
+preview-versus-no-preview checks pass with this fix. Historical runs produced
+with the incomplete snapshot implementation should not be treated as verified
+comparisons; their logs/saves remain available for investigation.
+
+The small CPU-only local model has produced fallback-free runs, but still
+repeatedly chooses housing and has not demonstrated a sustainable food economy
+or mission win. Construction previews establish legality, not long-term
+usefulness. The next strategy checkpoint remains a food-producing settlement
+under local-model control, followed by independent action-log replay.
+
 ## Objective
 
 Win Tarraco autonomously and minimize elapsed simulation

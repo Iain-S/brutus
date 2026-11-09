@@ -62,4 +62,10 @@ void random_save_state(buffer *buf);
  */
 void random_load_state(buffer *buf);
 
+/* Complete transient state for speculative simulation; does not change save files. */
+typedef struct random_snapshot random_snapshot;
+random_snapshot *random_snapshot_create(void);
+void random_snapshot_restore(const random_snapshot *snapshot);
+void random_snapshot_destroy(random_snapshot *snapshot);
+
 #endif // CORE_RANDOM_H
