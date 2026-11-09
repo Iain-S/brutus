@@ -86,6 +86,10 @@ def starter_plan(terrain, buildings, width, height, entry, length=6, anchor=None
             while cursor is not None and cursor not in roads:
                 path.append(cursor)
                 cursor = parents[cursor]
+            strip = {tile(i, side) for i in range(1, length + 1) for side in range(-1, 2)}
+            if strip.intersection(path):
+                # Avoid occupying future buildings or building a street tile twice.
+                continue
             actions = [(ActionType.BUILD_ROAD, *point) for point in reversed(path)]
             actions += [(ActionType.BUILD_ROAD, *tile(i, 0)) for i in range(1, length + 1)]
             # Reserve road-front positions for wells and staffed safety services.

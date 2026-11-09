@@ -1,5 +1,26 @@
 # Peaceful campaign planner: Tarraco
 
+## Housing proposal legality: 2026-11-09
+
+The housing outage after about eight blocks was not a game population cap.
+Audit of run `planner-local_98c9fe3d` found that the ninth proposed block first
+placed an access road at `(35,52)`, then tried to put a house on that road. The
+strip was checked against the original map, but not against its own newly
+planned access path. Preview correctly rejected construction; the generator
+had failed to continue searching despite other viable sites.
+
+The starter generator now rejects access paths intersecting the entire future
+strip and continues its existing search. This also avoids duplicate planned
+road actions. Two synthetic regressions and a native nine-block test reproduced
+the failure before the fix and pass afterward. No population, migration,
+construction cost, campaign event or strategy rule changes. Remaining siting
+heuristics, forest exclusion and strip shape are unchanged.
+
+The compatible instruction-model download and three captured-context preflight
+checks succeeded, with GPU offload and the existing models retained. The first
+full instruction trial uses this legality correction, so it must not be treated
+as a controlled model-only comparison against earlier broken-mode trials.
+
 ## Food observations and model-mode correction: 2026-11-09
 
 The separate native food-supply query now reports edible farm work progress,
@@ -27,7 +48,7 @@ Do not use the preceding trials to judge its intended reasoning capability.
 The adapter now rejects explicit Qwen3 thinking-only tags and exposes validated
 sampling controls. A separate
 [non-thinking instruction variant](https://huggingface.co/Qwen/Qwen3-4B-Instruct-2507)
-is the next comparison target; download approval is pending. Existing weights
+is the next comparison target; its download has now completed. Existing weights
 are retained. A captured-context probe with the installed hybrid 0.6B model
 verified the new sampling flags and valid final JSON only; no game actions were
 executed and no strategic-quality claim follows from that probe.

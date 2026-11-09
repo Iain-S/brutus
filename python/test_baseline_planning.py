@@ -3,11 +3,39 @@
 import unittest
 import numpy as np
 
-from julius_gym.baseline import ROAD, building_plan, connected_roads, exclude_hazard
+from julius_gym.baseline import ROAD, building_plan, connected_roads, exclude_hazard, starter_plan
 from julius_gym.env import ActionType
 
 
 class PlacementTests(unittest.TestCase):
+    def housing_side_entry_map(self, alternative=False):
+        terrain = np.full((23, 30), 2, dtype=np.uint16)
+        terrain[12, :10] = ROAD
+        terrain[6:9, 5:12] = 0
+        terrain[8:12, 9] = 0
+        if alternative:
+            # A longer clear route reaches the end of another legal strip.
+            terrain[13:19, 1] = 0
+            terrain[18, 1:25] = 0
+            terrain[7:19, 24] = 0
+            terrain[7, 20:25] = 0
+            terrain[6:9, 14:21] = 0
+        return terrain, np.zeros_like(terrain)
+
+    def test_housing_rejects_access_through_its_own_occupied_strip(self):
+        terrain, buildings = self.housing_side_entry_map()
+        with self.assertRaises(RuntimeError):
+            starter_plan(terrain, buildings, 30, 23, (0, 12))
+
+    def test_housing_search_continues_after_self_crossing_candidate(self):
+        terrain, buildings = self.housing_side_entry_map(alternative=True)
+        actions = starter_plan(terrain, buildings, 30, 23, (0, 12))
+        road_list = [(x, y) for kind, x, y in actions if kind == ActionType.BUILD_ROAD]
+        occupied = {(x, y) for kind, x, y in actions if kind != ActionType.BUILD_ROAD}
+        self.assertFalse(set(road_list) & occupied)
+        self.assertEqual(len(road_list), len(set(road_list)))
+        self.assertTrue(all(x >= 14 for x, y in occupied))
+
     def test_hazard_mask_preserves_engine_map_and_access(self):
         terrain = np.zeros((12, 12), dtype=np.uint16)
         terrain[6, 6] = ROAD
