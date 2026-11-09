@@ -13,6 +13,7 @@ runs/
         run.json
         final.sav
         final.buildings.json
+        final.food_supply.json
         REVIEW.md
         final.png                 (add manually after Julius capture)
 ```
@@ -26,6 +27,8 @@ runs. Filenames inside a run stay fixed so they are easy to compare.
   outcome/summary, elapsed wall time, errors, and manual-render status.
 - `final.sav`: persistent standard game save for interactive Julius review.
 - `final.buildings.json`: engine building/service diagnostics at the end.
+- `final.food_supply.json`: separate farm progress and granary/market inventories;
+  excludes cargo, warehouses and household inventory (the latter is in building diagnostics).
 - `REVIEW.md`: screenshot capture instructions for that folder.
 - `final.png`: reserved name for the real-assets Julius screenshot; not created
   or imitated by the headless runner.
@@ -75,3 +78,8 @@ contains its own final save and manifest, including any divergence error.
 Use matching game data, library and game settings. A replay failure is evidence
 to investigate, not something the script silently repairs. This verifies action
 execution determinism, not repeatability or quality of the model's decisions.
+
+When the source run includes `final.food_supply.json`, replay also compares that
+entire versioned payload strictly and reports `food_supply_verified: true`.
+Older runs without it retain their existing checks and report this extra check
+as false; no historical food observations are invented or silently migrated.

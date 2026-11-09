@@ -1,4 +1,5 @@
 #include "gymnasium.h"
+#include "food_supply.h"
 #include "building/building.h"
 #include "building/maintenance.h"
 #include "city/data_private.h"
@@ -344,6 +345,14 @@ int julius_env_get_population_info(julius_env_t *env, char *output, int capacity
         city_data.population.lost_homeless, city_data.population.lost_removal,
         city_data.health.value);
     return written < 0 || written >= capacity ? -1 : 0;
+}
+
+int julius_env_get_food_supply(julius_env_t *env, char *output, int capacity)
+{
+    if (!env || !env->initialized) {
+        return -1;
+    }
+    return gymnasium_get_food_supply(output, capacity);
 }
 
 int julius_env_get_buildings(julius_env_t *env, char *output, int capacity)

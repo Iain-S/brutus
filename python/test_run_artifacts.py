@@ -17,10 +17,13 @@ class ArtifactTests(unittest.TestCase):
             second = RunArtifacts("baseline", root)
             self.assertNotEqual(first.directory, second.directory)
             env = SimpleNamespace(export_save=lambda p: p.write_bytes(b"test save"),
-                                  get_buildings=lambda: [], get_victory_state=lambda: 0)
+                                  get_buildings=lambda: [], get_victory_state=lambda: 0,
+                                  get_food_supply=lambda: {"schema_version": 1, "buildings": []})
             first.ready = True
             first.finish(env, error=RuntimeError("test failure"))
             self.assertTrue((first.directory / "final.sav").exists())
+            self.assertEqual(json.loads((first.directory / "final.food_supply.json").read_text()),
+                             env.get_food_supply())
             metadata = json.loads((first.directory / "run.json").read_text())
             self.assertEqual(metadata["status"], "error")
             self.assertIn("test failure", metadata["error"])

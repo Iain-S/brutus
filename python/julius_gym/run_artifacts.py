@@ -52,6 +52,8 @@ class RunArtifacts:
                 ("final.sav", lambda: env.export_save(self.directory / "final.sav")),
                 ("final.buildings.json", lambda: (self.directory / "final.buildings.json").write_text(
                     json.dumps(env.get_buildings(), indent=2), encoding="utf-8")),
+                ("final.food_supply.json", lambda: (self.directory / "final.food_supply.json").write_text(
+                    json.dumps(env.get_food_supply(), indent=2), encoding="utf-8")),
             ):
                 try:
                     write()

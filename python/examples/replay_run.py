@@ -27,6 +27,14 @@ def assert_step_matches(expected, actual, tick):
         raise AssertionError(f"Replay diverged at tick {tick}: expected {expected}, got {actual}")
 
 
+def verify_food_supply(env, path):
+    if not path.exists():
+        return False
+    if env.get_food_supply() != json.loads(path.read_text(encoding="utf-8")):
+        raise AssertionError("Final food supply diagnostics differ from recorded run")
+    return True
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("run", type=Path)
@@ -61,13 +69,15 @@ def main():
                     raise AssertionError("Replay ended before the recorded trace")
         if env.get_buildings() != expected_buildings:
             raise AssertionError("Final building diagnostics differ from recorded run")
+        food_verified = verify_food_supply(env, source / "final.food_supply.json")
         population = int(observation["population_total"].item())
         if population != manifest["summary"]["population"]:
             raise AssertionError("Final population differs from recorded run")
         if env.get_victory_state() != manifest["victory_state"]:
             raise AssertionError("Final victory state differs from recorded run")
         summary = {"verified": True, "ticks": len(steps), "population": population,
-                   "source_run": str(source), "won": env.get_victory_state() == 1}
+                   "source_run": str(source), "won": env.get_victory_state() == 1,
+                   "food_supply_verified": food_verified}
         print(json.dumps(summary, indent=2))
     finally:
         error = sys.exc_info()[1]

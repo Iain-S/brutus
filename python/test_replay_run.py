@@ -3,6 +3,8 @@
 import importlib.util
 from pathlib import Path
 import unittest
+from types import SimpleNamespace
+from unittest.mock import Mock
 
 spec = importlib.util.spec_from_file_location("replay_run", Path(__file__).parent / "examples" / "replay_run.py")
 replay = importlib.util.module_from_spec(spec)
@@ -10,6 +12,18 @@ spec.loader.exec_module(replay)
 
 
 class ReplayTests(unittest.TestCase):
+    def test_optional_food_diagnostics_are_compared_strictly(self):
+        env = SimpleNamespace(get_food_supply=Mock(return_value={"schema_version": 1, "buildings": []}))
+        path = SimpleNamespace(exists=lambda: False)
+        self.assertFalse(replay.verify_food_supply(env, path))
+        env.get_food_supply.assert_not_called()
+        path = SimpleNamespace(exists=lambda: True,
+                               read_text=lambda **kwargs: '{"schema_version":1,"buildings":[]}')
+        self.assertTrue(replay.verify_food_supply(env, path))
+        env.get_food_supply.return_value = {"schema_version": 1, "buildings": [{"id": 1}]}
+        with self.assertRaisesRegex(AssertionError, "food supply"):
+            replay.verify_food_supply(env, path)
+
     def test_both_log_shapes_preserve_observation_steps(self):
         action = {"action": [5, 1, 1], "message": "Built housing", "reward": 0.1}
         observation = {"action": [0, 0, 0], "message": "No action taken", "reward": 0.01}

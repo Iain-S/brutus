@@ -36,6 +36,36 @@ The test rejects scheduled combat or tutorial behavior and checks repeated
 This is an interface smoke test, not a winning controller. See
 `examples/README.md` for the deterministic starter settlement runner.
 
+### Food Supply Diagnostics
+
+`env.get_food_supply()` returns a separate versioned JSON payload for active
+edible-food farms, granaries and markets, without advancing simulation time.
+It remains available after an episode ends. Rebuild the library to use it.
+Existing observation structures and `get_buildings()` records are unchanged.
+
+The `buildings` rows contain position, workers/required workers, labor coverage,
+computed road access, cached access/network and entry distance. The cached
+access byte is not maintained for every building type; use the computed field
+for the engine's present road-access predicate (not a delivery-path guarantee).
+Farm `progress_points` and
+`progress_max` are production work, not food inventory; one completed batch
+normally dispatches a 100-unit load. Granary and market `food_units` arrays use
+the payload's order: wheat, vegetables, fruit, meat/fish. Granary free-space
+units are separate. Olives and vines are not edible food.
+
+Inventories are physical amounts, not a guarantee of accessibility, adequate
+staffing, delivery or nutrition. The city observation's food stock is a filtered,
+cached granary indicator, not another container to add to these amounts.
+Cargo, warehouses and household stocks are excluded; household stocks remain
+available through `get_buildings()`. Raw primary/shared figure IDs are references,
+not cargo counts; the shared slot can hold a labor seeker rather than a buyer.
+
+```shell
+python test_food_supply.py --data-dir <ABSOLUTE_DATA_DIRECTORY> --lib-path <ABSOLUTE_LIBRARY_PATH>
+cmake --build <ABSOLUTE_BUILD_DIRECTORY> --target gym_food_supply_test
+ctest --test-dir <ABSOLUTE_BUILD_DIRECTORY> -R gym_food_supply --output-on-failure
+```
+
 ### Building Observation Counts
 
 Building aggregates use active and newly created engine records rather than

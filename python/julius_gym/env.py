@@ -658,6 +658,19 @@ class JuliusEnv(gym.Env):
             raise RuntimeError("Cannot read population diagnostics")
         return json.loads(output.value)
 
+    def get_food_supply(self):
+        """Read active farm work points and separate granary/market food-unit inventories.
+
+        This excludes cargo, warehouses and household stocks. No simulation advance.
+        """
+        query = self.lib.julius_env_get_food_supply
+        query.argtypes = [c_void_p, POINTER(c_char), c_int32]
+        query.restype = c_int32
+        output = ctypes.create_string_buffer(1024 * 1024)
+        if query(self.env_handle, output, len(output)) != 0:
+            raise RuntimeError("Cannot read food supply diagnostics")
+        return json.loads(output.value)
+
     def get_buildings(self):
         """Read active building footprints, employment and household food/water.
 
