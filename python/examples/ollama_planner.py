@@ -26,14 +26,17 @@ def request_body(context, model, tokens):
                "ratings": {key.removeprefix("ratings_"): value for key, value in state.items() if key.startswith("ratings_")},
                "goals": {key.removeprefix("victory_"): value for key, value in state.items() if key.endswith("_goal")},
                "services": context.get("services"),
-               "candidate_columns": ["candidate_id", "ticks", "net_outlay"],
-               "candidates": [[c["id"], c.get("ticks"), c.get("net_treasury_outlay", 0)] for c in context["candidates"]],
+               "candidate_columns": ["candidate_id", "ticks", "net_outlay", "benefit"],
+               "candidates": [[c["id"], c.get("ticks"), c.get("net_treasury_outlay", 0), c.get("benefit", "")]
+                              for c in context["candidates"]],
                "last_status": (context.get("last_result") or {}).get("status"),
+               "last_action": (context.get("last_result") or {}).get("candidate_id"),
                "validation_errors": context.get("validation_errors", [])}
     return {"model": model, "stream": False, "think": False, "format": schema,
             "system": "You run Caesar III. Choose a candidate to advance goals without overspending. "
                       "Immigrants cannot arrive without houses. Workers come from residents, not empty lots. "
                       "Building takes only a few ticks; waiting after housing lets immigrants and services act. "
+                      "Farms produce food, granaries store it, markets deliver it. Temples are buildings, not housing districts. "
                       "Return required JSON only. Keep the reason under eight words.",
             "prompt": json.dumps(compact),
             "options": {"num_predict": tokens, "num_ctx": 4096, "temperature": 0}}

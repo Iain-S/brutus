@@ -49,7 +49,7 @@ def execute(env, candidate, observation, budget):
     status = ("won" if victory == 1 else "lost" if victory == -1 else "failed" if failed
               else "terminated" if terminated else "truncated" if truncated
               else "completed" if len(records) == len(candidate.actions) else "budget_exhausted")
-    return observation, {"status": status, "steps": records}, terminated, truncated
+    return observation, {"candidate_id": candidate.id, "status": status, "steps": records}, terminated, truncated
 
 
 def preview_is_usable(result):
@@ -86,6 +86,52 @@ def connect_if_needed(make_farm, make_bridge):
     raise RuntimeError("Farmland is already reachable; a new bridge is not required")
 
 
+def food_supply_plan(env, mission, radius):
+    """Compose a food district against successive map states, then roll it back."""
+    actions = []
+    home = next(((b["x"], b["y"]) for b in env.get_buildings() if b["level"] >= 0), None)
+
+    def current_map():
+        terrain, buildings, width, height = env.get_map_data()
+        return exclude_hazard(terrain, mission["earthquake"], radius), buildings, width, height
+
+    def apply(phase):
+        for action in phase:
+            if len(actions) >= 128:
+                raise RuntimeError("Food supply macro exceeds 128-action bound")
+            actions.append(action)
+            _, _, terminated, truncated, info = env.step_at(*action)
+            if terminated or truncated:
+                return True
+            if not info["message"].startswith("Built "):
+                raise RuntimeError("Food supply preflight: " + info["message"])
+        return False
+
+    with env.snapshot() as snapshot:
+        try:
+            try:
+                farm_plan = building_plan(*current_map(), mission["entry"], A.BUILD_WHEAT_FARM, 3, True)
+            except RuntimeError:
+                if apply(bridge_plan(env, mission["entry"], mission["earthquake"], radius)):
+                    return actions
+                farm_plan = building_plan(*current_map(), mission["entry"], A.BUILD_WHEAT_FARM, 3, True)
+            farm = farm_plan[-1][1:]
+            if apply(farm_plan):
+                return actions
+            workers = starter_plan(*current_map(), mission["entry"], anchor=farm)
+            if home is None:
+                home = next((x, y) for kind, x, y in workers if kind == A.BUILD_HOUSING)
+            if apply(workers):
+                return actions
+            for kind, size, anchor in ((A.BUILD_GRANARY, 3, farm), (A.BUILD_MARKET, 2, home),
+                                       (A.BUILD_PREFECTURE, 1, farm), (A.BUILD_ENGINEERS_POST, 1, farm)):
+                if apply(building_plan(*current_map(), mission["entry"], kind, size, anchor=anchor)):
+                    return actions
+            return actions
+        finally:
+            snapshot.restore()
+
+
 def proposals(env, mission, radius):
     terrain, buildings, width, height = env.get_map_data()
     terrain = exclude_hazard(terrain, mission["earthquake"], radius)
@@ -95,6 +141,8 @@ def proposals(env, mission, radius):
     yield "connect_farmland", lambda: connect_if_needed(make_farm, lambda: bridge_plan(env, entry, mission["earthquake"], radius))
     yield "add_wheat_farm", make_farm
     records = env.get_buildings()
+    if not any(b["type"] == 100 for b in records):
+        yield "establish_wheat_supply", lambda: food_supply_plan(env, mission, radius)
     for farm in (b for b in records if b["type"] == 100):
         anchor = farm["x"], farm["y"]
         yield f"house_farm_workers_{farm['id']}", lambda anchor=anchor: starter_plan(
@@ -144,6 +192,8 @@ def decision_context(env, observation, mission, decision_id, budget, last_result
                              "action_counts": dict(Counter(str(a[0]) for a in actions)),
                              "target": actions[-1], "engine_preview_passed": True,
                              "preview_outcome": result["status"]}
+        if name == "establish_wheat_supply":
+            candidate.preview["benefit"] = "farm, worker housing, granary and market"
         candidates[name] = candidate
     wait = Candidate("wait", [(A.NONE, 0, 0)] * min(800, budget), state, {})
     wait.preview = {"ticks": len(wait.actions)}
@@ -156,12 +206,18 @@ def decision_context(env, observation, mission, decision_id, budget, last_result
                "services": {"residents_with_food": sum(b["population"] for b in buildings if b["food"] > 0),
                             "residents_with_water": sum(b["population"] for b in buildings if b["well"] or b["fountain"]),
                             "health": env.get_population_info()["health"],
+                            "markets": sum(b["type"] == 70 for b in buildings),
+                            "staffed_markets": sum(b["type"] == 70 and b["workers"] > 0 for b in buildings),
+                            "granaries": sum(b["type"] == 71 for b in buildings),
+                            "staffed_granaries": sum(b["type"] == 71 and b["workers"] > 0 for b in buildings),
+                            "ceres_temples": sum(b["type"] == 60 for b in buildings),
                             "farms": sum(b["type"] == 100 for b in buildings),
                             "farm_workers": sum(b["workers"] for b in buildings if b["type"] == 100),
                             "farms_without_labor_coverage": sum(b["type"] == 100 and b["houses_covered"] == 0 for b in buildings)},
                "candidates": [{"id": c.id, **c.preview} for c in candidates.values()],
                "unavailable": unavailable,
-               "last_result": ({"status": last_result["status"], "executed_ticks": len(last_result["steps"]),
+               "last_result": ({"candidate_id": last_result.get("candidate_id"),
+                                "status": last_result["status"], "executed_ticks": len(last_result["steps"]),
                                 "final_step": last_result["steps"][-1] if last_result["steps"] else None}
                                if last_result else None),
                "limitations": ["Food production/consumption monthly fields are placeholders",

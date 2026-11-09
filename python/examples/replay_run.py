@@ -3,6 +3,7 @@
 
 import argparse
 import json
+import math
 from pathlib import Path
 import sys
 
@@ -17,6 +18,13 @@ def recorded_steps(rows):
             yield from row["result"]["steps"]
         elif "action" in row:
             yield row
+
+
+def assert_step_matches(expected, actual, tick):
+    if (expected["message"] != actual["message"]
+            or not math.isfinite(expected["reward"]) or not math.isfinite(actual["reward"])
+            or abs(actual["reward"] - expected["reward"]) > 1e-6):
+        raise AssertionError(f"Replay diverged at tick {tick}: expected {expected}, got {actual}")
 
 
 def main():
@@ -48,8 +56,7 @@ def main():
                 actual = {"tick": index, "action": expected["action"], "reward": reward,
                           "terminated": terminated, "truncated": truncated, **result}
                 log.write(json.dumps(actual) + "\n")
-                if result["message"] != expected["message"] or abs(reward - expected["reward"]) > 1e-6:
-                    raise AssertionError(f"Replay diverged at tick {index}: expected {expected}, got {actual}")
+                assert_step_matches(expected, actual, index)
                 if (terminated or truncated) and index != len(steps):
                     raise AssertionError("Replay ended before the recorded trace")
         if env.get_buildings() != expected_buildings:

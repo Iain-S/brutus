@@ -160,6 +160,30 @@ so its name does not misleadingly offer redundant bridges as new access. Local
 summaries distinguish unemployed workers, employed workers and unfilled jobs,
 and include farm recruitment and city health diagnostics.
 
+### Composed Food Supply
+
+`establish_wheat_supply` offers a higher-level alternative to separate farm,
+housing, granary and market choices. It generates sites against successive
+temporary engine states, connects farmland if needed, places a wheat farm,
+worker housing, granary, market and safety services, then restores the original
+state. The normal outer preview validates the returned sequence again before
+offering it. The same 128-action bound, treasury rules and elapsed-tick budget
+apply. Candidate benefit text identifies the combined infrastructure.
+
+This encodes execution knowledge, not a forced strategy: the model may choose
+it or another candidate. It is offered when no active wheat farm exists.
+Successful construction does not promise adequate labor, food production or
+household delivery. The clean-mission integration test executes 50 actions and
+verifies all components and subsequent immigration:
+
+```shell
+python test_food_macro.py --data-dir <ABSOLUTE_DATA_DIRECTORY> --lib-path <ABSOLUTE_LIBRARY_PATH>
+```
+
+Feedback retains the last candidate ID even when observation no-ops follow a
+macro. Summaries include existing markets, granaries, staffed counts and Ceres
+temples, so low current ratings are not the only signal of recent construction.
+
 ### State and terminal-outcome corrections
 
 Rebuild the shared library after the state-token changes. Freshness now includes

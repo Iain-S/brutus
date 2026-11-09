@@ -321,3 +321,11 @@ under the loop, not a balanced economy or strong strategy.
 1600-tick runs from reset without model calls or snapshot previews. It checks
 per-action messages/rewards and final building diagnostics, population and
 victory state. Each replay retains its own manifest and final save.
+
+The eight-decision, 400-tick-cadence follow-up reached 3200 ticks and 201 residents
+with eight accepted decisions and no fallback, but selected one farmland bridge
+and seven housing expansions, leaving the offered farm unused. Further work now
+adds recent-action/service feedback and an optional composed wheat-supply macro.
+Its engine test builds the complete district in 50 paid actions with preview
+rollback and subsequent immigration. A live choice remains a separate test;
+the compound macro does not guarantee a staffed or productive food chain.

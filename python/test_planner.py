@@ -33,6 +33,7 @@ class PlannerTests(unittest.TestCase):
         candidate = Candidate("test_wait", [(0, 0, 0)], "current", {})
         with patch("julius_gym.planner.fingerprint", return_value="current"):
             _, result, _, _ = execute_cycle(env, candidate, {}, 5, 3)
+            self.assertEqual(result["candidate_id"], "test_wait")
             self.assertEqual((result["macro_ticks"], result["observation_ticks"], len(result["steps"])), (1, 2, 3))
             _, limited, _, _ = execute_cycle(env, candidate, {}, 2, 5)
             self.assertEqual(len(limited["steps"]), 2)
