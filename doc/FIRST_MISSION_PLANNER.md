@@ -1,5 +1,39 @@
 # Peaceful campaign planner: Tarraco
 
+## Compatible instruction-model result: 2026-11-09
+
+The first full trial with `qwen3:4b-instruct-2507-q4_K_M` used source
+`061400a9`, the corrected housing-access generator, temperature 0.7, top-p 0.8,
+top-k 20 and min-p 0. The installed manifest digest is
+`0edcdef34593eac1aa2be9c7d06c432dcf81945adca5eca2f27662c18f168ba0`.
+The adapter/executor remained unchanged throughout all 16 decisions, with
+12800 paid ticks, 800-tick decision intervals and 1600-tick forecasts.
+
+Run `planner-local_d4aa46fd` ended with 83 residents, culture 15, seven residents
+holding food, 28 household food units, 172 market food units, empty granaries
+and no win. Choices were one housing expansion, four markets, a farmland
+connection, a wheat farm, farm-worker housing, five granaries and three schools.
+All 16 responses were accepted without fallback. Prompts peaked at 2673 of
+4096 tokens, with no server prompt-truncation entries. GPU offload was verified;
+previewing took 125.8 seconds and inference 166.6 seconds (295.2 seconds total).
+
+Independent action replay `replay_3e8dcb85` matched per-step messages/rewards,
+final buildings, population, victory and the complete food-supply payload.
+The source bundle retains `model.runtime.json` with the installed digest,
+native-library hash and GPU metadata, as well as the normal `final.sav` for
+Julius review. Rendering remains manual; no end PNG has been generated.
+
+This establishes a working supported-mode baseline, not competent play. The
+model repeatedly chose storage despite empty granaries, labor shortages and
+available housing forecasts with greater population. Some duplicate schools
+also produced no additional culture during their recorded cycles. These are
+observations from one stochastic trajectory, not proof that duplicates are
+universally bad or that the model family cannot plan. Mode, sampling and the
+housing fix all differ from earlier trials; no model-only causal comparison
+is justified. Do not extend the horizon blindly or add a prescribed build
+order. Next isolate whether the compact positional forecast representation
+is impairing decision quality, using captured contexts before another live run.
+
 ## Housing proposal legality: 2026-11-09
 
 The housing outage after about eight blocks was not a game population cap.
