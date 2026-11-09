@@ -43,11 +43,11 @@ cycle history and compact food summaries to the provider-independent context.
 
 ## Task 2: Planner Feedback
 
-- [ ] Write failing pure-Python tests for food summaries, inventory forecasts and bounded outcome history.
-- [ ] Add current food summaries, forecast inventories and four recent observed cycles to model input.
-- [ ] Verify existing construction, snapshot, planner and artifact regressions.
-- [ ] Run a fixed bounded local-model trial, independently replay it and inspect context size.
-- [ ] Record results and limitations, review, commit and push verified source changes only.
+- [x] Write failing pure-Python tests for food summaries, inventory forecasts and bounded outcome history.
+- [x] Add current food summaries, forecast inventories and four recent observed cycles to model input.
+- [x] Verify existing construction, snapshot, planner and artifact regressions.
+- [x] Run a fixed bounded local-model trial, independently replay it and inspect context size.
+- [x] Record results and limitations, review, commit and push verified source changes only.
 
 ## Native Checkpoint Evidence
 
@@ -62,3 +62,25 @@ the API exposes raw primary/shared figure IDs instead of mislabeling roles.
 Computed road access uses native predicates with NULL result pointers to avoid
 mutating the map-point result cache. The raw cached byte is retained separately
 because farms/markets do not maintain it as a universal access indicator.
+
+## Feedback Evidence And Model Configuration Ruling
+
+Thirty-one food/history/planner boundary tests pass before the sampler-profile
+follow-up. Native forecast, construction and culture checks pass; a four-cycle
+runner smoke checks history ordering and exact paid tick accounting and replays
+with strict food comparison. A separate eight-cycle food-production regression
+matches detailed food state to clean-reset execution without any previews.
+
+The fixed 16-decision run reached 310 residents with no food and eight empty
+granaries. Strict replay passes; peak prompt size 3297/4096 with no server
+truncation warnings. This is negative strategy evidence, not an improvement.
+
+Ruling: publisher documentation establishes that the installed explicit Qwen3
+Thinking variant supports only thinking mode. The non-thinking JSON adapter's
+use of it was an invalid model-mode configuration, so prior trials cannot
+measure its intended capability. Add a best-effort guard for explicit Qwen3
+thinking tags and optional validated sampler controls, preserving defaults.
+The live trial had finished before these adapter changes. Three new profile
+tests pass, and a captured-context 0.6B protocol probe verifies explicit sampler
+settings without executing game actions. A compatible instruction model needs
+separate download approval; do not change the game strategy to mask this issue.

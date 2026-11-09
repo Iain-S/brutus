@@ -7,7 +7,7 @@ import sys
 import urllib.request
 
 
-def request_body(context, model, tokens):
+def request_body(context, model, tokens, temperature=0.0, top_p=None, top_k=None, min_p=None):
     schema = {"type": "object", "properties": {
         "decision_id": {"type": "integer", "enum": [context["decision_id"]]},
         "candidate_id": {"type": "string", "enum": [c["id"] for c in context["candidates"]]},
@@ -27,6 +27,7 @@ def request_body(context, model, tokens):
                "ratings": {key.removeprefix("ratings_"): value for key, value in state.items() if key.startswith("ratings_")},
                "goals": {key.removeprefix("victory_"): value for key, value in state.items() if key.endswith("_goal")},
                "services": context.get("services"),
+               "food_supply": context.get("food_supply"),
                "candidate_columns": ["candidate_id", "ticks", "net_outlay", "benefit"],
                "candidates": [[c["id"], c.get("ticks"), c.get("net_treasury_outlay", 0), c.get("benefit", "")]
                               for c in context["candidates"]],
@@ -35,22 +36,35 @@ def request_body(context, model, tokens):
                "validation_errors": context.get("validation_errors", [])}
     if "forecast_policy" in context:
         columns = ["ticks", "status", "population", "food_stocks", "residents_with_food",
-                   "health", "farm_workers", "treasury", "culture"]
+                   "health", "farm_workers", "treasury", "culture", "granary_food_units", "market_food_units"]
         compact["forecast_policy"] = context["forecast_policy"]
         compact["forecast_columns"] = columns
         compact["candidate_columns"].append("forecast")
         for row, candidate in zip(compact["candidates"], context["candidates"]):
             forecast = candidate.get("forecast", {})
             row.append([forecast.get(key) for key in columns])
+    if "recent_outcomes" in context:
+        metrics = ["population", "residents_with_food", "health", "culture", "granary_food_units",
+                   "market_food_units", "house_food_units", "treasury"]
+        compact["recent_columns"] = ["candidate_id", "ticks", "status"] + [key + "_delta" for key in metrics]
+        compact["recent_outcomes"] = [[r["candidate_id"], r["ticks"], r["status"],
+                                       *[r["delta"][key] for key in metrics]]
+                                      for r in context["recent_outcomes"][-4:]]
+    options = {"num_predict": tokens, "num_ctx": 4096, "temperature": temperature}
+    for name, value in (("top_p", top_p), ("top_k", top_k), ("min_p", min_p)):
+        if value is not None:
+            options[name] = value
     return {"model": model, "stream": False, "think": False, "format": schema,
             "system": "You run Caesar III. Choose a candidate to advance goals without overspending. "
                       "Immigrants cannot arrive without houses. Workers come from residents, not empty lots. "
                       "Building takes only a few ticks; waiting after housing lets immigrants and services act. "
                       "Farms produce food, granaries store it, markets deliver it. Temples are buildings, not housing districts. "
                       "Theaters need performers from actor colonies; schools and libraries provide education. "
+                      "Reported food_stocks is filtered granary stock, not another inventory to add. "
+                      "Recent deltas include all activity during each cycle, not just construction. "
                       "Return required JSON only. Keep the reason under eight words.",
             "prompt": json.dumps(compact),
-            "options": {"num_predict": tokens, "num_ctx": 4096, "temperature": 0}}
+            "options": options}
 
 
 def main():
@@ -58,11 +72,22 @@ def main():
     parser.add_argument("--model", required=True, help="An already installed Ollama model")
     parser.add_argument("--max-tokens", type=int, default=96)
     parser.add_argument("--timeout", type=int, default=110)
+    parser.add_argument("--temperature", type=float, default=0.0)
+    parser.add_argument("--top-p", type=float)
+    parser.add_argument("--top-k", type=int)
+    parser.add_argument("--min-p", type=float)
     args = parser.parse_args()
     if not 32 <= args.max_tokens <= 1024 or not 1 <= args.timeout <= 290:
         parser.error("max-tokens must be 32..1024 and timeout 1..290")
+    if (not 0 <= args.temperature <= 2 or (args.top_p is not None and not 0 < args.top_p <= 1)
+            or (args.top_k is not None and not 0 <= args.top_k <= 1000)
+            or (args.min_p is not None and not 0 <= args.min_p <= 1)):
+        parser.error("Invalid sampling parameters: temperature 0..2, top-p (0,1], top-k 0..1000, min-p 0..1")
+    tag = args.model.rsplit("/", 1)[-1].lower()
+    if tag.startswith("qwen3:") and "-thinking" in tag:
+        parser.error("Explicit Qwen3 thinking-only tags are incompatible with this non-thinking adapter; use an instruct variant")
     context = json.load(sys.stdin)
-    body = request_body(context, args.model, args.max_tokens)
+    body = request_body(context, args.model, args.max_tokens, args.temperature, args.top_p, args.top_k, args.min_p)
     request = urllib.request.Request("http://127.0.0.1:11434/api/generate",
                                      json.dumps(body).encode("utf-8"),
                                      {"Content-Type": "application/json"})
@@ -72,8 +97,9 @@ def main():
         raise RuntimeError("Local inference failed or exhausted its token budget")
     choice = json.loads(result["response"])
     print(json.dumps(choice))
-    print(json.dumps({key: result.get(key) for key in ("model", "total_duration", "load_duration",
-                                                      "prompt_eval_count", "eval_count")}), file=sys.stderr)
+    print(json.dumps({**{key: result.get(key) for key in ("model", "total_duration", "load_duration",
+                                                        "prompt_eval_count", "eval_count")},
+                      "options": body["options"]}), file=sys.stderr)
 
 
 if __name__ == "__main__":

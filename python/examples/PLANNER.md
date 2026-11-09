@@ -190,6 +190,62 @@ Feedback retains the last candidate ID even when observation no-ops follow a
 macro. Summaries include existing markets, granaries, staffed counts and Ceres
 temples, so low current ratings are not the only signal of recent construction.
 
+### Model Compatibility And Sampling
+
+This adapter requests **non-thinking** final JSON. Explicit Qwen3 `-thinking`
+tags are now rejected before inference: the publisher's
+[4B Thinking model card](https://huggingface.co/Qwen/Qwen3-4B-Thinking-2507)
+states that it supports only thinking mode. Earlier fixed trials forced
+`think=false`; their execution/replay evidence remains useful, but they are not
+valid measurements of that model's intended planning capability. The tag guard
+is not comprehensive model discovery: custom aliases and other model families
+still require checking their documented supported mode.
+
+For a separately installed non-thinking model, the
+[4B Instruct model card](https://huggingface.co/Qwen/Qwen3-4B-Instruct-2507)
+recommends temperature 0.7, top-p 0.8, top-k 20 and min-p 0. The corresponding
+[Ollama Q4_K_M tag](https://ollama.com/library/qwen3:4b-instruct-2507-q4_K_M)
+is about 2.5 GB. The adapter never downloads it automatically.
+
+```shell
+python examples/ollama_planner.py --model qwen3:4b-instruct-2507-q4_K_M --temperature 0.7 --top-p 0.8 --top-k 20 --min-p 0
+```
+
+This is a stdin/stdout command adapter: invoke it through `--model-command`,
+or supply a captured context on stdin for a protocol probe. Sampling flags are
+validated and recorded with inference metadata. Temperature defaults to zero
+for backwards compatibility; other sampler fields are left at model defaults
+unless explicitly set. A sampling change is a new configuration, not a claim
+of better game strategy or repeatable model decisions.
+
+### Food Flow And Observed History
+
+The provider-independent context now separates physical granary, market and
+household inventories from the city's cached granary-stock indicator. Farm
+progress remains work points, not edible stock. Compact food rows show position,
+workers/required workers, the current native local road-access predicate,
+inventories, free granary space and farm progress. Samples include at most four
+rows per kind, with omitted-row counts; totals include every active row. Cargo
+and warehouses remain outside this view, so it is not total city food accounting.
+
+The runner retains the last four actual decision cycles, including failures and
+terminal cycles. Each records elapsed paid ticks, status, and net changes in
+population, household food coverage, health, culture, separate food containers
+and treasury. They appear as `recent_outcomes` in the next decision's context and
+as `observed_outcome` alongside the action log. These are observations over time,
+not estimates that construction alone caused those changes. No ranking, reward,
+forced build order or duplicate-building prohibition is added.
+
+Optional forecasts now include physical granary and market inventory amounts.
+The existing legality, construction outlay, observation-interval and tick-budget
+rules remain unchanged. Rebuild the library for the separate food query and its
+new end artifact; see [RUNS.md](RUNS.md).
+
+```shell
+python -m unittest discover -s . -p test_planner_feedback.py
+python test_food_supply.py --data-dir <ABSOLUTE_DATA_DIRECTORY> --lib-path <ABSOLUTE_LIBRARY_PATH>
+```
+
 ### Peaceful Culture Actions
 
 Each of the existing well-based district anchors can now offer a school,

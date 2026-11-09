@@ -13,6 +13,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 from julius_gym import JuliusEnv
 from julius_gym.planner import command_choice, decision_context, execute_cycle, rule_choice, validate_choice
 from julius_gym.run_artifacts import DEFAULT_RUNS, RunArtifacts
+from julius_gym.diagnostics import capture_outcome, record_outcome
 
 
 def main():
@@ -57,6 +58,7 @@ def main():
         if mission["is_tutorial"] or mission["combat_events"] or mission["gladiator_revolt"]:
             raise RuntimeError("Planner requires a non-tutorial peaceful mission")
         ticks, calls, last = 0, 0, None
+        recent = []
         fallbacks = accepted = 0
         timing = {"preview_seconds": 0.0, "inference_seconds": 0.0, "execution_seconds": 0.0}
         terminated = truncated = False
@@ -68,7 +70,9 @@ def main():
                                                       forecast_ticks=args.forecast_ticks)
                 context["elapsed_ticks"] = ticks
                 context["minimum_decision_interval"] = args.decision_interval
+                context["recent_outcomes"] = recent
                 timing["preview_seconds"] += time.perf_counter() - started
+                before = capture_outcome(env, observation)
                 errors = []
                 attempts = []
                 for attempt in range(2):
@@ -102,7 +106,10 @@ def main():
                     env, candidate, observation, args.max_ticks - ticks, args.decision_interval)
                 timing["execution_seconds"] += time.perf_counter() - started
                 ticks += len(last["steps"])
+                recent = record_outcome(recent, candidate.id, last["status"], len(last["steps"]),
+                                        before, capture_outcome(env, observation))
                 log.write(json.dumps({"context": context, "choice": choice, "errors": errors,
+                                      "observed_outcome": recent[-1],
                                       "attempts": attempts, "timing_cumulative": timing, "result": last}) + "\n")
                 log.flush()
                 if terminated or truncated or ticks >= args.max_ticks:

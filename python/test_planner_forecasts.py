@@ -32,7 +32,8 @@ class ForecastTests(unittest.TestCase):
         adapter = importlib.util.module_from_spec(spec)
         spec.loader.exec_module(adapter)
         forecast = {"ticks": 800, "status": "completed", "population": 12, "food_stocks": 0,
-                    "residents_with_food": 0, "health": 50, "farm_workers": 0, "treasury": 90, "culture": 7}
+                    "residents_with_food": 0, "health": 50, "farm_workers": 0, "treasury": 90, "culture": 7,
+                    "granary_food_units": 120, "market_food_units": 30}
         context = {"decision_id": 0, "forecast_policy": {"minimum_ticks": 800},
                    "candidates": [{"id": "housing", "forecast": forecast}]}
         compact = json.loads(adapter.request_body(context, "test-model", 96)["prompt"])
@@ -50,6 +51,7 @@ class ForecastTests(unittest.TestCase):
         self.snapshot = self.env.snapshot.return_value.__enter__.return_value
         self.env.get_buildings.return_value = []
         self.env.get_population_info.return_value = {"health": 50}
+        self.env.get_food_supply.return_value = {"schema_version": 1, "units_per_load": 100, "buildings": []}
         self.candidate = Candidate("housing", [(5, 1, 1)], "current", {})
         self.before = observation(0, 100)
         self.built = observation(0, 90)
@@ -79,6 +81,7 @@ class ForecastTests(unittest.TestCase):
         self.assertEqual(forecast["ticks"], 5)
         self.assertEqual(forecast["population"], 12)
         self.assertEqual(forecast["culture"], 7)
+        self.assertEqual(forecast["market_food_units"], 0)
         self.assertEqual(forecast["treasury"], 85)
         self.assertEqual(len(execute.call_args.args[1].actions), 4)
         self.assertEqual(execute.call_args.args[3], 4)

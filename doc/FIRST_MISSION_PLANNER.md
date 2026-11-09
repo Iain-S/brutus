@@ -1,5 +1,41 @@
 # Peaceful campaign planner: Tarraco
 
+## Food observations and model-mode correction: 2026-11-09
+
+The separate native food-supply query now reports edible farm work progress,
+physical granary/market inventories and relevant staffing/road context. It does
+not reinterpret partial production as food, count free space as inventory, or
+claim cargo/warehouse visibility. New runs retain `final.food_supply.json` and
+replay compares it strictly when present; older building diagnostics are intact.
+
+The planner now receives bounded food samples and four recent actual cycles,
+including stock, household-food, population, culture, health and treasury
+changes. These are elapsed-cycle observations, not causal estimates. There is
+no forced strategy, ranking or duplicate-construction prohibition.
+
+A fixed 16-decision trial (suffix `planner-local_98c9fe3d`) ended at 12800 ticks
+with 310 residents, eight empty granaries, no farms/markets, no food and no win.
+All 16 responses were accepted without fallback; independent replay, including
+detailed food state, matched exactly. Prompts peaked at 3297 of 4096 tokens,
+and the server logged no prompt truncation. Previewing took about 210.9 seconds,
+inference 219.7 seconds. Richer input did not establish improved strategy.
+
+Investigation found a major configuration confound: the installed
+[Qwen3-4B-Thinking-2507](https://huggingface.co/Qwen/Qwen3-4B-Thinking-2507)
+supports only thinking mode, but these trials requested non-thinking JSON.
+Do not use the preceding trials to judge its intended reasoning capability.
+The adapter now rejects explicit Qwen3 thinking-only tags and exposes validated
+sampling controls. A separate
+[non-thinking instruction variant](https://huggingface.co/Qwen/Qwen3-4B-Instruct-2507)
+is the next comparison target; download approval is pending. Existing weights
+are retained. A captured-context probe with the installed hybrid 0.6B model
+verified the new sampling flags and valid final JSON only; no game actions were
+executed and no strategic-quality claim follows from that probe.
+
+The scripted food-preview regression also compares detailed inventories,
+production work and raw figure references against clean-reset action replay
+without previews at eight cycle boundaries. It passes with the new query.
+
 ## Peaceful culture capability: 2026-11-09
 
 School, library, theater and actor-colony candidates now use existing engine

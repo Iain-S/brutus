@@ -8,6 +8,7 @@ from collections import Counter
 
 from .baseline import bridge_plan, building_plan, exclude_hazard, starter_plan
 from .env import ActionType as A
+from .diagnostics import food_summary, food_totals
 
 
 def fingerprint(env, observation):
@@ -58,11 +59,14 @@ def preview_is_usable(result):
 
 def forecast_state(env, observation, ticks, status):
     buildings = env.get_buildings()
+    food = food_totals(env.get_food_supply())
     return {"ticks": ticks, "status": status,
             "population": int(observation["population_total"].item()),
             "culture": int(observation["ratings_culture"].item()),
             "treasury": int(observation["finance_treasury"].item()),
             "food_stocks": int(observation["resources_food_stocks"].item()),
+            "granary_food_units": food["granary_food_units"],
+            "market_food_units": food["market_food_units"],
             "residents_with_food": sum(b["population"] for b in buildings if b["food"] > 0),
             "health": env.get_population_info()["health"],
             "farm_workers": sum(b["workers"] for b in buildings if b["type"] == 100)}
@@ -241,6 +245,7 @@ def decision_context(env, observation, mission, decision_id, budget, last_result
     context = {"decision_id": decision_id, "objective": "Win Tarraco in minimum simulation ticks",
                "rules": "Choose one listed candidate_id. Return JSON decision_id, candidate_id, reason only.",
                "remaining_ticks": budget, "state": scalar, "mission": mission,
+               "food_supply": food_summary(env.get_food_supply(), buildings),
                "services": {"residents_with_food": sum(b["population"] for b in buildings if b["food"] > 0),
                             "residents_with_water": sum(b["population"] for b in buildings if b["well"] or b["fountain"]),
                             "health": env.get_population_info()["health"],
