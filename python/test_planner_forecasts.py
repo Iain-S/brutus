@@ -14,7 +14,7 @@ from julius_gym.planner import Candidate
 
 def observation(population, treasury):
     return {"population_total": np.array(population), "finance_treasury": np.array(treasury),
-            "resources_food_stocks": np.array(0)}
+            "resources_food_stocks": np.array(0), "ratings_culture": np.array(7)}
 
 
 class ForecastTests(unittest.TestCase):
@@ -32,7 +32,7 @@ class ForecastTests(unittest.TestCase):
         adapter = importlib.util.module_from_spec(spec)
         spec.loader.exec_module(adapter)
         forecast = {"ticks": 800, "status": "completed", "population": 12, "food_stocks": 0,
-                    "residents_with_food": 0, "health": 50, "farm_workers": 0, "treasury": 90}
+                    "residents_with_food": 0, "health": 50, "farm_workers": 0, "treasury": 90, "culture": 7}
         context = {"decision_id": 0, "forecast_policy": {"minimum_ticks": 800},
                    "candidates": [{"id": "housing", "forecast": forecast}]}
         compact = json.loads(adapter.request_body(context, "test-model", 96)["prompt"])
@@ -78,6 +78,7 @@ class ForecastTests(unittest.TestCase):
         self.assertEqual(outlay, 10)
         self.assertEqual(forecast["ticks"], 5)
         self.assertEqual(forecast["population"], 12)
+        self.assertEqual(forecast["culture"], 7)
         self.assertEqual(forecast["treasury"], 85)
         self.assertEqual(len(execute.call_args.args[1].actions), 4)
         self.assertEqual(execute.call_args.args[3], 4)

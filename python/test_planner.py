@@ -12,6 +12,19 @@ from julius_gym.planner import Candidate, command_choice, validate_choice, execu
 
 
 class PlannerTests(unittest.TestCase):
+    def test_culture_candidates_use_existing_peaceful_actions(self):
+        from types import SimpleNamespace
+        from julius_gym.planner import proposals
+        env = SimpleNamespace(get_map_data=lambda: (None, None, 10, 10),
+                              get_buildings=lambda: [{"type": 92, "x": 2, "y": 2}])
+        with patch("julius_gym.planner.exclude_hazard", return_value=None), \
+                patch("julius_gym.planner.building_plan", return_value=[]) as plan:
+            choices = dict(proposals(env, {"entry": (0, 0), "earthquake": {}}, 14))
+            for name, action, size in (("school", 16, 2), ("library", 18, 2),
+                                        ("theater", 19, 2), ("actor_colony", 50, 3)):
+                choices[f"add_{name}_district_0"]()
+                self.assertEqual(plan.call_args.args[-2:], (action, size))
+
     def test_observation_interval_stops_at_victory(self):
         from types import SimpleNamespace
         from julius_gym.planner import execute_cycle

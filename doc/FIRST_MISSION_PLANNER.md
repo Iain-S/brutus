@@ -1,5 +1,38 @@
 # Peaceful campaign planner: Tarraco
 
+## Peaceful culture capability: 2026-11-09
+
+School, library, theater and actor-colony candidates now use existing engine
+construction actions at the current well-district anchors. The model receives
+their building counts, the theater/actor prerequisite, and actual culture in
+optional forecasts. No build order is forced; campaign and combat rules are
+unchanged. The native integration test constructs all four, observes culture 60
+at 4800 ticks, and checks preview rollback and an independent simulation suffix.
+The three-way inhabited preview/no-preview comparison also passes.
+
+A fixed 16-decision follow-up with the same model, execution interval and tick
+horizon ended at 12800 ticks with 340 residents, 60 residents holding food,
+16 accepted choices, zero fallback and no win. Its run suffix is
+`planner-local_203e3d06`, with the usual end save for Julius review. Independent
+action-log replay matched exactly. Prompts peaked at 2743 tokens with the
+4096-token context setting; this bounded run showed no context-limit hit, not
+a guarantee for arbitrary future candidate sets. Previewing took about 220.7
+seconds and inference 189.0 seconds.
+
+The agent chose seven housing expansions, the wheat-supply macro while housing
+was still available, seven extra markets and one extra granary. The endpoint
+had one farm, eight markets, two granaries and no culture buildings. Delivery
+improved relative to the prior trial's 19 food-holding residents, but most
+residents still lacked food inventory and culture remained unaddressed.
+New choices being executable does not establish that the model uses them well.
+The runs differ in objective transmission, observations, choices and forecasts,
+so this does not isolate the cause of any change in model behavior.
+
+Next prioritize diagnostic food-flow visibility and evidence-based planner
+feedback rather than adding a hand-coded market/food/culture build order.
+Placement locality, housing expansion, health and full rating management remain
+limitations before a credible full-mission optimization experiment.
+
 ## GPU-backed 4B trial: 2026-11-09
 
 After repairing local GPU inference, an unchanged adapter trial used installed
@@ -31,9 +64,9 @@ reset isolation and linked hippodrome venue semantics. These counters were not
 in the compact state aliases, so their correction alone does not explain or
 fix the model's repeated granary choices.
 
-Remaining executor limitations matter independently of model size: placement
+Executor limitations in that recorded trial matter independently of model size: placement
 anchors do not guarantee nearby service coverage, detailed food inventories
-are not exposed, and the vocabulary has no education or entertainment actions.
+are not exposed, and that vocabulary had no education or entertainment actions.
 Religion alone cannot reach the culture goal of 45. Expand and validate those
 capabilities before presenting any full-mission run as a fair planning test.
 

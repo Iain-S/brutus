@@ -60,6 +60,7 @@ def forecast_state(env, observation, ticks, status):
     buildings = env.get_buildings()
     return {"ticks": ticks, "status": status,
             "population": int(observation["population_total"].item()),
+            "culture": int(observation["ratings_culture"].item()),
             "treasury": int(observation["finance_treasury"].item()),
             "food_stocks": int(observation["resources_food_stocks"].item()),
             "residents_with_food": sum(b["population"] for b in buildings if b["food"] > 0),
@@ -190,7 +191,9 @@ def proposals(env, mission, radius):
             anchors.append((b["x"], b["y"]))
     for index, anchor in enumerate(anchors[:4]):
         for name, kind, size in (("market", A.BUILD_MARKET, 2), ("granary", A.BUILD_GRANARY, 3),
-                                 ("doctor", A.BUILD_DOCTOR, 1), ("temple", A.BUILD_TEMPLE_SMALL, 2)):
+                                 ("doctor", A.BUILD_DOCTOR, 1), ("temple", A.BUILD_TEMPLE_SMALL, 2),
+                                 ("school", A.BUILD_SCHOOL, 2), ("library", A.BUILD_LIBRARY, 2),
+                                 ("theater", A.BUILD_THEATER, 2), ("actor_colony", A.BUILD_ACTOR_COLONY, 3)):
             yield f"add_{name}_district_{index}", lambda kind=kind, size=size, anchor=anchor: building_plan(
                 terrain, buildings, width, height, entry, kind, size, anchor=anchor)
 
@@ -246,6 +249,10 @@ def decision_context(env, observation, mission, decision_id, budget, last_result
                             "granaries": sum(b["type"] == 71 for b in buildings),
                             "staffed_granaries": sum(b["type"] == 71 and b["workers"] > 0 for b in buildings),
                             "ceres_temples": sum(b["type"] == 60 for b in buildings),
+                            "schools": sum(b["type"] == 51 for b in buildings),
+                            "libraries": sum(b["type"] == 53 for b in buildings),
+                            "theaters": sum(b["type"] == 31 for b in buildings),
+                            "actor_colonies": sum(b["type"] == 36 for b in buildings),
                             "farms": sum(b["type"] == 100 for b in buildings),
                             "farm_workers": sum(b["workers"] for b in buildings if b["type"] == 100),
                             "farms_without_labor_coverage": sum(b["type"] == 100 and b["houses_covered"] == 0 for b in buildings)},

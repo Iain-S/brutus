@@ -35,7 +35,7 @@ def request_body(context, model, tokens):
                "validation_errors": context.get("validation_errors", [])}
     if "forecast_policy" in context:
         columns = ["ticks", "status", "population", "food_stocks", "residents_with_food",
-                   "health", "farm_workers", "treasury"]
+                   "health", "farm_workers", "treasury", "culture"]
         compact["forecast_policy"] = context["forecast_policy"]
         compact["forecast_columns"] = columns
         compact["candidate_columns"].append("forecast")
@@ -47,6 +47,7 @@ def request_body(context, model, tokens):
                       "Immigrants cannot arrive without houses. Workers come from residents, not empty lots. "
                       "Building takes only a few ticks; waiting after housing lets immigrants and services act. "
                       "Farms produce food, granaries store it, markets deliver it. Temples are buildings, not housing districts. "
+                      "Theaters need performers from actor colonies; schools and libraries provide education. "
                       "Return required JSON only. Keep the reason under eight words.",
             "prompt": json.dumps(compact),
             "options": {"num_predict": tokens, "num_ctx": 4096, "temperature": 0}}

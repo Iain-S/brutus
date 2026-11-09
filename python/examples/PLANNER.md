@@ -6,9 +6,9 @@ not a demonstrated LLM solution to Tarraco.
 
 The compact local request preserves the explicit objective: win in minimum
 simulation ticks. Treasury is relevant to feasibility, not a replacement
-optimization target. The current candidate vocabulary is still incomplete:
-it has no education or entertainment macros, so it cannot yet meet Tarraco's
-culture goal. Successful food construction or a higher population is not a win.
+optimization target. The candidate vocabulary now includes basic education and
+entertainment, but complete mission reachability is not demonstrated. Successful
+construction, a higher population or one satisfied rating is not a win.
 
 Every invocation automatically retains a persistent end save and run manifest;
 see [RUNS.md](RUNS.md) for the naming convention and manual Julius PNG capture.
@@ -190,6 +190,30 @@ Feedback retains the last candidate ID even when observation no-ops follow a
 macro. Summaries include existing markets, granaries, staffed counts and Ceres
 temples, so low current ratings are not the only signal of recent construction.
 
+### Peaceful Culture Actions
+
+Each of the existing well-based district anchors can now offer a school,
+library, theater and actor colony, subject to normal availability, footprint,
+cost and engine-preview rules. The existing four-district and 128-action caps
+remain. An actor colony uses the engine's 3x3 footprint; the other three use
+2x2. No campaign data, combat behavior or forced build order changes.
+
+The model receives counts for these buildings and the factual prerequisite
+that theaters need performers from actor colonies. Counts do not imply staffing,
+coverage or active performances. Placement anchors remain heuristic rather than
+guaranteed short-distance coverage. Optional forecasts now include actual culture
+alongside population and food outcomes, so the new actions' relevant effects
+are not omitted from the lookahead.
+
+```shell
+python test_culture_macros.py --data-dir <ABSOLUTE_DATA_DIRECTORY> --lib-path <ABSOLUTE_LIBRARY_PATH>
+```
+
+The engine regression builds all four kinds through paid actions, observes
+positive culture, checks building counts, preview rollback and an independent
+simulation suffix. The tested starter reached culture 60 at 4800 ticks. This
+validates executor capability, not autonomous mission completion.
+
 ### Optional Outcome Forecasts
 
 `--forecast-ticks 1600` adds an optional no-further-construction continuation
@@ -199,7 +223,7 @@ macro's construction ticks, clamped to the remaining episode budget. The actual
 duration and end status are reported. Longer macros can exceed a shorter
 requested duration, so compare the reported tick counts.
 
-Forecasts report population, treasury, food stocks, household food coverage,
+Forecasts report population, culture, treasury, food stocks, household food coverage,
 health and farm workers from the real simulator. Construction legality and net
 construction outlay remain separate. A legal macro whose continuation loses or
 truncates is still offered, with that forecast outcome visible. Forecasting
