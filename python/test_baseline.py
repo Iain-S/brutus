@@ -10,6 +10,7 @@ from test_snapshot_restore import observation_digest
 
 def run(env):
     obs, info = env.reset()
+    assert int(obs["buildings_housing_capacity"].item()) == 0, "Reset retained stale housing capacity"
     terrain, buildings, width, height = env.get_map_data()
     assert not terrain[height:, :].any() and not terrain[:, width:].any()
     actions = starter_plan(terrain, buildings, width, height, info["mission"]["entry"])
@@ -24,6 +25,8 @@ def run(env):
         if action[0]:
             assert result["message"].startswith("Built "), (action, result)
             assert int(obs["finance_treasury"].item()) < before
+        if action[0] == 5:
+            assert int(obs["buildings_housing_capacity"].item()) > 0, "Built housing still reports zero capacity"
         history.append((observation_digest(env, obs), reward, result))
     assert int(obs["time_total_months"].item()) > start_months
     assert int(obs["population_total"].item()) > start_population

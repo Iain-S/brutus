@@ -274,3 +274,31 @@ before extending game horizons. Then evaluate whether decisions address food,
 staffing and services instead of repeatedly expanding vacant housing. Eleven
 boundary/adapter tests and the engine replay test pass; model quality still
 requires live evaluation rather than synthetic command fixtures.
+
+### Fixed-configuration checkpoint: 2026-11-09
+
+Planner corrections, durable artifacts, and the local adapter were committed as
+`5b9bd048`. The first unchanged-adapter trial completed two accepted waits with
+zero fallback, but no construction or residents. Transport success alone was
+therefore insufficient. Source review also found `housing_capacity` was still
+a zero placeholder in the C observation exporter.
+
+The exporter now computes physical housing counts/capacity from active and newly
+created house records, using the same house-model capacity and merged-house
+multiplier as the engine. This is not a guarantee of road access or immediate
+migration eligibility. A regression first failed against the zero placeholder
+and then passed; construction/reset replay and planner engine tests also pass.
+
+After that correction and an explicit housing prerequisite in the local prompt,
+a separate fixed-configuration trial made three model calls and accepted all
+three decisions without retries or fallback: housing, housing, farmland bridge.
+Capacity observations at those decisions were 0, 40 and 80. The run stopped at
+the three-decision budget after 51 game ticks, with zero residents and no win.
+Inference took about 93 seconds, previewing about 5 seconds. City growth cannot
+be judged from this short construction phase. The final save/log are in the
+2026-11-09 run folder ending `planner-local_ed114240`.
+
+The basic fallback-free local-control checkpoint is demonstrated, not mission
+competence. Next use a larger decision budget with an explicit simulation
+horizon to observe immigration and evaluate food/staffing decisions. Do not
+silently add uncharged waiting or equate valid construction with useful strategy.

@@ -1,6 +1,8 @@
 #include "observation.h"
 
 #include "building/count.h"
+#include "building/building.h"
+#include "building/model.h"
 #include "city/culture.h"
 #include "city/data.h"
 #include "city/finance.h"
@@ -75,29 +77,16 @@ int gymnasium_get_observation(gymnasium_observation_t *obs)
 
     // Extract building counts
     // Note: We aggregate different building types into categories
-    obs->buildings.housing = building_count_total(BUILDING_HOUSE_SMALL_TENT) +
-                             building_count_total(BUILDING_HOUSE_LARGE_TENT) +
-                             building_count_total(BUILDING_HOUSE_SMALL_SHACK) +
-                             building_count_total(BUILDING_HOUSE_LARGE_SHACK) +
-                             building_count_total(BUILDING_HOUSE_SMALL_HOVEL) +
-                             building_count_total(BUILDING_HOUSE_LARGE_HOVEL) +
-                             building_count_total(BUILDING_HOUSE_SMALL_CASA) +
-                             building_count_total(BUILDING_HOUSE_LARGE_CASA) +
-                             building_count_total(BUILDING_HOUSE_SMALL_INSULA) +
-                             building_count_total(BUILDING_HOUSE_MEDIUM_INSULA) +
-                             building_count_total(BUILDING_HOUSE_LARGE_INSULA) +
-                             building_count_total(BUILDING_HOUSE_GRAND_INSULA) +
-                             building_count_total(BUILDING_HOUSE_SMALL_VILLA) +
-                             building_count_total(BUILDING_HOUSE_MEDIUM_VILLA) +
-                             building_count_total(BUILDING_HOUSE_LARGE_VILLA) +
-                             building_count_total(BUILDING_HOUSE_GRAND_VILLA) +
-                             building_count_total(BUILDING_HOUSE_SMALL_PALACE) +
-                             building_count_total(BUILDING_HOUSE_MEDIUM_PALACE) +
-                             building_count_total(BUILDING_HOUSE_LARGE_PALACE) +
-                             building_count_total(BUILDING_HOUSE_LUXURY_PALACE);
-
-    // Note: total housing capacity is not exposed via public API
-    obs->buildings.housing_capacity = 0; // Not available
+    // Physical capacity, including newly placed lots before the next daily
+    // activation pass. Road connectivity and migration eligibility are separate.
+    for (int id = 1; id < MAX_BUILDINGS; id++) {
+        const building *b = building_get(id);
+        if ((b->state == BUILDING_STATE_IN_USE || b->state == BUILDING_STATE_CREATED) && b->house_size) {
+            obs->buildings.housing++;
+            obs->buildings.housing_capacity += model_get_house(b->subtype.house_level)->max_people *
+                (b->house_is_merged ? 4 : 1);
+        }
+    }
 
     obs->buildings.food_buildings = building_count_total(BUILDING_WHEAT_FARM) +
                                     building_count_total(BUILDING_VEGETABLE_FARM) +

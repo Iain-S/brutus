@@ -30,7 +30,8 @@ def request_body(context, model, tokens):
                "validation_errors": context.get("validation_errors", [])}
     return {"model": model, "stream": False, "think": False, "format": schema,
             "system": "You run Caesar III. Choose a candidate to advance goals without overspending. "
-                      "Workers come from residents, not empty lots. Waiting lets immigrants and services act. "
+                      "Immigrants cannot arrive without houses. Workers come from residents, not empty lots. "
+                      "Building takes only a few ticks; waiting after housing lets immigrants and services act. "
                       "Return required JSON only. Keep the reason under eight words.",
             "prompt": json.dumps(compact),
             "options": {"num_predict": tokens, "num_ctx": 4096, "temperature": 0}}

@@ -127,6 +127,18 @@ Use an installed model with `ollama_planner.py --model qwen3:0.6b` to reproduce
 the connection with the current adapter. The 4B model remains installed; it was
 unloaded from memory after the timeout trial, not deleted.
 
+### Housing observation correction
+
+The initial fixed-configuration follow-up returned two valid waits and attracted
+no residents. Reviewing the observation exporter also revealed a separate input
+bug: housing capacity was hard-coded to zero. It now sums the physical capacity
+of active and newly created house records using the engine's house models.
+Housing counts are calculated from the same records rather than a periodically
+updated cache. This is physical capacity, not a guarantee of road access or
+immediate migration eligibility. Rebuild the library to use the correction.
+The local prompt explicitly states that immigration requires housing; factual
+game prerequisites are supplied to the model rather than forcing an action ID.
+
 ### State and terminal-outcome corrections
 
 Rebuild the shared library after the state-token changes. Freshness now includes
