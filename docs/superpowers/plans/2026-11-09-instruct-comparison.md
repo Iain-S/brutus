@@ -31,7 +31,7 @@ results are not a controlled attribution of changes to model size alone.
 - [x] Run the fixed experiment; inspect accepted/fallback choices and prompt truncation.
 - [x] Independently replay final building/food diagnostics, population and outcome.
 - [x] Record source/configuration, outcome metrics, end-save location and limitations.
-- [ ] Commit and push verified source/documentation only; preserve staged models.
+- [x] Commit and push verified source/documentation only; preserve staged models.
 
 ## Parallel Audit
 
@@ -82,3 +82,44 @@ Ruling: do not spend a larger live-run budget on the same repeated construction
 yet. First probe identical captured contexts with a named-field representation
 of the same factual forecasts. No forced ordering or new strategic hints. This
 can test an input-interpretation concern, not establish a full-game improvement.
+
+Trial documentation committed and pushed as `84fea8cf`; staged model artifacts
+were excluded and remain untouched.
+
+## Offline Representation Probe
+
+Three captured decisions (9, 12, 14) were each sampled once in both forms with
+seed 42 and the trial sampling profile. Only candidate forecast arrays became
+objects using their existing column names; all values, candidate order, other
+facts, output schema and system instructions were identical. An independent
+round-trip comparison verified equality. No game actions were executed.
+
+Compact choices were granary, granary, school. Named-field choices were school,
+school, theater in district 1. All six responses completed normally. Compact
+prompts were 2506/2635/2673 tokens; named prompts 3447/3576/3614, all within the
+4096-token setting, with no server truncation entries. Requests/responses are
+retained under ignored `runs/instruct-representation-probe/`.
+
+Ruling: do not deploy the representation change on this evidence. Choice
+sensitivity does not establish improved outcomes; the named form also leaves
+less context headroom. Before another live trial, probe the already-installed
+thinking variant with thinking enabled and a bounded token/time budget. This
+is a separate model/mode/budget experiment, not another representation pair.
+
+## Bounded Thinking-Mode Probe
+
+The installed thinking variant reports thinking capability. On captured decision
+9 with named forecasts, thinking enabled, context 8192 and a 2048-token output
+budget, schema-constrained decoding returned an empty final response. A short
+JSON object appeared only in the thinking channel. Do not promote that object
+to an accepted planner answer or interpret this as successful deliberation.
+Removing only the `format` constraint then timed out after 290 seconds without
+a completed response. Requests and diagnostics remain in ignored
+`runs/thinking-mode-probe/`; no game actions or downloads occurred.
+
+The constrained-output symptom is consistent with reported
+[Ollama thinking/structured-output interactions](https://github.com/ollama/ollama/issues/10538),
+but the local observations do not establish the precise server root cause or
+prove that all model/version combinations fail. No service upgrade, response
+channel workaround or adapter thinking-mode support was deployed. Return to
+the supported instruction model for the bounded representation comparison.

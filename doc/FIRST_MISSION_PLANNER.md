@@ -1,5 +1,20 @@
 # Peaceful campaign planner: Tarraco
 
+## Optional Named Forecasts
+
+The local adapter accepts `--forecast-format objects` to send candidate
+forecasts as dictionaries instead of positional rows. The default remains
+`rows`; no facts, action availability, ordering or sampling settings change.
+The chosen format is recorded in adapter stderr metadata. With forecasts
+disabled the flag does not invent them. Objects consume more context: three
+captured probes grew from 2506-2673 to 3447-3614 tokens of the current 4096.
+Check prompt counts and Ollama truncation logs before interpreting live results.
+
+In one paired sample at each of three saved decisions, named forecasts selected
+actions with higher forecast culture than the row form. This is input-format
+sensitivity and a reason for a bounded live test, not evidence of a faster win.
+No human-directed build order or duplicate-construction filter is introduced.
+
 ## Compatible instruction-model result: 2026-11-09
 
 The first full trial with `qwen3:4b-instruct-2507-q4_K_M` used source

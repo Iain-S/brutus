@@ -7,7 +7,8 @@ import sys
 import urllib.request
 
 
-def request_body(context, model, tokens, temperature=0.0, top_p=None, top_k=None, min_p=None):
+def request_body(context, model, tokens, temperature=0.0, top_p=None, top_k=None, min_p=None,
+                 forecast_format="rows"):
     schema = {"type": "object", "properties": {
         "decision_id": {"type": "integer", "enum": [context["decision_id"]]},
         "candidate_id": {"type": "string", "enum": [c["id"] for c in context["candidates"]]},
@@ -38,11 +39,13 @@ def request_body(context, model, tokens, temperature=0.0, top_p=None, top_k=None
         columns = ["ticks", "status", "population", "food_stocks", "residents_with_food",
                    "health", "farm_workers", "treasury", "culture", "granary_food_units", "market_food_units"]
         compact["forecast_policy"] = context["forecast_policy"]
-        compact["forecast_columns"] = columns
+        if forecast_format == "rows":
+            compact["forecast_columns"] = columns
         compact["candidate_columns"].append("forecast")
         for row, candidate in zip(compact["candidates"], context["candidates"]):
             forecast = candidate.get("forecast", {})
-            row.append([forecast.get(key) for key in columns])
+            values = {key: forecast.get(key) for key in columns}
+            row.append(values if forecast_format == "objects" else list(values.values()))
     if "recent_outcomes" in context:
         metrics = ["population", "residents_with_food", "health", "culture", "granary_food_units",
                    "market_food_units", "house_food_units", "treasury"]
@@ -76,6 +79,8 @@ def main():
     parser.add_argument("--top-p", type=float)
     parser.add_argument("--top-k", type=int)
     parser.add_argument("--min-p", type=float)
+    parser.add_argument("--forecast-format", choices=("rows", "objects"), default="rows",
+                        help="Candidate forecast representation; objects use more context tokens")
     args = parser.parse_args()
     if not 32 <= args.max_tokens <= 1024 or not 1 <= args.timeout <= 290:
         parser.error("max-tokens must be 32..1024 and timeout 1..290")
@@ -87,7 +92,8 @@ def main():
     if tag.startswith("qwen3:") and "-thinking" in tag:
         parser.error("Explicit Qwen3 thinking-only tags are incompatible with this non-thinking adapter; use an instruct variant")
     context = json.load(sys.stdin)
-    body = request_body(context, args.model, args.max_tokens, args.temperature, args.top_p, args.top_k, args.min_p)
+    body = request_body(context, args.model, args.max_tokens, args.temperature, args.top_p, args.top_k, args.min_p,
+                        forecast_format=args.forecast_format)
     request = urllib.request.Request("http://127.0.0.1:11434/api/generate",
                                      json.dumps(body).encode("utf-8"),
                                      {"Content-Type": "application/json"})
@@ -99,7 +105,7 @@ def main():
     print(json.dumps(choice))
     print(json.dumps({**{key: result.get(key) for key in ("model", "total_duration", "load_duration",
                                                         "prompt_eval_count", "eval_count")},
-                      "options": body["options"]}), file=sys.stderr)
+                      "options": body["options"], "forecast_format": args.forecast_format}), file=sys.stderr)
 
 
 if __name__ == "__main__":
