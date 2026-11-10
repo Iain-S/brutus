@@ -14,6 +14,27 @@ spec.loader.exec_module(adapter)
 
 
 class AdapterProfileTests(unittest.TestCase):
+    def test_context_budget_only_changes_num_ctx_and_preserves_default(self):
+        context = {"decision_id": 0, "candidates": [{"id": "wait"}]}
+        default = adapter.request_body(context, "model", 256)
+        self.assertEqual(default, adapter.request_body(context, "model", 256, context_tokens=4096))
+        large = adapter.request_body(context, "model", 256, context_tokens=8192)
+        self.assertEqual(large["options"]["num_ctx"], 8192)
+        large["options"]["num_ctx"] = 4096
+        self.assertEqual(default, large)
+
+    def test_invalid_context_budget_rejected_before_inference(self):
+        for value in ("2047", "16385", "0", "8192.5"):
+            with patch.object(sys, "argv", ["adapter", "--model", "test-model", "--context-tokens", value]), \
+                    patch.object(sys, "stderr", StringIO()) as error, \
+                    patch.object(adapter.urllib.request, "urlopen") as request:
+                with self.assertRaises(SystemExit) as stopped:
+                    adapter.main()
+                self.assertEqual(stopped.exception.code, 2)
+                self.assertIn("context", error.getvalue())
+                self.assertIn("invalid int" if "." in value else "2048..16384", error.getvalue())
+                request.assert_not_called()
+
     def test_forecast_objects_preserve_fields_values_order_and_defaults(self):
         context = {"decision_id": 5, "forecast_policy": "no further construction", "candidates": [
             {"id": "first", "forecast": {"ticks": 1600, "status": "truncated", "population": 83,
@@ -49,17 +70,22 @@ class AdapterProfileTests(unittest.TestCase):
             {"id": "wait", "forecast": {"ticks": 800, "population": 12}}]}
         result = {"done": True, "done_reason": "stop", "response": json.dumps(
             {"decision_id": 0, "candidate_id": "wait", "reason": "test"})}
-        with patch.object(sys, "argv", ["adapter", "--model", "test-model", "--forecast-format", "objects"]), \
-                patch.object(sys, "stdin", StringIO(json.dumps(context))), \
-                patch.object(sys, "stdout", StringIO()) as output, \
-                patch.object(sys, "stderr", StringIO()) as audit, \
-                patch.object(adapter.urllib.request, "urlopen", return_value=StringIO(json.dumps(result))) as request:
-            adapter.main()
-        sent = json.loads(request.call_args.args[0].data)
-        prompt = json.loads(sent["prompt"])
-        self.assertEqual(prompt["candidates"][0][-1]["population"], 12)
-        self.assertEqual(json.loads(output.getvalue())["candidate_id"], "wait")
-        self.assertEqual(json.loads(audit.getvalue())["forecast_format"], "objects")
+        for budget in (2048, 8192, 16384):
+            with self.subTest(budget=budget), \
+                    patch.object(sys, "argv", ["adapter", "--model", "test-model", "--forecast-format", "objects",
+                                               "--context-tokens", str(budget)]), \
+                    patch.object(sys, "stdin", StringIO(json.dumps(context))), \
+                    patch.object(sys, "stdout", StringIO()) as output, \
+                    patch.object(sys, "stderr", StringIO()) as audit, \
+                    patch.object(adapter.urllib.request, "urlopen", return_value=StringIO(json.dumps(result))) as request:
+                adapter.main()
+            sent = json.loads(request.call_args.args[0].data)
+            prompt = json.loads(sent["prompt"])
+            self.assertEqual(prompt["candidates"][0][-1]["population"], 12)
+            self.assertEqual(json.loads(output.getvalue())["candidate_id"], "wait")
+            self.assertEqual(json.loads(audit.getvalue())["forecast_format"], "objects")
+            self.assertEqual(sent["options"]["num_ctx"], budget)
+            self.assertEqual(json.loads(audit.getvalue())["options"]["num_ctx"], budget)
 
     def test_explicit_sampling_preserves_model_and_schema_bounds(self):
         body = adapter.request_body({"decision_id": 3, "candidates": [{"id": "wait"}]}, "test-model", 256,

@@ -1,5 +1,27 @@
 # Peaceful campaign planner: Tarraco
 
+## Explicit Context Budget: 2026-11-10
+
+The local adapter now accepts `--context-tokens 8192` (allowed range
+2048-16384, unchanged default 4096). This changes only Ollama's requested
+`num_ctx`; the chosen value is already included in stderr `options` metadata
+and the run's model-command configuration. Prompts, candidate availability,
+sampling, response budgets and game behavior are unchanged. Larger contexts
+may increase GPU/CPU memory use and inference time.
+
+For named forecasts, verify representative large inputs, actual loaded context
+capacity and server truncation logs before interpreting decisions. Reserving
+space for the output and some growth is necessary; simply accepting JSON is
+not a context-integrity check. A verified fixed trial does not guarantee that
+arbitrarily larger future states will fit.
+
+Preflight of the three largest saved objects-mode prompts reported 4204, 4188
+and 4158 input tokens at an actual loaded capacity of 8192. Each completed with
+valid current-decision JSON, verified GPU offload and no server truncation.
+After reserving 256 output tokens, the smallest remaining margin was 3732.
+This verifies those saved inputs only; another live trajectory still needs its
+own prompt-count and server-log checks.
+
 ## Optional Named Forecasts
 
 The local adapter accepts `--forecast-format objects` to send candidate

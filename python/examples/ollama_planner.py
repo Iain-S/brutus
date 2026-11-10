@@ -8,7 +8,7 @@ import urllib.request
 
 
 def request_body(context, model, tokens, temperature=0.0, top_p=None, top_k=None, min_p=None,
-                 forecast_format="rows"):
+                 forecast_format="rows", context_tokens=4096):
     schema = {"type": "object", "properties": {
         "decision_id": {"type": "integer", "enum": [context["decision_id"]]},
         "candidate_id": {"type": "string", "enum": [c["id"] for c in context["candidates"]]},
@@ -53,7 +53,7 @@ def request_body(context, model, tokens, temperature=0.0, top_p=None, top_k=None
         compact["recent_outcomes"] = [[r["candidate_id"], r["ticks"], r["status"],
                                        *[r["delta"][key] for key in metrics]]
                                       for r in context["recent_outcomes"][-4:]]
-    options = {"num_predict": tokens, "num_ctx": 4096, "temperature": temperature}
+    options = {"num_predict": tokens, "num_ctx": context_tokens, "temperature": temperature}
     for name, value in (("top_p", top_p), ("top_k", top_k), ("min_p", min_p)):
         if value is not None:
             options[name] = value
@@ -81,9 +81,13 @@ def main():
     parser.add_argument("--min-p", type=float)
     parser.add_argument("--forecast-format", choices=("rows", "objects"), default="rows",
                         help="Candidate forecast representation; objects use more context tokens")
+    parser.add_argument("--context-tokens", type=int, default=4096,
+                        help="Ollama context capacity (2048..16384); larger budgets may use more memory/time")
     args = parser.parse_args()
     if not 32 <= args.max_tokens <= 1024 or not 1 <= args.timeout <= 290:
         parser.error("max-tokens must be 32..1024 and timeout 1..290")
+    if not 2048 <= args.context_tokens <= 16384:
+        parser.error("context-tokens must be 2048..16384")
     if (not 0 <= args.temperature <= 2 or (args.top_p is not None and not 0 < args.top_p <= 1)
             or (args.top_k is not None and not 0 <= args.top_k <= 1000)
             or (args.min_p is not None and not 0 <= args.min_p <= 1)):
@@ -93,7 +97,7 @@ def main():
         parser.error("Explicit Qwen3 thinking-only tags are incompatible with this non-thinking adapter; use an instruct variant")
     context = json.load(sys.stdin)
     body = request_body(context, args.model, args.max_tokens, args.temperature, args.top_p, args.top_k, args.min_p,
-                        forecast_format=args.forecast_format)
+                        forecast_format=args.forecast_format, context_tokens=args.context_tokens)
     request = urllib.request.Request("http://127.0.0.1:11434/api/generate",
                                      json.dumps(body).encode("utf-8"),
                                      {"Content-Type": "application/json"})
