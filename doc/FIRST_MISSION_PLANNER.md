@@ -1,5 +1,55 @@
 # Peaceful campaign planner: Tarraco
 
+## Intact-Input Trial And Mission Reachability: 2026-11-10
+
+Source `894e216f`, run `planner-local_2c28aa7a`, repeated the objects-mode
+configuration with only the requested context budget raised to 8192. All 16
+decisions were accepted without fallback. At 12800 paid ticks the city had 140
+residents, culture 40, 70 residents holding food, 259 household food units,
+404 market units and empty granaries. There was no win. The model chose eight
+schools, a theater, the wheat-supply macro, another farmland connection, two
+farms, two farm-worker housing macros and a market; no general housing expansion.
+
+Peak prompt length was 5098 tokens, leaving 2838 after reserving the 256-token
+response budget. Runtime capacity was verified as 8192 with GPU offload and no
+server prompt-truncation entries. Previewing took 129.6 seconds, inference
+383.2, total wall 515.8. Independent replay `replay_01b87cea` matched per-step
+results, final buildings, population, victory and complete food diagnostics.
+Standard final saves and runtime sidecars are retained; PNG capture is manual.
+
+This resolves the observed input-capacity failure for this bounded trajectory,
+not the planning problem. Repeated schools still yielded no additional culture
+in several recorded cycles, and housing growth remained limited. One stochastic
+trajectory does not isolate context size as the cause of the population change.
+The default remains 4096/rows; use the explicit settings to reproduce this trial.
+
+Before spending more calls on longer runs, account for two source-level limits:
+
+- `src/city/ratings.c` updates peace annually: the first two clean years add two
+  points each, then clean years add five. Starting at zero, the best sequence is
+  2, 4, 9, 14, 19, 24, 29, 34. Thus peace 30 requires at least eight annual
+  updates, even without crime or destruction. A roughly 16-month trial cannot
+  demonstrate a complete win; these trials measure partial development only.
+- `src/gymnasium/action.h` exposes construction, tax and wage controls, not
+  imperial gifts, request dispatch or governor salary. In ordinary peaceful
+  play these omissions block the normal favor-management routes. The observed
+  starting favor is 50 and the target is 70; the three milestone bonuses in
+  `src/city/ratings.c` add at most 15 even before annual losses. Gifts and
+  fulfilled requests use the normal engine in `src/city/emperor.c` and
+  `src/scenario/request.c`, but are not reachable through the current adapter.
+
+A read-only native reset inspection confirmed that all five targets are active:
+population 2500, culture 45, prosperity 25, peace 30 and favor 70, with initial
+peace zero and favor 50. This is an action-capability/horizon issue, not something
+a better model alone can solve. The inspection executed no game actions.
+
+Next checkpoint: audit coverage of every active win criterion, then expose and
+test missing lawful imperial observations/actions, including personal savings,
+actual gift costs and diminishing returns, without granting money/favor or
+forcing a gift schedule. Also verify housing evolution/prosperity capabilities
+and choose a horizon consistent with normal peace progression. Do not weaken
+the mission goals or accelerate the engine's annual ratings.
+
 ## Explicit Context Budget: 2026-11-10
 
 The local adapter now accepts `--context-tokens 8192` (allowed range
