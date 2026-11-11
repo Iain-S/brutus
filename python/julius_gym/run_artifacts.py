@@ -54,6 +54,8 @@ class RunArtifacts:
                     json.dumps(env.get_buildings(), indent=2), encoding="utf-8")),
                 ("final.food_supply.json", lambda: (self.directory / "final.food_supply.json").write_text(
                     json.dumps(env.get_food_supply(), indent=2), encoding="utf-8")),
+                ("final.imperial.json", lambda: (self.directory / "final.imperial.json").write_text(
+                    json.dumps(env.get_imperial_state(), indent=2), encoding="utf-8")),
             ):
                 try:
                     write()

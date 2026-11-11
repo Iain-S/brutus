@@ -5,6 +5,7 @@
 #include "building/construction_clear.h"
 #include "building/type.h"
 #include "city/finance.h"
+#include "city/emperor.h"
 #include "city/labor.h"
 #include "city/warning.h"
 #include "map/grid.h"
@@ -133,6 +134,9 @@ const char *gymnasium_action_name(gymnasium_action_type_t type)
         case ACTION_BUILD_LION_HOUSE: return "BUILD_LION_HOUSE";
         case ACTION_BUILD_CHARIOT_MAKER: return "BUILD_CHARIOT_MAKER";
         case ACTION_CLEAR_LAND: return "CLEAR_LAND";
+        case ACTION_SEND_MODEST_GIFT: return "SEND_MODEST_GIFT";
+        case ACTION_SEND_GENEROUS_GIFT: return "SEND_GENEROUS_GIFT";
+        case ACTION_SEND_LAVISH_GIFT: return "SEND_LAVISH_GIFT";
         default: return "UNKNOWN";
     }
 }
@@ -169,6 +173,16 @@ int gymnasium_validate_action(const gymnasium_action_t *action, gymnasium_action
     if (action->type < 0 || action->type >= ACTION_COUNT) {
         set_result(result, 0, ACTION_ERROR_INVALID_TYPE, "Invalid action type");
         return 0;
+    }
+
+    if (action->type >= ACTION_SEND_MODEST_GIFT && action->type <= ACTION_SEND_LAVISH_GIFT) {
+        int cost = city_emperor_gift_cost(action->type - ACTION_SEND_MODEST_GIFT);
+        if (cost > city_emperor_personal_savings()) {
+            set_result(result, 0, ACTION_ERROR_NO_MONEY, "Insufficient personal savings for imperial gift");
+            return 0;
+        }
+        set_result(result, 1, ACTION_ERROR_NONE, "Affordable imperial gift");
+        return 1;
     }
 
     // Administrative actions don't need coordinate validation
@@ -229,6 +243,21 @@ int gymnasium_execute_action(const gymnasium_action_t *action, gymnasium_action_
     // First validate the action
     if (!gymnasium_validate_action(action, result)) {
         return -1;
+    }
+
+    if (action->type >= ACTION_SEND_MODEST_GIFT && action->type <= ACTION_SEND_LAVISH_GIFT) {
+        int size = action->type - ACTION_SEND_MODEST_GIFT;
+        int cost = city_emperor_gift_cost(size);
+        city_emperor_calculate_gift_costs();
+        if (!city_emperor_set_gift_size(size)) {
+            set_result(result, 0, ACTION_ERROR_NO_MONEY, "Insufficient personal savings for imperial gift");
+            return -1;
+        }
+        city_emperor_send_gift();
+        char message[256];
+        snprintf(message, sizeof(message), "Sent %s for %d personal denarii", gymnasium_action_name(action->type), cost);
+        set_result(result, 1, ACTION_ERROR_NONE, message);
+        return 0;
     }
 
     if (is_building_action(action->type) || action->type == ACTION_CLEAR_LAND) {

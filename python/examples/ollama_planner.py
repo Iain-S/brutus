@@ -35,9 +35,15 @@ def request_body(context, model, tokens, temperature=0.0, top_p=None, top_k=None
                "last_status": (context.get("last_result") or {}).get("status"),
                "last_action": (context.get("last_result") or {}).get("candidate_id"),
                "validation_errors": context.get("validation_errors", [])}
+    if "imperial" in context:
+        compact["imperial"] = context["imperial"]
+        compact["candidate_columns"].append("personal_savings_cost")
+        for row, candidate in zip(compact["candidates"], context["candidates"]):
+            row.append(candidate.get("personal_savings_cost", 0))
     if "forecast_policy" in context:
         columns = ["ticks", "status", "population", "food_stocks", "residents_with_food",
-                   "health", "farm_workers", "treasury", "culture", "granary_food_units", "market_food_units"]
+                   "health", "farm_workers", "treasury", "culture", "granary_food_units", "market_food_units",
+                   "favor", "personal_savings"]
         compact["forecast_policy"] = context["forecast_policy"]
         if forecast_format == "rows":
             compact["forecast_columns"] = columns
@@ -65,6 +71,7 @@ def request_body(context, model, tokens, temperature=0.0, top_p=None, top_k=None
                       "Theaters need performers from actor colonies; schools and libraries provide education. "
                       "Reported food_stocks is filtered granary stock, not another inventory to add. "
                       "Recent deltas include all activity during each cycle, not just construction. "
+                      "Imperial gifts spend personal savings, not city treasury; repeated gifts have diminishing returns. "
                       "Return required JSON only. Keep the reason under eight words.",
             "prompt": json.dumps(compact),
             "options": options}

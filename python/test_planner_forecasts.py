@@ -14,10 +14,21 @@ from julius_gym.planner import Candidate
 
 def observation(population, treasury):
     return {"population_total": np.array(population), "finance_treasury": np.array(treasury),
-            "resources_food_stocks": np.array(0), "ratings_culture": np.array(7)}
+            "resources_food_stocks": np.array(0), "ratings_culture": np.array(7), "ratings_favor": np.array(50)}
 
 
 class ForecastTests(unittest.TestCase):
+    def test_appended_gift_actions_are_not_misclassified_as_construction(self):
+        from julius_gym.env import ActionType as A
+        from julius_gym.planner import execute
+        for message, status in (("Sent SEND_MODEST_GIFT for 45 personal denarii", "completed"),
+                                ("Insufficient personal savings for imperial gift", "failed")):
+            self.env.step_at.return_value = (self.before, 0, False, False, {"message": message})
+            candidate = Candidate("gift", [(A.SEND_MODEST_GIFT, 0, 0)], "current", {})
+            with patch("julius_gym.planner.fingerprint", return_value="current"):
+                _, result, _, _ = execute(self.env, candidate, self.before, 1)
+            self.assertEqual(result["status"], status)
+
     def test_runner_rejects_unbounded_forecast_horizons(self):
         runner = Path(__file__).parent / "examples" / "run_planner.py"
         for ticks in (-1, 8001):
@@ -33,7 +44,7 @@ class ForecastTests(unittest.TestCase):
         spec.loader.exec_module(adapter)
         forecast = {"ticks": 800, "status": "completed", "population": 12, "food_stocks": 0,
                     "residents_with_food": 0, "health": 50, "farm_workers": 0, "treasury": 90, "culture": 7,
-                    "granary_food_units": 120, "market_food_units": 30}
+                    "granary_food_units": 120, "market_food_units": 30, "favor": 53, "personal_savings": 155}
         context = {"decision_id": 0, "forecast_policy": {"minimum_ticks": 800},
                    "candidates": [{"id": "housing", "forecast": forecast}]}
         compact = json.loads(adapter.request_body(context, "test-model", 96)["prompt"])
@@ -51,6 +62,7 @@ class ForecastTests(unittest.TestCase):
         self.snapshot = self.env.snapshot.return_value.__enter__.return_value
         self.env.get_buildings.return_value = []
         self.env.get_population_info.return_value = {"health": 50}
+        self.env.get_imperial_state.return_value = {"personal_savings": 155}
         self.env.get_food_supply.return_value = {"schema_version": 1, "units_per_load": 100, "buildings": []}
         self.candidate = Candidate("housing", [(5, 1, 1)], "current", {})
         self.before = observation(0, 100)
@@ -81,6 +93,8 @@ class ForecastTests(unittest.TestCase):
         self.assertEqual(forecast["ticks"], 5)
         self.assertEqual(forecast["population"], 12)
         self.assertEqual(forecast["culture"], 7)
+        self.assertEqual(forecast["favor"], 50)
+        self.assertEqual(forecast["personal_savings"], 155)
         self.assertEqual(forecast["market_food_units"], 0)
         self.assertEqual(forecast["treasury"], 85)
         self.assertEqual(len(execute.call_args.args[1].actions), 4)

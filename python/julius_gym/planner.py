@@ -40,8 +40,9 @@ def execute(env, candidate, observation, budget):
         observation, reward, terminated, truncated, info = env.step_at(*action)
         record = {"action": action, "reward": reward, **info}
         records.append(record)
+        success_prefix = "Sent " if A.SEND_MODEST_GIFT <= action[0] <= A.SEND_LAVISH_GIFT else "Built "
         failed = (not terminated and not truncated and action[0] >= A.BUILD_HOUSING
-                  and not info["message"].startswith("Built "))
+                  and not info["message"].startswith(success_prefix))
         if failed or terminated or truncated:
             break
     else:
@@ -63,6 +64,8 @@ def forecast_state(env, observation, ticks, status):
     return {"ticks": ticks, "status": status,
             "population": int(observation["population_total"].item()),
             "culture": int(observation["ratings_culture"].item()),
+            "favor": int(observation["ratings_favor"].item()),
+            "personal_savings": env.get_imperial_state()["personal_savings"],
             "treasury": int(observation["finance_treasury"].item()),
             "food_stocks": int(observation["resources_food_stocks"].item()),
             "granary_food_units": food["granary_food_units"],
@@ -200,6 +203,9 @@ def proposals(env, mission, radius):
                                  ("theater", A.BUILD_THEATER, 2), ("actor_colony", A.BUILD_ACTOR_COLONY, 3)):
             yield f"add_{name}_district_{index}", lambda kind=kind, size=size, anchor=anchor: building_plan(
                 terrain, buildings, width, height, entry, kind, size, anchor=anchor)
+    for name, kind in (("modest", A.SEND_MODEST_GIFT), ("generous", A.SEND_GENEROUS_GIFT),
+                       ("lavish", A.SEND_LAVISH_GIFT)):
+        yield f"send_{name}_gift", lambda kind=kind: [(kind, 0, 0)]
 
 
 def decision_context(env, observation, mission, decision_id, budget, last_result=None, radius=14,
@@ -210,6 +216,8 @@ def decision_context(env, observation, mission, decision_id, budget, last_result
     macro. It is an observed net outlay, not a construction-price quotation.
     """
     state = fingerprint(env, observation)
+    imperial = env.get_imperial_state()
+    gift_quotes = {f"send_{gift['name']}_gift": gift["cost"] for gift in imperial["gifts"]}
     candidates, unavailable = {}, []
     for name, make_actions in proposals(env, mission, radius):
         try:
@@ -231,6 +239,9 @@ def decision_context(env, observation, mission, decision_id, budget, last_result
                              "preview_outcome": result["status"]}
         if name == "establish_wheat_supply":
             candidate.preview["benefit"] = "farm, worker housing, granary and market"
+        if name in gift_quotes:
+            candidate.preview["personal_savings_cost"] = gift_quotes[name]
+            candidate.preview["benefit"] = "imperial gift; personal savings; normal diminishing returns"
         if forecast is not None:
             candidate.preview["forecast"] = forecast
         candidates[name] = candidate
@@ -244,7 +255,7 @@ def decision_context(env, observation, mission, decision_id, budget, last_result
     scalar = {k: int(v.item()) for k, v in observation.items()}
     context = {"decision_id": decision_id, "objective": "Win Tarraco in minimum simulation ticks",
                "rules": "Choose one listed candidate_id. Return JSON decision_id, candidate_id, reason only.",
-               "remaining_ticks": budget, "state": scalar, "mission": mission,
+               "remaining_ticks": budget, "state": scalar, "mission": mission, "imperial": imperial,
                "food_supply": food_summary(env.get_food_supply(), buildings),
                "services": {"residents_with_food": sum(b["population"] for b in buildings if b["food"] > 0),
                             "residents_with_water": sum(b["population"] for b in buildings if b["well"] or b["fountain"]),

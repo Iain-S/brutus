@@ -12,6 +12,17 @@ spec.loader.exec_module(replay)
 
 
 class ReplayTests(unittest.TestCase):
+    def test_optional_imperial_state_is_compared_strictly(self):
+        env = SimpleNamespace(get_imperial_state=Mock(return_value={"personal_savings": 100, "favor": 53}))
+        missing = SimpleNamespace(exists=lambda: False)
+        self.assertFalse(replay.verify_imperial_state(env, missing))
+        env.get_imperial_state.assert_not_called()
+        path = SimpleNamespace(exists=lambda: True, read_text=lambda **kwargs: '{"personal_savings":100,"favor":53}')
+        self.assertTrue(replay.verify_imperial_state(env, path))
+        env.get_imperial_state.return_value["personal_savings"] = 99
+        with self.assertRaisesRegex(AssertionError, "imperial"):
+            replay.verify_imperial_state(env, path)
+
     def test_optional_food_diagnostics_are_compared_strictly(self):
         env = SimpleNamespace(get_food_supply=Mock(return_value={"schema_version": 1, "buildings": []}))
         path = SimpleNamespace(exists=lambda: False)

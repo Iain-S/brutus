@@ -14,6 +14,20 @@ spec.loader.exec_module(adapter)
 
 
 class AdapterProfileTests(unittest.TestCase):
+    def test_imperial_input_distinguishes_personal_gift_price_and_forecast(self):
+        context = {"decision_id": 0, "imperial": {"personal_savings": 200, "salary_amount": 8},
+                   "forecast_policy": "test", "candidates": [{"id": "send_modest_gift",
+                   "personal_savings_cost": 45, "net_treasury_outlay": 0,
+                   "forecast": {"favor": 53, "personal_savings": 155}}]}
+        body = adapter.request_body(context, "model", 256, forecast_format="objects")
+        compact = json.loads(body["prompt"])
+        self.assertEqual(compact["imperial"], context["imperial"])
+        row = dict(zip(compact["candidate_columns"], compact["candidates"][0]))
+        self.assertEqual(row["personal_savings_cost"], 45)
+        self.assertEqual(row["net_outlay"], 0)
+        self.assertEqual(row["forecast"]["favor"], 53)
+        self.assertEqual(row["forecast"]["personal_savings"], 155)
+
     def test_context_budget_only_changes_num_ctx_and_preserves_default(self):
         context = {"decision_id": 0, "candidates": [{"id": "wait"}]}
         default = adapter.request_body(context, "model", 256)

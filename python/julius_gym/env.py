@@ -266,7 +266,10 @@ class ActionType:
     BUILD_CHARIOT_MAKER = 53
     CLEAR_LAND = 54
     BUILD_LOW_BRIDGE = 55
-    COUNT = 56
+    SEND_MODEST_GIFT = 56
+    SEND_GENEROUS_GIFT = 57
+    SEND_LAVISH_GIFT = 58
+    COUNT = 59
 
 
 class JuliusEnv(gym.Env):
@@ -277,8 +280,9 @@ class JuliusEnv(gym.Env):
         Dict containing various city metrics (ratings, finance, population, etc.)
 
     Action Space:
-        Discrete(55) - 55 different action types including:
+        Discrete(59) - action types including:
         - Administrative: adjust taxes, wages
+        - Imperial gifts paid from personal savings
         - Building: construct various buildings at coordinates
         - Destruction: clear land
 
@@ -669,6 +673,16 @@ class JuliusEnv(gym.Env):
         output = ctypes.create_string_buffer(1024 * 1024)
         if query(self.env_handle, output, len(output)) != 0:
             raise RuntimeError("Cannot read food supply diagnostics")
+        return json.loads(output.value)
+
+    def get_imperial_state(self):
+        """Read personal savings, salary and fresh native gift costs without advancing time."""
+        query = self.lib.julius_env_get_imperial_state
+        query.argtypes = [c_void_p, POINTER(c_char), c_int32]
+        query.restype = c_int32
+        output = ctypes.create_string_buffer(2048)
+        if query(self.env_handle, output, len(output)) != 0:
+            raise RuntimeError("Cannot read imperial diagnostics")
         return json.loads(output.value)
 
     def get_buildings(self):

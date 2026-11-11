@@ -1,5 +1,42 @@
 # Peaceful campaign planner: Tarraco
 
+## Imperial Capability And Water Audit: 2026-11-11
+
+Three appended gift actions now use the normal emperor path, paid from personal
+savings with unchanged costs and diminishing returns. A separate read-only
+imperial query exposes salary, savings, favor, timing/penalty and fresh gift
+quotes without modifying GUI caches. The planner receives this factual state,
+legal gift choices and favor/personal-savings forecasts. No gift schedule or
+winning build order is forced. Request dispatch and salary controls remain
+unimplemented. Action IDs 0-55 are unchanged, but the space is now 59 actions;
+old fixed-action-space RL checkpoints require their old build or migration.
+
+Native tests cover quote immutability/buffer guards, personal rather than city
+payments, all sizes, affordability boundaries and diminishing returns. The
+asset-backed test funds gifts through ordinary salary, checks candidate preview
+rollback and waits for the native 12-month recovery. Future run bundles include
+`final.imperial.json`; replay compares the entire diagnostic payload when present
+and remains compatible with older bundles lacking it. These are capability
+checks, not autonomous wins or full-state GUI-cache coverage.
+
+The independent housing audit identified a stronger remaining barrier. Read-only
+inspection of the currently loaded original house models confirms that the
+maximum prosperity contribution without fountain water is 20. Small hovel
+(level 4) contributes 25 and requires fountain water, one food type, religion
+and suitable desirability. Pottery is not required at that tier. Native city
+prosperity is capped by the unweighted house-model average, so the current
+well-only vocabulary cannot reach the active target 25 from this initial city.
+Loaded-model observations are retained in ignored `runs/housing-model-audit.json`;
+model data was not modified or copied into tracked source.
+
+Working fountains require workers and a supplied reservoir's range. Gym exposes
+fountain construction, but no reservoir/aqueduct actions, and the planner offers
+no fountain candidates. Next add and test the complete normal water-supply
+capability, not a decorative unsupplied fountain or altered house requirements.
+Then verify prosperity growth, scalable district coverage and economic controls
+before another long model trial. The first four well anchors still limit the
+current district-service search; population 2500 has not been demonstrated.
+
 ## Intact-Input Trial And Mission Reachability: 2026-11-10
 
 Source `894e216f`, run `planner-local_2c28aa7a`, repeated the objects-mode

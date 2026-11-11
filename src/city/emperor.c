@@ -194,12 +194,22 @@ int city_emperor_can_send_gift(int size)
     return city_data.emperor.gifts[size].cost <= city_data.emperor.personal_savings;
 }
 
-void city_emperor_calculate_gift_costs(void)
+int city_emperor_gift_cost(int size)
 {
     int savings = city_data.emperor.personal_savings;
-    city_data.emperor.gifts[GIFT_MODEST].cost = savings / 8 + 20;
-    city_data.emperor.gifts[GIFT_GENEROUS].cost = savings / 4 + 50;
-    city_data.emperor.gifts[GIFT_LAVISH].cost = savings / 2 + 100;
+    switch (size) {
+        case GIFT_MODEST: return savings / 8 + 20;
+        case GIFT_GENEROUS: return savings / 4 + 50;
+        case GIFT_LAVISH: return savings / 2 + 100;
+        default: return -1;
+    }
+}
+
+void city_emperor_calculate_gift_costs(void)
+{
+    for (int size = GIFT_MODEST; size <= GIFT_LAVISH; size++) {
+        city_data.emperor.gifts[size].cost = city_emperor_gift_cost(size);
+    }
 }
 
 void city_emperor_send_gift(void)

@@ -14,12 +14,13 @@ runs/
         final.sav
         final.buildings.json
         final.food_supply.json
+        final.imperial.json
         REVIEW.md
         final.png                 (add manually after Julius capture)
 ```
 
 Date and timestamp use UTC. Mode is `baseline`, `planner-smoke`,
-`planner-local`, or `replay`. The random suffix avoids collisions, including simultaneous
+`planner-local`, `imperial-capability` (native integration checks), or `replay`. The random suffix avoids collisions, including simultaneous
 runs. Filenames inside a run stay fixed so they are easy to compare.
 
 - `actions.jsonl`: action/decision records.
@@ -29,6 +30,8 @@ runs. Filenames inside a run stay fixed so they are easy to compare.
 - `final.buildings.json`: engine building/service diagnostics at the end.
 - `final.food_supply.json`: separate farm progress and granary/market inventories;
   excludes cargo, warehouses and household inventory (the latter is in building diagnostics).
+- `final.imperial.json`: personal savings/salary, favor, gift timing/penalty and
+  fresh native gift quotes, separate from city treasury.
 - `REVIEW.md`: screenshot capture instructions for that folder.
 - `final.png`: reserved name for the real-assets Julius screenshot; not created
   or imitated by the headless runner.
@@ -83,3 +86,9 @@ When the source run includes `final.food_supply.json`, replay also compares that
 entire versioned payload strictly and reports `food_supply_verified: true`.
 Older runs without it retain their existing checks and report this extra check
 as false; no historical food observations are invented or silently migrated.
+
+When `final.imperial.json` is present, replay strictly compares its whole
+diagnostic payload and reports `imperial_state_verified: true`. Older bundles
+without it retain their existing checks and report this extra check as false.
+The query does not include every GUI-only cached gift field; normal save files
+retain those native fields for interactive review.

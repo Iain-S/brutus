@@ -1,5 +1,38 @@
 # Julius Gymnasium Environment
 
+## Imperial Gifts And Personal Finances
+
+Rebuild `julius_gym` before using the new imperial capability.
+`env.get_imperial_state()` returns read-only versioned JSON data: favor,
+personal savings, governor rank/salary, months since the last gift, the native
+gift-overdose counter, and fresh costs/affordability for all three gift sizes.
+It neither advances time nor changes the GUI's cached gift prices, and remains
+available after an episode ends. Personal savings are not city treasury.
+
+`ActionType.SEND_MODEST_GIFT` (56), `SEND_GENEROUS_GIFT` (57) and
+`SEND_LAVISH_GIFT` (58) use the normal native gift functions. Coordinates are
+ignored. Each is an ordinary paid simulation step; insufficient personal funds
+reject the gift, and the normal tick is still charged. Costs, favor clamping,
+diminishing returns and the native 12-month recovery are unchanged. The planner
+offers engine-legal gift candidates without prescribing a gifting schedule.
+Forecasts include favor/personal savings, with gift prices separate from city
+treasury outlay. No salary changes or request dispatch are implemented yet.
+
+Existing action IDs 0-55 and observation/config struct layouts are unchanged,
+but the action space grows from 56 to 59. Existing fixed-action-space RL models
+need their matching old build/package or explicit migration; they cannot be
+assumed compatible with the expanded space.
+
+```shell
+python test_imperial.py --data-dir <ABSOLUTE_DATA_DIRECTORY> --lib-path <ABSOLUTE_LIBRARY_PATH>
+cmake --build <ABSOLUTE_BUILD_DIRECTORY> --target gym_imperial_test
+ctest --test-dir <ABSOLUTE_BUILD_DIRECTORY> -R gym_imperial --output-on-failure
+```
+
+The asset-backed test earns savings through ordinary salary, checks preview
+rollback, sends native gifts, waits for normal recovery and retains a replayable
+run bundle. It is a capability test, not a winning controller.
+
 ## Peaceful Campaign Selection
 
 With a rebuilt headless library, select a campaign using `campaign_rank` instead
@@ -140,7 +173,7 @@ done = False
 total_reward = 0
 
 while not done:
-    # Choose action (0-55)
+    # Choose action (0-58)
     action = env.action_space.sample()  # Random action
 
     # Execute action
@@ -201,7 +234,7 @@ The observation space is a dictionary containing:
 
 ## Action Space
 
-Discrete action space with 56 actions:
+Discrete action space with 59 actions:
 
 ### Administrative Actions (0-4)
 - `NONE` (0): No action
@@ -220,6 +253,11 @@ Discrete action space with 56 actions:
 ### Bridge (55)
 
 - `BUILD_LOW_BRIDGE` (55): Build an engine-validated low bridge from a shoreline water tile.
+
+### Imperial Gifts (56-58)
+
+- `SEND_MODEST_GIFT` (56), `SEND_GENEROUS_GIFT` (57), `SEND_LAVISH_GIFT` (58):
+  use personal savings and the normal emperor gift rules, not city treasury.
 
 ## Reward Structure
 

@@ -632,6 +632,7 @@ set(TRANSLATION_FILES
     ${PROJECT_SOURCE_DIR}/src/translation/translation.c
 )
 set(GYMNASIUM_FILES
+    ${PROJECT_SOURCE_DIR}/src/gymnasium/imperial.c
     ${PROJECT_SOURCE_DIR}/src/gymnasium/food_supply.c
     ${PROJECT_SOURCE_DIR}/src/gymnasium/observation.c
     ${PROJECT_SOURCE_DIR}/src/gymnasium/action.c
@@ -1002,6 +1003,9 @@ else()
         add_executable(gym_food_supply_test test/gymnasium/food_supply.c)
         target_link_libraries(gym_food_supply_test PRIVATE julius_gym)
         add_test(NAME gym_food_supply COMMAND gym_food_supply_test)
+        add_executable(gym_imperial_test test/gymnasium/imperial.c)
+        target_link_libraries(gym_imperial_test PRIVATE julius_gym)
+        add_test(NAME gym_imperial COMMAND gym_imperial_test)
     endif()
     
     # Link against found libraries OR nothing (if using bundled sources)
