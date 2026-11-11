@@ -19,6 +19,14 @@ rollback and waits for the native 12-month recovery. Future run bundles include
 and remains compatible with older bundles lacking it. These are capability
 checks, not autonomous wins or full-state GUI-cache coverage.
 
+Source `4c856281` was verified by the committed salary-funded integration
+`imperial-capability_2a8b9a8a` and independent `replay_4dc4ff66`. All 29443 paid
+steps matched, including final imperial/food/building diagnostics. The native
+unit suite (three tests), 41 planner unit tests, four replay tests, two artifact
+tests and the baseline/food/culture/nine-block native regressions passed.
+The control intentionally has zero population; it demonstrates tool correctness,
+not strategic competence. Its standard save is retained for Julius inspection.
+
 The independent housing audit identified a stronger remaining barrier. Read-only
 inspection of the currently loaded original house models confirms that the
 maximum prosperity contribution without fountain water is 20. Small hovel

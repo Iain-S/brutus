@@ -33,7 +33,7 @@ Keep the current worktree/branch to preserve user staging and installed build.
 - [x] Implement fresh read-only costs/query and normal guarded gift step actions; test affordable/unaffordable gifts, personal vs city money, diminishing returns, buffer safety, unchanged IDs and query immutability.
 - [x] Add Python binding, planner choices/factual inputs/forecasts; test preview rollback, natural salary funding, ordinary step accounting and independent replay.
 - [x] Save final imperial diagnostics in future bundles and strictly compare when present; retain compatibility for older bundles lacking the file.
-- [ ] Build, run focused suites/native tests, review, document audit limitations, commit and push source only.
+- [x] Build, run focused suites/native tests, review, document audit limitations, commit and push source only.
 
 ## Validation
 
@@ -75,3 +75,15 @@ reservoirs/fountains (and aqueducts where needed) are missing from the action/
 planner vocabulary. Next implement real water infrastructure and test activation,
 housing evolution and prosperity; do not substitute rule changes or a forced
 winning policy. Scalable service siting and fiscal controls remain audit items.
+
+## Committed Verification
+
+Implementation and documentation pushed as `4c856281`, excluding all staged
+model artifacts. Rebuilt and repeated the salary-funded/recovery integration
+from that commit: `imperial-capability_2a8b9a8a`, 29443 ticks, no injected savings
+or favor. Independent `replay_4dc4ff66` verified per-step messages/rewards,
+population/victory, buildings, detailed food and the whole imperial diagnostic
+payload. Both retain standard final saves for manual Julius review; no PNG was
+generated. This zero-population control is deliberately not a mission strategy
+or autonomous win. No live LLM run was spent on the still-incomplete water
+capability.
