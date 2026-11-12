@@ -27,6 +27,7 @@ No automatic model installation, engine policy change or imposed build order.
 - [x] Implement the helper and invoke it before accepting JSON output; run all adapter/planner tests and source review.
 - [x] Finish bounded occupied-state headroom probes with persistent endpoint saves; explicitly distinguish timeout, one-token probe and real accepted decisions.
 - [ ] Commit/push only verified source/docs. Run a short model-selected experiment only after a usable headroom measurement; audit every call and replay its actions independently.
+- [ ] If the fixed trial shows forecast-inferior repetition, evaluate forecast representation separately on a replayed frozen state; execute none of the probe choices and retain its normal final save/diagnostics.
 
 ## Probe Results
 
@@ -52,3 +53,37 @@ server/output-budget errors and CLI refusal to emit unsafe decision JSON.
 All 47 planner/adapter unit tests pass. Metadata is emitted to stderr before
 validation so rejected responses still retain token counts/options in the
 existing bounded command audit; unsafe decision JSON never reaches stdout.
+
+## Frozen-State Evaluation Design
+
+**Blocked:** The fixed trial subsequently failed strict final-state replay.
+Its forecasts may be contaminated by an unsnapshotted native water-worker
+allocation cursor. Planning-quality inferences below are provisional, not a
+validated model diagnosis. The representation probe was not executed. See
+`2026-11-12-water-labor-snapshot.md`; first repair and prove determinism, then
+capture a fresh clean frozen state. Do not reuse the polluted historical context
+as a trusted counterfactual baseline.
+
+The fixed trial is source `be4e2258`, 16 decisions / 12,800 ticks maximum,
+800-tick decision cadence and 1,600-tick forecasts, instruct-model profile with
+8K context, rows, max output 256, temperature 0.7 / top-p 0.8 / top-k 20 / min-p 0,
+adapter timeout 170 seconds / runner timeout 180 seconds. Keep its inputs fixed.
+
+Initial rows show some repeated water choices inferior to waiting on reported
+forecast endpoints. A source/data review found no forecast-column alignment
+defect. Some other water forecasts do improve future coverage; do not label
+every repeated action useless. Short forecasts also fail to show food payoffs.
+
+For a diagnostic after the fixed trial, freeze decision 3 by strictly replaying
+its first three action blocks, verify the scalar observations match, and retain
+all state facts. Restrict BOTH diagnostic conditions to the same four recorded
+legal choices: housing, wheat supply, water supply and wait. This restriction
+keeps named-object forecasts within 8K without the measured 16K memory/latency
+penalty. It is an evaluation subset, never a deployed tool mask or game policy.
+
+Make three requests per representation (rows versus named objects), alternating
+which goes first, with identical model/settings/facts and normal validation.
+Do not execute these choices. Persist raw requests/responses, choice audit and
+the frozen endpoint save in `planner-choice-probe`. This tiny unseeded sample
+can indicate representation sensitivity, not establish statistical significance
+or full-action strategy quality. Reject telemetry/headroom failures explicitly.

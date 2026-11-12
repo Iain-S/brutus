@@ -9,6 +9,7 @@
 #include "city/data_private.h"
 
 #include "city/finance.h"
+#include "city/labor.h"
 #include "city/ratings.h"
 #include "city/victory.h"
 #include "core/config.h"
@@ -75,6 +76,7 @@ struct julius_snapshot {
     random_snapshot *random;
     city_victory_snapshot victory;
     int fire_direction;
+    int water_allocation_cursor;
     uint64_t state_token;
     julius_env_t *owner;
     char filename[2 * FILE_NAME_MAX];
@@ -261,18 +263,22 @@ int julius_env_reset(julius_env_t *env, gymnasium_observation_t *observation)
         return -1;
     }
 
+    int previous_water_cursor = city_labor_water_allocation_cursor();
+    city_labor_restore_water_allocation_cursor(1);
     if (env->campaign_selected) {
         scenario_set_custom(0);
         scenario_set_campaign_rank(env->campaign_rank);
         scenario_set_campaign_mission(game_mission_peaceful());
         // The campaign path ignores the filename and loads mission1.pak.
         if (!game_file_start_scenario("")) {
+            city_labor_restore_water_allocation_cursor(previous_water_cursor);
             env->episode_active = 0;
             snprintf(env->error_message, sizeof(env->error_message), "Failed to load campaign rank %d", env->campaign_rank);
             return -1;
         }
     } else if (env->config.scenario_file) {
         if (!game_file_start_scenario(env->config.scenario_file)) {
+            city_labor_restore_water_allocation_cursor(previous_water_cursor);
             snprintf(env->error_message, sizeof(env->error_message),
                     "Failed to load scenario: %s", env->config.scenario_file);
             return -1;
@@ -501,6 +507,7 @@ julius_snapshot_t *julius_env_snapshot_create(julius_env_t *env)
     }
     city_victory_capture_state(&snapshot->victory);
     snapshot->fire_direction = building_maintenance_fire_direction();
+    snapshot->water_allocation_cursor = city_labor_water_allocation_cursor();
 
     if (!game_file_write_saved_game(snapshot->filename)) {
         snprintf(env->error_message, sizeof(env->error_message),
@@ -540,6 +547,7 @@ int julius_env_snapshot_restore(julius_env_t *env, const julius_snapshot_t *snap
     random_snapshot_restore(snapshot->random);
     city_victory_restore_state(&snapshot->victory);
     building_maintenance_restore_fire_direction(snapshot->fire_direction);
+    city_labor_restore_water_allocation_cursor(snapshot->water_allocation_cursor);
     env->current_tick = snapshot->current_tick;
     env->state_token = snapshot->state_token;
     env->episode_active = snapshot->episode_active;

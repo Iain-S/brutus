@@ -783,3 +783,36 @@ taxation capabilities before imposing any further economic mechanism. Longer
 trials must account for annual counter resets, recurring expenses and the
 peace-rating time floor. The four-anchor service-search limit, broader gods
 and trade remain known limitations or possible needs, not proven solved.
+
+## Water Labor Determinism Failure: 2026-11-12
+
+The expanded-capability trial on `be4e2258`, `planner-local_e2122189`, completed
+16 accepted model decisions with no retries/fallbacks, at 12,800 ticks and
+population 76. Prompt counts ranged from 2,909 to 7,167 of 8,192 tokens. It chose
+one housing expansion, nine water macros, one wheat-supply macro and five actor
+colonies. **This is not a validated strategy result:** strict independent
+`replay_5a59fe42` matched every action/message/reward but failed final buildings.
+
+Workers were distributed differently between fountains 17 and 21, changing
+fountain access for houses 9 and 10. Food, finance and imperial endpoint JSON
+matched exactly; water/housing reflected the staffing difference. Source review
+identified the native water-allocation round-robin cursor as unsnapshotted
+function-static state. Forecast branches could thus affect later live labor
+allocation even when their visible immediate state restored correctly.
+
+Preserve both bundles and their failed comparison. Do not weaken replay checks
+or attribute the repeated choices solely to model quality before repairing this
+leak. The planned rows-versus-objects frozen-state diagnostic was not executed;
+the old forecasts are not a trusted counterfactual baseline. The repair plan is
+`docs/superpowers/plans/2026-11-12-water-labor-snapshot.md`.
+
+The repair retains the native allocation algorithm, captures/restores its cursor
+with Gym snapshots and initializes it before Gym mission loading. Failed loads
+preserve the previous cursor. A fresh recorded-action control (not new model
+decisions) now matches without/with all normal forecasts: baseline
+`preview-replay-control_1db08036`, forecasts `preview-replay-control_e46cc3f1`.
+All six endpoints, population/victory, 25,600 combined step messages/rewards,
+reset cursors and 16 immediate cursor rollback checks match. Native scarcity,
+nested snapshot and failed-reset regressions pass. This repairs the reproduced
+execution drift, not the historical strategy benchmark; a fresh model trial is
+still required before diagnosing planning quality.

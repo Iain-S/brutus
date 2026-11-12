@@ -1,7 +1,8 @@
-"""Exercise transient wind and terminal-state rollback through native test hooks."""
+"""Exercise transient water labor, wind, reset failures and terminal-state rollback."""
 
 import argparse
 import ctypes
+from pathlib import Path
 
 from julius_gym import JuliusEnv
 
@@ -18,6 +19,27 @@ def main():
     env = JuliusEnv(data_directory=args.data_dir, lib_path=args.lib_path, campaign_rank=3, max_ticks=20000)
     try:
         env.reset()
+        cursor = env.lib.city_labor_water_allocation_cursor
+        cursor.argtypes = []
+        cursor.restype = ctypes.c_int
+        restore_cursor = env.lib.city_labor_restore_water_allocation_cursor
+        restore_cursor.argtypes = [ctypes.c_int]
+        restore_cursor.restype = None
+        assert cursor() == 1, "Episode inherited a previous water allocation cursor"
+        restore_cursor(17)
+        with env.snapshot() as snapshot:
+            restore_cursor(29)
+            with env.snapshot() as nested:
+                restore_cursor(31)
+                nested.restore()
+                assert cursor() == 29, "Nested snapshot lost its water allocation cursor"
+            snapshot.restore()
+            assert cursor() == 17, "Speculative water allocation cursor leaked"
+            restore_cursor(31)
+            snapshot.restore()
+            assert cursor() == 17, "Repeated cursor restoration failed"
+        env.reset()
+        assert cursor() == 1, "Reset retained a previous water allocation cursor"
         env.lib.city_victory_force_win.argtypes = []
         env.lib.city_victory_force_win.restype = None
         with env.snapshot() as snapshot:
@@ -69,7 +91,31 @@ def main():
         assert wind() == 0, "Previous episode's wind leaked into a fresh mission"
     finally:
         env.close()
-    print("Victory, defeat, force-win flag and year-boundary wind rollback passed.")
+    missing = Path(args.lib_path).resolve().parent / "__brutus_missing_cursor_test.map"
+    assert not missing.exists(), missing
+    env = JuliusEnv(data_directory=args.data_dir, lib_path=args.lib_path, scenario_file=str(missing))
+    try:
+        restore_cursor = env.lib.city_labor_restore_water_allocation_cursor
+        restore_cursor.argtypes = [ctypes.c_int]
+        restore_cursor.restype = None
+        cursor = env.lib.city_labor_water_allocation_cursor
+        cursor.argtypes = []
+        cursor.restype = ctypes.c_int
+        custom_mode = env.lib.scenario_set_custom
+        custom_mode.argtypes = [ctypes.c_int]
+        custom_mode.restype = None
+        custom_mode(1)
+        restore_cursor(31)
+        try:
+            env.reset()
+        except RuntimeError:
+            pass
+        else:
+            raise AssertionError("Missing scenario unexpectedly reset successfully")
+        assert cursor() == 31, "Failed reset changed the prior water allocation cursor"
+    finally:
+        env.close()
+    print("Water labor cursor, victory, defeat, force-win flag and year-boundary wind rollback passed.")
 
 
 if __name__ == "__main__":

@@ -31,5 +31,6 @@ jobs:
           cmake --build build-gym-ci --parallel 2 --target
           gym_observation_counts_test gym_food_supply_test
           gym_imperial_test gym_water_supply_test gym_housing_test gym_finance_test
+          gym_labor_snapshot_test
       - name: Run Native Tests
         run: ctest --test-dir build-gym-ci -R '^gym_' --output-on-failure

@@ -1,5 +1,21 @@
 # Julius Gymnasium Environment
 
+Gym snapshots also capture the native round-robin water-worker allocation
+cursor, which standard save files omit. Gym resets initialize it before mission
+loading; failed loads restore the prior cursor. This preserves ordinary worker
+allocation rather than changing staffing rules or forcing water coverage.
+
+For recorded-run scarcity regression (no model calls):
+
+```shell
+python test_water_labor_snapshots.py --data-dir <ABSOLUTE_DATA_DIRECTORY> --lib-path <ABSOLUTE_LIBRARY_PATH> --source-run <ABSOLUTE_16_DECISION_12800_TICK_RUN>
+```
+
+The test compares two fresh resets of the same recorded actions, with and
+without full speculative forecasts, including all six final native diagnostics
+and cursor rollback. It does not treat a historically polluted final state as
+the oracle or deploy the recorded choices as a planner policy.
+
 The local Ollama planner adapter rejects responses without positive integer
 prompt-token telemetry or enough context for the configured output budget plus
 128 extra tokens. This is a conservative safety guard, not a tokenizer or proof
