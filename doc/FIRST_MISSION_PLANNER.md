@@ -39,8 +39,17 @@ baseline/food/culture/housing/imperial regressions. Three existing C fixtures
 ran successfully. Windows Application Control blocked execution of the updated
 `gym_water_supply_test.exe`, including outside the sandbox; that policy was not
 altered. The fixture builds, but its updated executable remains a local execution
-gap. An asset-free Linux CI workflow is added for independent native coverage;
-its result must be checked separately rather than assumed.
+gap. The asset-free Linux workflow provides independent native coverage.
+
+Implementation was pushed as `3ace9ecd`. Its committed control
+`water-capability_5f241867` and independent `replay_efe09063` verified all 12103
+paid steps and complete final water/food/imperial/building diagnostics, again
+ending at 118 residents and max house level4. The
+[Headless Gym Tests run](https://github.com/Iain-S/brutus/actions/runs/43212781327)
+completed successfully for that exact source SHA: configure, build all four
+asset-free C fixtures and the native CTest step all passed on Linux. This closes
+the independent native-fixture verification gap, not the local Windows policy
+restriction. No signing/trust policy was changed and no game assets were uploaded.
 
 ## Imperial Capability And Water Audit: 2026-11-11
 

@@ -29,7 +29,7 @@ map caches. No renderer substitutes or automatic screenshot claims.
 - [x] Implement native actions/query and Python binding; verify prices, footprint, supplied/dry infrastructure, buffer guards and immutability.
 - [x] Compose bounded reservoir/fountain supply and midpoint aqueduct routes in snapshots; add optional planner proposals/feedback without a forced order. Verify normal activation and house fountain access.
 - [x] Export final.water_supply.json and strictly replay when present; keep older bundles compatible.
-- [ ] Run focused native/unit/asset-backed tests, independent paid-action replay, review, document remaining evolution/prosperity limitations, commit and push source only.
+- [x] Run focused native/unit/asset-backed tests, independent paid-action replay, review, document remaining evolution/prosperity limitations, commit and push source only.
 
 ## Validation
 
@@ -79,3 +79,23 @@ training environment just for the workflow. Hosted workflow validation/results
 remain pending until observed after push. Next capability is house-demand/
 desirability visibility and elective improvements, not another partial trial
 with hidden evolution blockers. Citywide prosperity25 is still unproven.
+
+## Committed And Hosted Verification
+
+Source `3ace9ecd18892388d0f2f0850d17f1c926aa2eeb` was pushed, preserving the
+user's staged models. Committed paid control `water-capability_5f241867` repeated
+12103 steps, reached118 residents/max house level4 and retained a standard save.
+Independent `replay_efe09063` passed messages/rewards, population/victory,
+buildings, food, imperial and full water diagnostics. No model calls or edited
+rules were used, and the fixture is not an autonomous win.
+
+Public GitHub Actions metadata for
+[run43212781327](https://github.com/Iain-S/brutus/actions/runs/43212781327)
+confirmed that exact source SHA and successful configure/build/native-test
+steps in the Linux `native-tests` job. All four asset-free native fixtures are
+therefore independently verified, including the revised wet-image/topology
+regression. Workflow static review found no correctness/security blockers.
+The Windows executable remains subject to local Application Control; do not
+change that policy as part of this feature. Obtain policy-administrator approval
+or signing before retrying the local executable if local CTest execution is
+needed. The game/Python integration and CI evidence remain valid independently.
