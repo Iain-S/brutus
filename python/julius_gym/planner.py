@@ -8,7 +8,8 @@ from collections import Counter
 
 from .baseline import bridge_plan, building_plan, exclude_hazard, starter_plan
 from .env import ActionType as A
-from .diagnostics import food_summary, food_totals
+from .diagnostics import food_summary, food_totals, water_summary
+from .water import water_plan
 
 
 def fingerprint(env, observation):
@@ -64,6 +65,7 @@ def forecast_state(env, observation, ticks, status):
     return {"ticks": ticks, "status": status,
             "population": int(observation["population_total"].item()),
             "culture": int(observation["ratings_culture"].item()),
+            "prosperity": int(observation["ratings_prosperity"].item()),
             "favor": int(observation["ratings_favor"].item()),
             "personal_savings": env.get_imperial_state()["personal_savings"],
             "treasury": int(observation["finance_treasury"].item()),
@@ -71,6 +73,7 @@ def forecast_state(env, observation, ticks, status):
             "granary_food_units": food["granary_food_units"],
             "market_food_units": food["market_food_units"],
             "residents_with_food": sum(b["population"] for b in buildings if b["food"] > 0),
+            "residents_with_fountain": sum(b["population"] for b in buildings if b["fountain"]),
             "health": env.get_population_info()["health"],
             "farm_workers": sum(b["workers"] for b in buildings if b["type"] == 100)}
 
@@ -197,6 +200,7 @@ def proposals(env, mission, radius):
         if b["type"] == 92 and all(abs(b["x"] - x) + abs(b["y"] - y) > 6 for x, y in anchors):
             anchors.append((b["x"], b["y"]))
     for index, anchor in enumerate(anchors[:4]):
+        yield f"establish_water_supply_district_{index}", lambda anchor=anchor: water_plan(env, mission, anchor, radius)
         for name, kind, size in (("market", A.BUILD_MARKET, 2), ("granary", A.BUILD_GRANARY, 3),
                                  ("doctor", A.BUILD_DOCTOR, 1), ("temple", A.BUILD_TEMPLE_SMALL, 2),
                                  ("school", A.BUILD_SCHOOL, 2), ("library", A.BUILD_LIBRARY, 2),
@@ -239,6 +243,8 @@ def decision_context(env, observation, mission, decision_id, budget, last_result
                              "preview_outcome": result["status"]}
         if name == "establish_wheat_supply":
             candidate.preview["benefit"] = "farm, worker housing, granary and market"
+        if name.startswith("establish_water_supply_district_"):
+            candidate.preview["benefit"] = "connected fountain with reservoir/optional aqueduct supply"
         if name in gift_quotes:
             candidate.preview["personal_savings_cost"] = gift_quotes[name]
             candidate.preview["benefit"] = "imperial gift; personal savings; normal diminishing returns"
@@ -257,6 +263,7 @@ def decision_context(env, observation, mission, decision_id, budget, last_result
                "rules": "Choose one listed candidate_id. Return JSON decision_id, candidate_id, reason only.",
                "remaining_ticks": budget, "state": scalar, "mission": mission, "imperial": imperial,
                "food_supply": food_summary(env.get_food_supply(), buildings),
+               "water_supply": water_summary(env.get_water_supply(), buildings),
                "services": {"residents_with_food": sum(b["population"] for b in buildings if b["food"] > 0),
                             "residents_with_water": sum(b["population"] for b in buildings if b["well"] or b["fountain"]),
                             "health": env.get_population_info()["health"],

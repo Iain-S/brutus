@@ -1,5 +1,44 @@
 # Julius Gymnasium Environment
 
+## Native Water Infrastructure
+
+Rebuild the headless library before using `BUILD_RESERVOIR` (59) and
+`BUILD_AQUEDUCT` (60). The action space is now 61; IDs 0-58 and the observation/
+config struct layouts are unchanged. Older fixed-action-space RL models need
+their matching build/package or explicit migration.
+
+Reservoir coordinates are the top-left of a 3x3 footprint. The adapter uses the
+normal GUI reservoir mode at that footprint's center with identical start/end
+points, paying for one reservoir, not an implicit aqueduct drag. Aqueduct
+actions place individual native-validated tiles. Costs, menu availability,
+terrain rules and legal road crossings remain native game behavior.
+
+`env.get_water_supply()` reads active wells/reservoirs/fountains and all
+aqueduct tile wet/dry states. It exposes cached supply, staffing, near-water and
+reservoir-range observations separately, without updating supply or advancing
+time. Aqueduct wet/dry uses the cached native image band: the internal aqueduct
+grid also stores topology offsets and is not a reliable boolean water flag.
+
+The planner can choose bounded `establish_water_supply_district_N` proposals.
+They compose an entry-connected fountain, source reservoir and optional relay/
+midpoint aqueduct path in snapshots. Geometry is conservative (including avoiding
+road crossings); real native construction and optional forecasts still validate
+each proposal. Nothing forces a water-first build order. The current first-four
+well-anchor service search and other placement limitations remain.
+
+```shell
+python test_water_supply.py --data-dir <ABSOLUTE_DATA_DIRECTORY> --lib-path <ABSOLUTE_LIBRARY_PATH>
+cmake --build <ABSOLUTE_BUILD_DIRECTORY> --target gym_water_supply_test
+ctest --test-dir <ABSOLUTE_BUILD_DIRECTORY> -R gym_water_supply --output-on-failure
+```
+
+The asset-backed check pays for all construction and tests actual fountain
+access, an initially dry relay filled through aqueducts, invalid construction,
+snapshot rollback and native evolution. Its food/religion/landscaping setup is
+a test fixture, not a planner policy or demonstration of prosperity 25 citywide.
+The `Headless Gym Tests` workflow runs the asset-free C fixtures on Linux without
+original game data or model weights.
+
 ## Imperial Gifts And Personal Finances
 
 Rebuild `julius_gym` before using the new imperial capability.
@@ -19,7 +58,7 @@ Forecasts include favor/personal savings, with gift prices separate from city
 treasury outlay. No salary changes or request dispatch are implemented yet.
 
 Existing action IDs 0-55 and observation/config struct layouts are unchanged,
-but the action space grows from 56 to 59. Existing fixed-action-space RL models
+but subsequent water actions bring the current action space to 61. Existing fixed-action-space RL models
 need their matching old build/package or explicit migration; they cannot be
 assumed compatible with the expanded space.
 
@@ -173,7 +212,7 @@ done = False
 total_reward = 0
 
 while not done:
-    # Choose action (0-58)
+    # Choose action (0-60)
     action = env.action_space.sample()  # Random action
 
     # Execute action
@@ -234,7 +273,7 @@ The observation space is a dictionary containing:
 
 ## Action Space
 
-Discrete action space with 59 actions:
+Discrete action space with 61 actions:
 
 ### Administrative Actions (0-4)
 - `NONE` (0): No action
@@ -258,6 +297,11 @@ Discrete action space with 59 actions:
 
 - `SEND_MODEST_GIFT` (56), `SEND_GENEROUS_GIFT` (57), `SEND_LAVISH_GIFT` (58):
   use personal savings and the normal emperor gift rules, not city treasury.
+
+### Water Construction (59-60)
+
+- `BUILD_RESERVOIR` (59): One native reservoir at a 3x3 top-left footprint.
+- `BUILD_AQUEDUCT` (60): One native aqueduct tile; normal routing/terrain rules apply.
 
 ## Reward Structure
 

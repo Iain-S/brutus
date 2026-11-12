@@ -40,10 +40,12 @@ def request_body(context, model, tokens, temperature=0.0, top_p=None, top_k=None
         compact["candidate_columns"].append("personal_savings_cost")
         for row, candidate in zip(compact["candidates"], context["candidates"]):
             row.append(candidate.get("personal_savings_cost", 0))
+    if "water_supply" in context:
+        compact["water_supply"] = context["water_supply"]
     if "forecast_policy" in context:
         columns = ["ticks", "status", "population", "food_stocks", "residents_with_food",
                    "health", "farm_workers", "treasury", "culture", "granary_food_units", "market_food_units",
-                   "favor", "personal_savings"]
+                   "favor", "personal_savings", "prosperity", "residents_with_fountain"]
         compact["forecast_policy"] = context["forecast_policy"]
         if forecast_format == "rows":
             compact["forecast_columns"] = columns
@@ -72,6 +74,7 @@ def request_body(context, model, tokens, temperature=0.0, top_p=None, top_k=None
                       "Reported food_stocks is filtered granary stock, not another inventory to add. "
                       "Recent deltas include all activity during each cycle, not just construction. "
                       "Imperial gifts spend personal savings, not city treasury; repeated gifts have diminishing returns. "
+                      "Reservoirs need nearby water or midpoint-connected aqueducts. Fountains need reservoir range and staff. "
                       "Return required JSON only. Keep the reason under eight words.",
             "prompt": json.dumps(compact),
             "options": options}

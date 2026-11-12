@@ -24,7 +24,7 @@ def main():
         artifacts.metadata["mission"] = info["mission"]
         initial = env.get_imperial_state()
         assert initial["payment_source"] == "personal_savings"
-        assert A.BUILD_LOW_BRIDGE == 55 and A.SEND_MODEST_GIFT == 56 and A.COUNT == 59
+        assert A.BUILD_LOW_BRIDGE == 55 and A.SEND_MODEST_GIFT == 56 and A.COUNT >= 59
         before = fingerprint(env, observation)
         assert env.get_imperial_state() == initial and fingerprint(env, observation) == before
         query = env.lib.julius_env_get_imperial_state

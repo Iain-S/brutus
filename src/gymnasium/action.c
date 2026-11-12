@@ -22,6 +22,8 @@ static building_type action_to_building_type(gymnasium_action_type_t action)
         case ACTION_BUILD_HOUSING: return BUILDING_HOUSE_VACANT_LOT;
         case ACTION_BUILD_ROAD: return BUILDING_ROAD;
         case ACTION_BUILD_LOW_BRIDGE: return BUILDING_LOW_BRIDGE;
+        case ACTION_BUILD_RESERVOIR: return BUILDING_DRAGGABLE_RESERVOIR;
+        case ACTION_BUILD_AQUEDUCT: return BUILDING_AQUEDUCT;
         case ACTION_BUILD_PLAZA: return BUILDING_PLAZA;
         case ACTION_BUILD_GARDEN: return BUILDING_GARDENS;
         case ACTION_BUILD_STATUE: return BUILDING_SMALL_STATUE;
@@ -137,6 +139,8 @@ const char *gymnasium_action_name(gymnasium_action_type_t type)
         case ACTION_SEND_MODEST_GIFT: return "SEND_MODEST_GIFT";
         case ACTION_SEND_GENEROUS_GIFT: return "SEND_GENEROUS_GIFT";
         case ACTION_SEND_LAVISH_GIFT: return "SEND_LAVISH_GIFT";
+        case ACTION_BUILD_RESERVOIR: return "BUILD_RESERVOIR";
+        case ACTION_BUILD_AQUEDUCT: return "BUILD_AQUEDUCT";
         default: return "UNKNOWN";
     }
 }
@@ -157,7 +161,8 @@ static int is_administrative_action(gymnasium_action_type_t type)
 
 static int is_building_action(gymnasium_action_type_t type)
 {
-    return (type >= ACTION_BUILD_HOUSING && type < ACTION_CLEAR_LAND) || type == ACTION_BUILD_LOW_BRIDGE;
+    return (type >= ACTION_BUILD_HOUSING && type < ACTION_CLEAR_LAND) || type == ACTION_BUILD_LOW_BRIDGE
+        || type == ACTION_BUILD_RESERVOIR || type == ACTION_BUILD_AQUEDUCT;
 }
 
 int gymnasium_validate_action(const gymnasium_action_t *action, gymnasium_action_result_t *result)
@@ -212,6 +217,11 @@ int gymnasium_validate_action(const gymnasium_action_t *action, gymnasium_action
             set_result(result, 0, ACTION_ERROR_INVALID_COORDS, "Coordinates out of bounds");
             return 0;
         }
+        if (action->type == ACTION_BUILD_RESERVOIR &&
+            (action->x + 2 >= map_width || action->y + 2 >= map_height)) {
+            set_result(result, 0, ACTION_ERROR_INVALID_COORDS, "Reservoir footprint outside map");
+            return 0;
+        }
     }
 
     // For building actions, check if we can map to a building type
@@ -263,7 +273,9 @@ int gymnasium_execute_action(const gymnasium_action_t *action, gymnasium_action_
     if (is_building_action(action->type) || action->type == ACTION_CLEAR_LAND) {
         building_type type = action->type == ACTION_CLEAR_LAND ? BUILDING_CLEAR_LAND : action_to_building_type(action->type);
         int treasury = city_finance_treasury();
-        int offset = map_grid_offset(action->x, action->y);
+        int x = action->x + (action->type == ACTION_BUILD_RESERVOIR ? 1 : 0);
+        int y = action->y + (action->type == ACTION_BUILD_RESERVOIR ? 1 : 0);
+        int offset = map_grid_offset(x, y);
         if (city_finance_out_of_money()) {
             set_result(result, 0, ACTION_ERROR_NO_MONEY, "Construction unavailable: out of money");
             return -1;
@@ -278,9 +290,9 @@ int gymnasium_execute_action(const gymnasium_action_t *action, gymnasium_action_
                 return -1;
             }
         }
-        building_construction_start(action->x, action->y, offset);
+        building_construction_start(x, y, offset);
         if (building_construction_in_progress()) {
-            building_construction_update(action->x, action->y, offset);
+            building_construction_update(x, y, offset);
             building_construction_place();
         }
         building_construction_clear_type();

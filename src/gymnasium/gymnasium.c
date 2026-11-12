@@ -1,6 +1,7 @@
 #include "gymnasium.h"
 #include "food_supply.h"
 #include "imperial.h"
+#include "water_supply.h"
 #include "building/building.h"
 #include "building/maintenance.h"
 #include "city/data_private.h"
@@ -362,6 +363,12 @@ int julius_env_get_imperial_state(julius_env_t *env, char *output, int capacity)
         return -1;
     }
     return gymnasium_get_imperial_state(output, capacity);
+}
+
+int julius_env_get_water_supply(julius_env_t *env, char *output, int capacity)
+{
+    if (!env || !env->initialized) return -1;
+    return gymnasium_get_water_supply(output, capacity);
 }
 
 int julius_env_get_buildings(julius_env_t *env, char *output, int capacity)

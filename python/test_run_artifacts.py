@@ -20,10 +20,12 @@ class ArtifactTests(unittest.TestCase):
                                   get_buildings=lambda: [], get_victory_state=lambda: 0,
                                   get_food_supply=lambda: {"schema_version": 1, "buildings": []})
             env.get_imperial_state = lambda: {"schema_version": 1, "personal_savings": 100, "favor": 53}
+            env.get_water_supply = lambda: {"schema_version": 1, "buildings": [], "aqueducts": []}
             first.ready = True
             first.finish(env, error=RuntimeError("test failure"))
             self.assertTrue((first.directory / "final.sav").exists())
             self.assertEqual(json.loads((first.directory / "final.imperial.json").read_text()), env.get_imperial_state())
+            self.assertEqual(json.loads((first.directory / "final.water_supply.json").read_text()), env.get_water_supply())
             self.assertEqual(json.loads((first.directory / "final.food_supply.json").read_text()),
                              env.get_food_supply())
             metadata = json.loads((first.directory / "run.json").read_text())

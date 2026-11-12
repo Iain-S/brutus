@@ -38,6 +38,28 @@ def food_summary(supply, buildings):
     return result
 
 
+def water_summary(supply, buildings):
+    rows = supply["buildings"]
+    result = {"reservoir_radius": supply["reservoir_radius"], "fountain_radius": supply["fountain_radius"],
+              "scope": "cached native supply; staffing and supply are separate observations",
+              "aqueduct_tiles": len(supply["aqueducts"]),
+              "wet_aqueduct_tiles": sum(bool(r["water"]) for r in supply["aqueducts"]),
+              "residents_with_fountain": sum(b["population"] for b in buildings if b["fountain"]),
+              "max_house_level": max((b["level"] for b in buildings), default=-1),
+              "row_columns": ["id", "kind", "x", "y", "workers", "water_access", "near_water", "in_reservoir_range"],
+              "rows": [], "rows_total": len(rows)}
+    for kind in ("reservoir", "fountain", "well"):
+        group = sorted((r for r in rows if r["kind"] == kind), key=lambda r: r["id"])
+        result[kind + "s"] = len(group)
+        if kind != "well":
+            result["supplied_" + kind + "s"] = sum(bool(r["water_access"]) for r in group)
+        if kind == "fountain":
+            result["staffed_fountains"] = sum(r["workers"] > 0 for r in group)
+        result["rows"].extend([[r.get(key) for key in result["row_columns"]] for r in group[:4]])
+    result["rows_omitted"] = len(rows) - len(result["rows"])
+    return result
+
+
 def capture_outcome(env, observation):
     totals = food_totals(env.get_food_supply())
     buildings = env.get_buildings()

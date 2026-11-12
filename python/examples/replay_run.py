@@ -43,6 +43,14 @@ def verify_imperial_state(env, path):
     return True
 
 
+def verify_water_supply(env, path):
+    if not path.exists():
+        return False
+    if env.get_water_supply() != json.loads(path.read_text(encoding="utf-8")):
+        raise AssertionError("Final water supply diagnostics differ from recorded run")
+    return True
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("run", type=Path)
@@ -79,6 +87,7 @@ def main():
             raise AssertionError("Final building diagnostics differ from recorded run")
         food_verified = verify_food_supply(env, source / "final.food_supply.json")
         imperial_verified = verify_imperial_state(env, source / "final.imperial.json")
+        water_verified = verify_water_supply(env, source / "final.water_supply.json")
         population = int(observation["population_total"].item())
         if population != manifest["summary"]["population"]:
             raise AssertionError("Final population differs from recorded run")
@@ -86,7 +95,8 @@ def main():
             raise AssertionError("Final victory state differs from recorded run")
         summary = {"verified": True, "ticks": len(steps), "population": population,
                    "source_run": str(source), "won": env.get_victory_state() == 1,
-                   "food_supply_verified": food_verified, "imperial_state_verified": imperial_verified}
+                   "food_supply_verified": food_verified, "imperial_state_verified": imperial_verified,
+                   "water_supply_verified": water_verified}
         print(json.dumps(summary, indent=2))
     finally:
         error = sys.exc_info()[1]

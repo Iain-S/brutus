@@ -15,12 +15,13 @@ runs/
         final.buildings.json
         final.food_supply.json
         final.imperial.json
+        final.water_supply.json
         REVIEW.md
         final.png                 (add manually after Julius capture)
 ```
 
 Date and timestamp use UTC. Mode is `baseline`, `planner-smoke`,
-`planner-local`, `imperial-capability` (native integration checks), or `replay`. The random suffix avoids collisions, including simultaneous
+`planner-local`, `imperial-capability`/`water-capability` (native integration checks), or `replay`. The random suffix avoids collisions, including simultaneous
 runs. Filenames inside a run stay fixed so they are easy to compare.
 
 - `actions.jsonl`: action/decision records.
@@ -32,6 +33,8 @@ runs. Filenames inside a run stay fixed so they are easy to compare.
   excludes cargo, warehouses and household inventory (the latter is in building diagnostics).
 - `final.imperial.json`: personal savings/salary, favor, gift timing/penalty and
   fresh native gift quotes, separate from city treasury.
+- `final.water_supply.json`: full cached native water-structure diagnostics and
+  aqueduct wet/dry tiles, without recalculating supply.
 - `REVIEW.md`: screenshot capture instructions for that folder.
 - `final.png`: reserved name for the real-assets Julius screenshot; not created
   or imitated by the headless runner.
@@ -92,3 +95,8 @@ diagnostic payload and reports `imperial_state_verified: true`. Older bundles
 without it retain their existing checks and report this extra check as false.
 The query does not include every GUI-only cached gift field; normal save files
 retain those native fields for interactive review.
+
+When `final.water_supply.json` is present, replay strictly compares all structure
+and aqueduct diagnostics and reports `water_supply_verified: true`. Older bundles
+without it retain existing checks and report this extra check as false. New
+output bundles do not rewrite historical source diagnostics.

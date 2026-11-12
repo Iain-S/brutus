@@ -33,7 +33,7 @@ int main(void)
     CHECK(gymnasium_get_imperial_state(tiny, 4) == -1 && tiny[4] == 'X');
     CHECK(gymnasium_get_imperial_state(NULL, 20) == -1);
     CHECK(gymnasium_get_imperial_state(output, 0) == -1);
-    CHECK(ACTION_BUILD_LOW_BRIDGE == 55 && ACTION_SEND_MODEST_GIFT == 56 && ACTION_COUNT == 59);
+    CHECK(ACTION_BUILD_LOW_BRIDGE == 55 && ACTION_SEND_MODEST_GIFT == 56 && ACTION_COUNT >= 59);
 
     gymnasium_action_t gift = { .type = ACTION_SEND_LAVISH_GIFT, .x = -1, .y = -1 };
     gymnasium_action_result_t result;

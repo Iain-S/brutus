@@ -14,7 +14,8 @@ from julius_gym.planner import Candidate
 
 def observation(population, treasury):
     return {"population_total": np.array(population), "finance_treasury": np.array(treasury),
-            "resources_food_stocks": np.array(0), "ratings_culture": np.array(7), "ratings_favor": np.array(50)}
+            "resources_food_stocks": np.array(0), "ratings_culture": np.array(7), "ratings_favor": np.array(50),
+            "ratings_prosperity": np.array(8)}
 
 
 class ForecastTests(unittest.TestCase):
@@ -44,7 +45,8 @@ class ForecastTests(unittest.TestCase):
         spec.loader.exec_module(adapter)
         forecast = {"ticks": 800, "status": "completed", "population": 12, "food_stocks": 0,
                     "residents_with_food": 0, "health": 50, "farm_workers": 0, "treasury": 90, "culture": 7,
-                    "granary_food_units": 120, "market_food_units": 30, "favor": 53, "personal_savings": 155}
+                    "granary_food_units": 120, "market_food_units": 30, "favor": 53, "personal_savings": 155,
+                    "prosperity": 8, "residents_with_fountain": 0}
         context = {"decision_id": 0, "forecast_policy": {"minimum_ticks": 800},
                    "candidates": [{"id": "housing", "forecast": forecast}]}
         compact = json.loads(adapter.request_body(context, "test-model", 96)["prompt"])
@@ -95,6 +97,8 @@ class ForecastTests(unittest.TestCase):
         self.assertEqual(forecast["culture"], 7)
         self.assertEqual(forecast["favor"], 50)
         self.assertEqual(forecast["personal_savings"], 155)
+        self.assertEqual(forecast["prosperity"], 8)
+        self.assertEqual(forecast["residents_with_fountain"], 0)
         self.assertEqual(forecast["market_food_units"], 0)
         self.assertEqual(forecast["treasury"], 85)
         self.assertEqual(len(execute.call_args.args[1].actions), 4)

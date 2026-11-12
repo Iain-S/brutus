@@ -14,6 +14,12 @@ spec.loader.exec_module(adapter)
 
 
 class AdapterProfileTests(unittest.TestCase):
+    def test_water_feedback_is_not_dropped(self):
+        context = {"decision_id": 0, "water_supply": {"supplied_fountains": 1, "residents_with_fountain": 40},
+                   "candidates": [{"id": "wait"}]}
+        prompt = json.loads(adapter.request_body(context, "model", 256)["prompt"])
+        self.assertEqual(prompt["water_supply"], context["water_supply"])
+
     def test_imperial_input_distinguishes_personal_gift_price_and_forecast(self):
         context = {"decision_id": 0, "imperial": {"personal_savings": 200, "salary_amount": 8},
                    "forecast_policy": "test", "candidates": [{"id": "send_modest_gift",

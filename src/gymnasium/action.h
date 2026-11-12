@@ -80,6 +80,8 @@ typedef enum {
     ACTION_SEND_MODEST_GIFT,        // Personal savings, normal imperial gift rules
     ACTION_SEND_GENEROUS_GIFT,
     ACTION_SEND_LAVISH_GIFT,
+    ACTION_BUILD_RESERVOIR,         // 3x3 footprint top-left; native single-center placement
+    ACTION_BUILD_AQUEDUCT,          // One native-routed aqueduct tile
 
     ACTION_COUNT                    // Total number of actions
 } gymnasium_action_type_t;

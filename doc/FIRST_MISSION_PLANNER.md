@@ -1,5 +1,47 @@
 # Peaceful campaign planner: Tarraco
 
+## Working Water Capability: 2026-11-12
+
+Reservoir/aqueduct construction is now exposed through normal paid native
+actions (59/60; action count61). Reservoirs use the GUI's single-center mode at
+the API's 3x3 top-left footprint, with no automatic free route or manual supply
+updates. Native costs, menu locks, routing and staffing remain unchanged.
+Read-only water diagnostics, bounded source/relay/fountain proposals and factual
+model feedback are integrated. Forecasts now include fountain-served residents
+and actual prosperity. No build order is forced; existing placement/service
+coverage limits remain.
+
+The paid native control reached 118 residents and a level4 small hovel at 12103
+ticks. It verified snapshot rollback, a working staffed fountain, an initially
+dry relay filled only after a midpoint aqueduct connection, failed duplicate/
+out-of-bounds/water-tile construction, and isolated dry aqueduct diagnostics.
+Independent replay matched messages/rewards, buildings, population/victory,
+food, imperial and complete water diagnostics. Standard final saves remain for
+manual Julius review; no PNG was generated.
+
+Review caught a native representation trap: `map_aqueduct_at()` also stores
+rendering/topology offsets. A natural construction regression reproduced false
+wet reports before the query was changed to the same wet image-band predicate
+used by the engine. The corrected query is read-only and reports cached state;
+it does not force a supply update to make the test pass.
+
+Water alone did not evolve the first fixture: supplied, fed homes still had
+negative desirability (one inspected home was -6, below its -5 upgrade threshold).
+The successful evolution fixture also paid for food, religion and landscaping
+through ordinary actions. Those fixture choices are not a winning controller,
+and reaching one level4 home does not establish citywide prosperity 25. Next
+expose house desirability/native evolution demands and elective improvement
+tools, then test scalable service coverage before another long model trial.
+
+Local validation passed 42 planner, five water-geometry/feedback, five replay
+and two artifact unit tests, the native asset-backed control, and existing
+baseline/food/culture/housing/imperial regressions. Three existing C fixtures
+ran successfully. Windows Application Control blocked execution of the updated
+`gym_water_supply_test.exe`, including outside the sandbox; that policy was not
+altered. The fixture builds, but its updated executable remains a local execution
+gap. An asset-free Linux CI workflow is added for independent native coverage;
+its result must be checked separately rather than assumed.
+
 ## Imperial Capability And Water Audit: 2026-11-11
 
 Three appended gift actions now use the normal emperor path, paid from personal
