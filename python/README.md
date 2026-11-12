@@ -1,5 +1,14 @@
 # Julius Gymnasium Environment
 
+The local Ollama planner adapter rejects responses without positive integer
+prompt-token telemetry or enough context for the configured output budget plus
+128 extra tokens. This is a conservative safety guard, not a tokenizer or proof
+against all server-side truncation. Oversized-input rejection remains an audited
+model failure/fallback, not a clean strategy result. Use explicit context and
+forecast-format settings; a larger context can reduce GPU offloading and slow
+inference. The occupied-state housing/finance probe fit 6,797 prompt tokens into
+8K using rows-format forecasts, but future decisions still need auditing.
+
 ## Native Taxation And Finances
 
 Rebuild the headless library for `env.get_finance_state()`. The read-only JSON

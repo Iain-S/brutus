@@ -24,7 +24,8 @@ runs/
 
 Date and timestamp use UTC. Mode is `baseline`, `planner-smoke`,
 `planner-local`, `imperial-capability`/`water-capability`/`finance-capability`
-(native integration checks), or `replay`. The random suffix avoids collisions, including simultaneous
+(native integration checks), `planner-preflight` (prompt-load probes with no
+accepted planner decision), or `replay`. The random suffix avoids collisions, including simultaneous
 runs. Filenames inside a run stay fixed so they are easy to compare.
 
 - `actions.jsonl`: action/decision records.

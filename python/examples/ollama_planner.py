@@ -92,6 +92,16 @@ def request_body(context, model, tokens, temperature=0.0, top_p=None, top_k=None
             "options": options}
 
 
+def validate_inference_result(result, options):
+    if result.get("error") or not result.get("done") or result.get("done_reason") == "length":
+        raise RuntimeError("Local inference failed or exhausted its token budget")
+    prompt_tokens = result.get("prompt_eval_count")
+    if type(prompt_tokens) is not int or prompt_tokens <= 0:
+        raise RuntimeError("Local inference lacks valid prompt-token telemetry")
+    if prompt_tokens + options["num_predict"] + 128 > options["num_ctx"]:
+        raise RuntimeError("Local inference lacks context headroom; possible input truncation")
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--model", required=True, help="An already installed Ollama model")
@@ -125,13 +135,12 @@ def main():
                                      {"Content-Type": "application/json"})
     with urllib.request.urlopen(request, timeout=args.timeout) as response:
         result = json.load(response)
-    if result.get("error") or not result.get("done") or result.get("done_reason") == "length":
-        raise RuntimeError("Local inference failed or exhausted its token budget")
-    choice = json.loads(result["response"])
-    print(json.dumps(choice))
     print(json.dumps({**{key: result.get(key) for key in ("model", "total_duration", "load_duration",
                                                         "prompt_eval_count", "eval_count")},
                       "options": body["options"], "forecast_format": args.forecast_format}), file=sys.stderr)
+    validate_inference_result(result, body["options"])
+    choice = json.loads(result["response"])
+    print(json.dumps(choice))
 
 
 if __name__ == "__main__":

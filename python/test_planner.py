@@ -96,7 +96,8 @@ class PlannerTests(unittest.TestCase):
         adapter = importlib.util.module_from_spec(spec)
         spec.loader.exec_module(adapter)
         context = {"decision_id": 7, "candidates": [{"id": "wait"}]}
-        response = {"done": True, "done_reason": "stop", "response": json.dumps(self.choice)}
+        response = {"done": True, "done_reason": "stop", "prompt_eval_count": 128,
+                    "response": json.dumps(self.choice)}
         stdout = StringIO()
         with patch.object(sys, "argv", ["adapter", "--model", "local-test"]), \
                 patch.object(sys, "stdin", StringIO(json.dumps(context))), \

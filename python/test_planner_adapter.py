@@ -14,6 +14,36 @@ spec.loader.exec_module(adapter)
 
 
 class AdapterProfileTests(unittest.TestCase):
+    def test_inference_requires_context_headroom_and_valid_telemetry(self):
+        result = {"done": True, "done_reason": "stop", "prompt_eval_count": 6000}
+        options = {"num_ctx": 8192, "num_predict": 256}
+        adapter.validate_inference_result(result, options)
+        adapter.validate_inference_result({**result, "prompt_eval_count": 7808}, options)
+        for count in (None, 0, -1, True, 6000.0, "6000", 7809, 8000):
+            with self.assertRaisesRegex(RuntimeError, "context|telemetry"):
+                adapter.validate_inference_result({**result, "prompt_eval_count": count}, options)
+
+    def test_inference_retains_server_and_output_budget_failures(self):
+        result = {"done": True, "done_reason": "stop", "prompt_eval_count": 6000}
+        options = {"num_ctx": 8192, "num_predict": 256}
+        for patch in ({"error": "backend failed"}, {"done": False}, {"done_reason": "length"}):
+            with self.assertRaisesRegex(RuntimeError, "inference"):
+                adapter.validate_inference_result({**result, **patch}, options)
+
+    def test_cli_emits_no_decision_when_context_headroom_is_insufficient(self):
+        context = {"decision_id": 0, "candidates": [{"id": "wait"}]}
+        result = {"done": True, "done_reason": "stop", "prompt_eval_count": 4000,
+                  "response": json.dumps({"decision_id": 0, "candidate_id": "wait", "reason": "test"})}
+        with patch.object(sys, "argv", ["adapter", "--model", "test-model"]), \
+                patch.object(sys, "stdin", StringIO(json.dumps(context))), \
+                patch.object(sys, "stdout", StringIO()) as output, \
+                patch.object(sys, "stderr", StringIO()) as audit, \
+                patch.object(adapter.urllib.request, "urlopen", return_value=StringIO(json.dumps(result))):
+            with self.assertRaisesRegex(RuntimeError, "context headroom"):
+                adapter.main()
+        self.assertEqual(output.getvalue(), "")
+        self.assertEqual(json.loads(audit.getvalue())["prompt_eval_count"], 4000)
+
     def test_housing_feedback_is_not_dropped(self):
         context = {"decision_id": 0, "housing": {"desirability_blocked_houses": 8, "rows_omitted": 2},
                    "candidates": [{"id": "wait"}]}
@@ -94,7 +124,7 @@ class AdapterProfileTests(unittest.TestCase):
     def test_forecast_format_cli_is_forwarded_and_audited(self):
         context = {"decision_id": 0, "forecast_policy": "test", "candidates": [
             {"id": "wait", "forecast": {"ticks": 800, "population": 12}}]}
-        result = {"done": True, "done_reason": "stop", "response": json.dumps(
+        result = {"done": True, "done_reason": "stop", "prompt_eval_count": 128, "response": json.dumps(
             {"decision_id": 0, "candidate_id": "wait", "reason": "test"})}
         for budget in (2048, 8192, 16384):
             with self.subTest(budget=budget), \
