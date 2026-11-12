@@ -31,8 +31,8 @@ comparisons, rewrite old artifacts, remove rotation or guarantee staffing.
 - [x] Independently verify the cursor lifetime and mutable allocation state.
 - [x] Add failing isolated scarcity/rotation/cursor tests and snapshot/reset hook tests, then implement the minimal capture/restore/reset integration.
 - [x] On a freshly reset fixed library, execute the old recorded action sequence twice: baseline without previews and the same steps with interleaved normal full candidate forecasts. Compare every step and all six final raw diagnostic payloads. Do not compare away known invalid historical state or claim a new model strategy result.
-- [ ] Run focused native/Python/paid regressions, independent review and Linux CI. Document the invalid trial and repair evidence; commit/push source only.
-- [ ] Only then resume representation diagnostics or new model decisions on a clean reproducible state. Existing frozen decision-3 artifacts may be polluted by preview leakage and are not a trustworthy counterfactual evaluation baseline.
+- [x] Run focused native/Python/paid regressions, independent review and Linux CI. Document the invalid trial and repair evidence; commit/push source only.
+- [x] Only then resume representation diagnostics or new model decisions on a clean reproducible state. Existing frozen decision-3 artifacts may be polluted by preview leakage and are not a trustworthy counterfactual evaluation baseline.
 
 Independent source review confirmed the cursor is the only changing static
 allocation state in this module. The table `DEFAULT_PRIORITY` is only read;
@@ -82,3 +82,27 @@ five water-geometry and two artifact tests pass. Independent source review has
 no remaining blockers. The transient compiler assembler-launch failure on the
 first parallel build did not recur with the same toolchain at parallelism 2;
 no toolchain or Windows policy changes were made.
+
+## Committed Verification
+
+Repair `1bd2d83e` was pushed excluding staged models/generated artifacts.
+Linux [Headless Gym Tests run 43273641565](https://github.com/Iain-S/brutus/actions/runs/43273641565)
+passed configure, all seven fixture builds and native CTest; queued graphical
+builds are separate. The canonical DLL was rebuilt at this commit. Independent
+`replay_f7574b50` matched all six payloads from final forecast control
+`preview-replay-control_e46cc3f1` at 12,800 ticks, population 76, no victory.
+
+Fresh model-selected `planner-local_43337274` started on `1bd2d83e` after these
+checks, using unchanged model/settings/budgets from the invalid trial. Its
+strategy interpretation awaits its own strict replay. No old invalid benchmark
+has been relabelled valid, and no recorded choices were imposed as policy.
+
+## Residual Scope
+
+A follow-up static-state audit found no other proved omitted cursor in the
+reviewed peaceful population/culture/figure paths. It did identify a conditional
+future risk: the granary GETTING-mode donor cache is refreshed on load rather
+than restored at its original phase. That mode is not controlled by today's
+planner tools and is not implicated in this trace. Before exposing it, test a
+donor-stock threshold crossing between scheduled cache updates and restore;
+do not claim this 12,800-tick control proves all possible eight-year states.
