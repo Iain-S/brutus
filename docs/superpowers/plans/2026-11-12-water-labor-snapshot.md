@@ -92,10 +92,13 @@ builds are separate. The canonical DLL was rebuilt at this commit. Independent
 `replay_f7574b50` matched all six payloads from final forecast control
 `preview-replay-control_e46cc3f1` at 12,800 ticks, population 76, no victory.
 
-Fresh model-selected `planner-local_43337274` started on `1bd2d83e` after these
-checks, using unchanged model/settings/budgets from the invalid trial. Its
-strategy interpretation awaits its own strict replay. No old invalid benchmark
-has been relabelled valid, and no recorded choices were imposed as policy.
+Fresh model-selected `planner-local_43337274` ran on `1bd2d83e` after these
+checks, using unchanged model/settings/budgets from the invalid trial. It
+accepted 16 choices with no retries/fallbacks, reached 12,800 ticks/population 76
+and no win. Its own strict `replay_0c5dc348` matches every step and all six final
+endpoints. No old invalid benchmark has been relabelled valid, and no recorded
+choices were imposed as policy. Repeated unproductive choices persist in the
+clean run; subsequent non-executing probes are documented in the context plan.
 
 ## Residual Scope
 

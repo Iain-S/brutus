@@ -27,7 +27,8 @@ Date and timestamp use UTC. Mode is `baseline`, `planner-smoke`,
 (native integration checks), `planner-preflight` (prompt-load probes with no
 accepted planner decision), `planner-choice-probe` (non-executing frozen-state
 choice diagnostics), `preview-replay-control` (paired recorded-action runs with
-and without forecasts), or `replay`. The random suffix avoids collisions, including simultaneous
+and without forecasts), `planner-deliberation-probe` (non-executing rationale
+profile comparisons), or `replay`. The random suffix avoids collisions, including simultaneous
 runs. Filenames inside a run stay fixed so they are easy to compare.
 
 - `actions.jsonl`: action/decision records.

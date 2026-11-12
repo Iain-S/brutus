@@ -26,8 +26,9 @@ No automatic model installation, engine policy change or imposed build order.
 - [x] Add failing tests for valid telemetry, missing/noninteger/nonpositive counts, insufficient headroom, exhausted output and server failure.
 - [x] Implement the helper and invoke it before accepting JSON output; run all adapter/planner tests and source review.
 - [x] Finish bounded occupied-state headroom probes with persistent endpoint saves; explicitly distinguish timeout, one-token probe and real accepted decisions.
-- [ ] Commit/push only verified source/docs. Run a short model-selected experiment only after a usable headroom measurement; audit every call and replay its actions independently.
-- [ ] If the fixed trial shows forecast-inferior repetition, evaluate forecast representation separately on a replayed frozen state; execute none of the probe choices and retain its normal final save/diagnostics.
+- [x] Commit/push only verified source/docs. Run a short model-selected experiment only after a usable headroom measurement; audit every call and replay its actions independently.
+- [x] If the fixed trial shows forecast-inferior repetition, evaluate forecast representation separately on a replayed frozen state; execute none of the probe choices and retain its normal final save/diagnostics.
+- [x] Follow up with an all-option, non-executing rationale-profile probe; preserve evidence and avoid domain build-order guidance.
 
 ## Probe Results
 
@@ -56,13 +57,17 @@ existing bounded command audit; unsafe decision JSON never reaches stdout.
 
 ## Frozen-State Evaluation Design
 
-**Blocked:** The fixed trial subsequently failed strict final-state replay.
+**Initially blocked:** The first fixed-configuration trial failed strict final-state replay.
 Its forecasts may be contaminated by an unsnapshotted native water-worker
 allocation cursor. Planning-quality inferences below are provisional, not a
 validated model diagnosis. The representation probe was not executed. See
 `2026-11-12-water-labor-snapshot.md`; first repair and prove determinism, then
 capture a fresh clean frozen state. Do not reuse the polluted historical context
 as a trusted counterfactual baseline.
+
+The repair is now committed and independently verified. Fresh
+`planner-local_43337274` and its strict `replay_0c5dc348` match all endpoints;
+the actual representation probe below uses that clean run, not the old context.
 
 The fixed trial is source `be4e2258`, 16 decisions / 12,800 ticks maximum,
 800-tick decision cadence and 1,600-tick forecasts, instruct-model profile with
@@ -87,3 +92,62 @@ Do not execute these choices. Persist raw requests/responses, choice audit and
 the frozen endpoint save in `planner-choice-probe`. This tiny unseeded sample
 can indicate representation sensitivity, not establish statistical significance
 or full-action strategy quality. Reject telemetry/headroom failures explicitly.
+
+## Verified Trial And Representation Results
+
+Fresh trial `planner-local_43337274` on `1bd2d83e`: 16 model calls, 16 accepted,
+zero retries/fallbacks/errors, 12,800 ticks, population 76, no victory. All calls
+used the same profile; prompt counts 2,909..7,167 pass the 8K guard. Choices were
+one housing, nine water, one wheat-supply and five actor-colony macros. Full
+independent `replay_0c5dc348` matches every step and all six endpoints. This is
+valid execution evidence but poor short-horizon progress, not campaign competence.
+
+Clean `planner-choice-probe_a3af40d7` strictly replayed to decision 3's state
+(2,400 ticks, population 44). All three rows-format and all three named-object
+requests chose water, although its reported forecast has fewer fountain-served
+residents and lower treasury than waiting at that state. Rows used 3,977 prompt
+tokens; objects 4,276. All six responses passed ordinary validation; none was
+executed. `replay_dde81429` matches the frozen endpoint bundle exactly. The small
+four-choice sample shows no helpful format shift here; it is not a general
+capacity or statistical-significance claim.
+
+## Follow-Up Rationale Profile
+
+Keep the same clean frozen state and ALL recorded legal candidates, rows,
+model/options/timeouts and output budget. Compare two calls per profile,
+alternating order: baseline versus a generic reason-first profile. The latter
+orders JSON reason before choice and asks for a brief comparison of at least two
+reported forecasts before selecting an ID, replacing the eight-word reason
+limit with 100 words. It provides no domain build order, preferred action or
+tool filtering. Treat order plus rationale instruction as one profile, not an
+isolated causal attribution. Execute no choices; retain raw request/response
+and frozen endpoint artifacts in `planner-deliberation-probe`. Reject exhausted
+output/context/time budgets honestly. No production adapter change is deployed.
+
+## Rationale-Profile Results And Next Checkpoint
+
+`planner-deliberation-probe_f3eb90e4` retained all legal candidates on the same
+clean state. Two baseline responses selected water and market; both reason-first
+responses selected housing. Prompt counts were 5,424 baseline and 5,451 modified,
+all responses passed normal headroom/output/schema validation, and no choices
+were executed. Frozen `replay_fd619cfb` strictly matches all endpoints.
+
+This is not reliable numerical reasoning evidence: one modified reason merely
+copied the candidate ID, while the longer one invented a 13-person gain and 50%
+desirability improvement. Actual housing forecast population was 72 versus 44
+for waiting, not that claimed gain. Treat model reasons as untrusted text, not
+native observations or verified benefit. Four responses at one state do not
+establish better strategy, and no production profile/default has changed.
+
+Next checkpoint, if continuing this local-model path: add an OPTIONAL
+`--reason-first` adapter profile with TDD, unchanged default requests, unchanged
+candidate/action protocol and explicit profile audit metadata. Order the reason
+before the choice and request a brief numerical comparison; add no domain build
+order, hidden ranking or tool mask. Keep existing native/headroom validation.
+First test request/schema ordering, CLI forwarding and backward compatibility,
+review and commit it; then run eight decisions with max episode 12,800 ticks,
+800-tick cadence and the same 1,600-tick forecasts. Compare actual endpoint
+metrics against the baseline's first eight decisions, not its 16-decision final
+state. Strictly replay before interpretation. Do not promote the profile or
+trust its rationale unless actual outcomes improve; stronger models or
+simulation search remain alternatives if this does not help.

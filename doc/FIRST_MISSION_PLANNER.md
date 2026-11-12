@@ -816,3 +816,28 @@ reset cursors and 16 immediate cursor rollback checks match. Native scarcity,
 nested snapshot and failed-reset regressions pass. This repairs the reproduced
 execution drift, not the historical strategy benchmark; a fresh model trial is
 still required before diagnosing planning quality.
+
+## Clean Local-Planner Evaluation: 2026-11-12
+
+Fresh `planner-local_43337274` on repair `1bd2d83e` now passes strict independent
+`replay_0c5dc348`, including every action/reward and all six endpoint payloads.
+It accepted 16/16 calls without retries or fallback, used 2,909..7,167 prompt
+tokens within 8K, and ended at 12,800 ticks/population 76 without victory. Its
+choices still repeat nine water macros and five actor colonies, alongside one
+housing expansion and one wheat-supply macro. Execution is reproducible; these
+results do not establish mission competence or justify a longer blind run.
+
+Frozen-state probe `planner-choice-probe_a3af40d7` made three requests each with
+rows and named-object forecasts on the same four-choice subset. All six chose
+water despite an inferior reported endpoint versus waiting there. No selected
+probe action was executed; `replay_dde81429` verifies its saved state. Named
+fields alone did not help in this small diagnostic.
+
+All-option `planner-deliberation-probe_f3eb90e4` compared the normal profile with
+generic reason-before-choice output. Its two modified requests chose housing;
+baseline chose water and market. However, a longer rationale invented numerical
+benefits, so neither rationale faithfulness nor better strategy is demonstrated.
+`replay_fd619cfb` verifies the unchanged frozen endpoint. No production default
+has changed. Next test an optional audited rationale profile on real outcomes,
+not a forced build order; see the context-guard plan for the bounded eight-choice
+design and strict-replay gate.
