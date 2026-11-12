@@ -60,6 +60,41 @@ def water_summary(supply, buildings):
     return result
 
 
+def housing_totals(state):
+    houses = state["houses"]
+    occupied = [r for r in houses if r["population"] > 0]
+    with_next = [r for r in occupied if r["next_level"] is not None]
+    return {"occupied_houses": len(occupied),
+            "desirability_blocked_houses": sum(not r["desirability_allows_upgrade"] for r in with_next),
+            "current_goods_services_failed_houses": sum(not r["current_goods_services_pass"] for r in occupied),
+            "next_goods_services_failed_houses": sum(not r["next_goods_services_pass"] for r in with_next),
+            "native_cached_prosperity_cap": state["native_cached_prosperity_cap"],
+            "max_house_level": max((r["level"] for r in houses), default=-1)}
+
+
+def housing_summary(state):
+    houses = state["houses"]
+    levels = {level for r in houses for level in (r["level"], r["next_level"]) if level is not None}
+    columns = ["id", "x", "y", "population", "level", "next_level", "size", "house_size", "merged",
+               "desirability_cached", "tile_desirability_cached",
+               "desirability_allows_upgrade", "current_goods_services_pass", "next_goods_services_pass",
+               "no_space_to_expand_cached", "devolve_delay_cached",
+               "well", "fountain", "food_types_checked", "entertainment", "education", "num_gods",
+               "barber", "bathhouse", "health"]
+    result = {**housing_totals(state), "scope": "independent cached conditions, not guaranteed upgrades; space/merging/timing also apply",
+              "garden_model": state["garden_model"], "multiple_wine_available": state["multiple_wine_available"],
+              "models": [m for m in state["models"] if m["level"] in levels],
+              "level_counts": {level: sum(r["level"] == level for r in houses)
+                               for level in sorted({r["level"] for r in houses})},
+              "row_columns": columns + ["goods_inventory_units"],
+              "goods_inventory_order": ["pottery", "oil", "furniture", "wine"], "rows": [],
+              "rows_total": len(houses)}
+    for row in sorted(houses, key=lambda r: r["id"])[:8]:
+        result["rows"].append([row.get(key) for key in columns] + [[row["inventory_units"][i] for i in (7, 5, 6, 4)]])
+    result["rows_omitted"] = len(houses) - len(result["rows"])
+    return result
+
+
 def capture_outcome(env, observation):
     totals = food_totals(env.get_food_supply())
     buildings = env.get_buildings()

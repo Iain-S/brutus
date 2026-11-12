@@ -1,5 +1,36 @@
 # Julius Gymnasium Environment
 
+## Native Housing Feedback
+
+Rebuild the headless library for `env.get_housing_state()`. This read-only JSON
+query includes all active houses, all 20 loaded house models, cached house/tile
+desirability, inventory units, services and the cached native prosperity cap.
+Current-level and next-level goods/service checks reuse the engine predicate
+with private demand counters. Queries do not evolve houses, update caches,
+consume goods, change global demands or advance time.
+
+Desirability uses the current model; upgrade goods/services use the next model.
+The devolution threshold takes precedence. Maximum-level houses have no next
+level/check. Passing these independent checks does not guarantee evolution:
+population, merging, timing and expansion space still matter. Wine diversity
+uses the native cached citywide flag, not household wine quantity. Food types
+count nonzero inventory slots, not cached consumption counts.
+
+Planner feedback includes totals for all houses, referenced models and the first
+eight house rows by ID with explicit omission counts. Optional repeatable
+`landscape_district_N` choices place up to four paid gardens near existing
+district anchors using the loaded garden range. They clear vegetation explicitly,
+avoid infrastructure and add no access roads. This is a bounded tool, not a
+required build order or housing/population cap. Forecasts expose independent
+desirability blockers and the cached prosperity cap, not an upgrade prediction.
+Action count remains 61 and existing observation/config layouts are unchanged.
+
+```shell
+python -m unittest discover -s . -p test_housing_feedback.py
+cmake --build <ABSOLUTE_BUILD_DIRECTORY> --target gym_housing_test
+ctest --test-dir <ABSOLUTE_BUILD_DIRECTORY> -R gym_housing --output-on-failure
+```
+
 ## Native Water Infrastructure
 
 Rebuild the headless library before using `BUILD_RESERVOIR` (59) and

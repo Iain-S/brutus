@@ -46,7 +46,8 @@ class ForecastTests(unittest.TestCase):
         forecast = {"ticks": 800, "status": "completed", "population": 12, "food_stocks": 0,
                     "residents_with_food": 0, "health": 50, "farm_workers": 0, "treasury": 90, "culture": 7,
                     "granary_food_units": 120, "market_food_units": 30, "favor": 53, "personal_savings": 155,
-                    "prosperity": 8, "residents_with_fountain": 0}
+                    "prosperity": 8, "residents_with_fountain": 0, "desirability_blocked_houses": 0,
+                    "native_cached_prosperity_cap": 10, "max_house_level": -1}
         context = {"decision_id": 0, "forecast_policy": {"minimum_ticks": 800},
                    "candidates": [{"id": "housing", "forecast": forecast}]}
         compact = json.loads(adapter.request_body(context, "test-model", 96)["prompt"])
@@ -65,6 +66,7 @@ class ForecastTests(unittest.TestCase):
         self.env.get_buildings.return_value = []
         self.env.get_population_info.return_value = {"health": 50}
         self.env.get_imperial_state.return_value = {"personal_savings": 155}
+        self.env.get_housing_state.return_value = {"houses": [], "native_cached_prosperity_cap": 10}
         self.env.get_food_supply.return_value = {"schema_version": 1, "units_per_load": 100, "buildings": []}
         self.candidate = Candidate("housing", [(5, 1, 1)], "current", {})
         self.before = observation(0, 100)
@@ -99,6 +101,8 @@ class ForecastTests(unittest.TestCase):
         self.assertEqual(forecast["personal_savings"], 155)
         self.assertEqual(forecast["prosperity"], 8)
         self.assertEqual(forecast["residents_with_fountain"], 0)
+        self.assertEqual(forecast["desirability_blocked_houses"], 0)
+        self.assertEqual(forecast["native_cached_prosperity_cap"], 10)
         self.assertEqual(forecast["market_food_units"], 0)
         self.assertEqual(forecast["treasury"], 85)
         self.assertEqual(len(execute.call_args.args[1].actions), 4)

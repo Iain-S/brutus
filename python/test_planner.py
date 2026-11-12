@@ -16,7 +16,8 @@ class PlannerTests(unittest.TestCase):
         from types import SimpleNamespace
         from julius_gym.planner import proposals
         env = SimpleNamespace(get_map_data=lambda: (None, None, 10, 10),
-                              get_buildings=lambda: [{"type": 92, "x": 2, "y": 2}])
+                              get_buildings=lambda: [{"type": 92, "x": 2, "y": 2}],
+                              get_housing_state=lambda: {"garden_model": {"desirability_range": 4}})
         with patch("julius_gym.planner.exclude_hazard", return_value=None), \
                 patch("julius_gym.planner.building_plan", return_value=[]) as plan:
             choices = dict(proposals(env, {"entry": (0, 0), "earthquake": {}}, 14))

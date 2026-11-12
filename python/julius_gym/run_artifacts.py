@@ -58,6 +58,8 @@ class RunArtifacts:
                     json.dumps(env.get_imperial_state(), indent=2), encoding="utf-8")),
                 ("final.water_supply.json", lambda: (self.directory / "final.water_supply.json").write_text(
                     json.dumps(env.get_water_supply(), indent=2), encoding="utf-8")),
+                ("final.housing.json", lambda: (self.directory / "final.housing.json").write_text(
+                    json.dumps(env.get_housing_state(), indent=2), encoding="utf-8")),
             ):
                 try:
                     write()

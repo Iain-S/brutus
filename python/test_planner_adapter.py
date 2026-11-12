@@ -14,6 +14,12 @@ spec.loader.exec_module(adapter)
 
 
 class AdapterProfileTests(unittest.TestCase):
+    def test_housing_feedback_is_not_dropped(self):
+        context = {"decision_id": 0, "housing": {"desirability_blocked_houses": 8, "rows_omitted": 2},
+                   "candidates": [{"id": "wait"}]}
+        prompt = json.loads(adapter.request_body(context, "model", 256)["prompt"])
+        self.assertEqual(prompt["housing"], context["housing"])
+
     def test_water_feedback_is_not_dropped(self):
         context = {"decision_id": 0, "water_supply": {"supplied_fountains": 1, "residents_with_fountain": 40},
                    "candidates": [{"id": "wait"}]}

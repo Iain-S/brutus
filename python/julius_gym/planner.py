@@ -8,7 +8,8 @@ from collections import Counter
 
 from .baseline import bridge_plan, building_plan, exclude_hazard, starter_plan
 from .env import ActionType as A
-from .diagnostics import food_summary, food_totals, water_summary
+from .diagnostics import food_summary, food_totals, water_summary, housing_summary, housing_totals
+from .housing import garden_plan
 from .water import water_plan
 
 
@@ -62,6 +63,7 @@ def preview_is_usable(result):
 def forecast_state(env, observation, ticks, status):
     buildings = env.get_buildings()
     food = food_totals(env.get_food_supply())
+    housing = housing_totals(env.get_housing_state())
     return {"ticks": ticks, "status": status,
             "population": int(observation["population_total"].item()),
             "culture": int(observation["ratings_culture"].item()),
@@ -74,6 +76,9 @@ def forecast_state(env, observation, ticks, status):
             "market_food_units": food["market_food_units"],
             "residents_with_food": sum(b["population"] for b in buildings if b["food"] > 0),
             "residents_with_fountain": sum(b["population"] for b in buildings if b["fountain"]),
+            "desirability_blocked_houses": housing["desirability_blocked_houses"],
+            "native_cached_prosperity_cap": housing["native_cached_prosperity_cap"],
+            "max_house_level": housing["max_house_level"],
             "health": env.get_population_info()["health"],
             "farm_workers": sum(b["workers"] for b in buildings if b["type"] == 100)}
 
@@ -199,7 +204,10 @@ def proposals(env, mission, radius):
     for b in records:
         if b["type"] == 92 and all(abs(b["x"] - x) + abs(b["y"] - y) > 6 for x, y in anchors):
             anchors.append((b["x"], b["y"]))
+    garden_radius = env.get_housing_state()["garden_model"]["desirability_range"] if anchors else 0
     for index, anchor in enumerate(anchors[:4]):
+        yield f"landscape_district_{index}", lambda anchor=anchor: garden_plan(
+            terrain, buildings, width, height, anchor, radius=garden_radius)
         yield f"establish_water_supply_district_{index}", lambda anchor=anchor: water_plan(env, mission, anchor, radius)
         for name, kind, size in (("market", A.BUILD_MARKET, 2), ("granary", A.BUILD_GRANARY, 3),
                                  ("doctor", A.BUILD_DOCTOR, 1), ("temple", A.BUILD_TEMPLE_SMALL, 2),
@@ -245,6 +253,8 @@ def decision_context(env, observation, mission, decision_id, budget, last_result
             candidate.preview["benefit"] = "farm, worker housing, granary and market"
         if name.startswith("establish_water_supply_district_"):
             candidate.preview["benefit"] = "connected fountain with reservoir/optional aqueduct supply"
+        if name.startswith("landscape_district_"):
+            candidate.preview["benefit"] = "up to four paid gardens; native desirability effects"
         if name in gift_quotes:
             candidate.preview["personal_savings_cost"] = gift_quotes[name]
             candidate.preview["benefit"] = "imperial gift; personal savings; normal diminishing returns"
@@ -264,6 +274,7 @@ def decision_context(env, observation, mission, decision_id, budget, last_result
                "remaining_ticks": budget, "state": scalar, "mission": mission, "imperial": imperial,
                "food_supply": food_summary(env.get_food_supply(), buildings),
                "water_supply": water_summary(env.get_water_supply(), buildings),
+               "housing": housing_summary(env.get_housing_state()),
                "services": {"residents_with_food": sum(b["population"] for b in buildings if b["food"] > 0),
                             "residents_with_water": sum(b["population"] for b in buildings if b["well"] or b["fountain"]),
                             "health": env.get_population_info()["health"],

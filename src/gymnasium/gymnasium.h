@@ -86,6 +86,7 @@ int julius_env_get_population_info(julius_env_t *env, char *output, int capacity
 /** Read imperial personal finances and gift quotes, including after episode end. */
 int julius_env_get_imperial_state(julius_env_t *env, char *output, int capacity);
 int julius_env_get_water_supply(julius_env_t *env, char *output, int capacity);
+int julius_env_get_housing_state(julius_env_t *env, char *output, int capacity);
 
 /**
  * Capture the current environment state.

@@ -697,6 +697,21 @@ class JuliusEnv(gym.Env):
             raise RuntimeError("Cannot read water supply diagnostics")
         return json.loads(output.value)
 
+    def get_housing_state(self):
+        """Read native house/model constraints without evolving, consuming goods or changing demands."""
+        query = self.lib.julius_env_get_housing_state
+        query.argtypes = [c_void_p, POINTER(c_char), c_int32]
+        query.restype = c_int32
+        if not self.env_handle:
+            raise RuntimeError("Cannot read housing diagnostics")
+        capacity = 64 * 1024
+        while capacity <= 8 * 1024 * 1024:
+            output = ctypes.create_string_buffer(capacity)
+            if query(self.env_handle, output, capacity) == 0:
+                return json.loads(output.value)
+            capacity *= 2
+        raise RuntimeError("Cannot read housing diagnostics within 8 MiB")
+
     def get_buildings(self):
         """Read active building footprints, employment and household food/water.
 

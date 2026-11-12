@@ -42,10 +42,13 @@ def request_body(context, model, tokens, temperature=0.0, top_p=None, top_k=None
             row.append(candidate.get("personal_savings_cost", 0))
     if "water_supply" in context:
         compact["water_supply"] = context["water_supply"]
+    if "housing" in context:
+        compact["housing"] = context["housing"]
     if "forecast_policy" in context:
         columns = ["ticks", "status", "population", "food_stocks", "residents_with_food",
                    "health", "farm_workers", "treasury", "culture", "granary_food_units", "market_food_units",
-                   "favor", "personal_savings", "prosperity", "residents_with_fountain"]
+                   "favor", "personal_savings", "prosperity", "residents_with_fountain",
+                   "desirability_blocked_houses", "native_cached_prosperity_cap", "max_house_level"]
         compact["forecast_policy"] = context["forecast_policy"]
         if forecast_format == "rows":
             compact["forecast_columns"] = columns
@@ -75,6 +78,9 @@ def request_body(context, model, tokens, temperature=0.0, top_p=None, top_k=None
                       "Recent deltas include all activity during each cycle, not just construction. "
                       "Imperial gifts spend personal savings, not city treasury; repeated gifts have diminishing returns. "
                       "Reservoirs need nearby water or midpoint-connected aqueducts. Fountains need reservoir range and staff. "
+                      "Housing desirability uses the current model threshold; upgrade goods/services use the next model. "
+                      "Passing these checks does not guarantee evolution: population, space, merging and timing also apply. "
+                      "Gardens affect desirability through normal engine updates. "
                       "Return required JSON only. Keep the reason under eight words.",
             "prompt": json.dumps(compact),
             "options": options}

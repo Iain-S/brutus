@@ -51,6 +51,14 @@ def verify_water_supply(env, path):
     return True
 
 
+def verify_housing_state(env, path):
+    if not path.exists():
+        return False
+    if env.get_housing_state() != json.loads(path.read_text(encoding="utf-8")):
+        raise AssertionError("Final housing diagnostics differ from recorded run")
+    return True
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("run", type=Path)
@@ -88,6 +96,7 @@ def main():
         food_verified = verify_food_supply(env, source / "final.food_supply.json")
         imperial_verified = verify_imperial_state(env, source / "final.imperial.json")
         water_verified = verify_water_supply(env, source / "final.water_supply.json")
+        housing_verified = verify_housing_state(env, source / "final.housing.json")
         population = int(observation["population_total"].item())
         if population != manifest["summary"]["population"]:
             raise AssertionError("Final population differs from recorded run")
@@ -96,7 +105,7 @@ def main():
         summary = {"verified": True, "ticks": len(steps), "population": population,
                    "source_run": str(source), "won": env.get_victory_state() == 1,
                    "food_supply_verified": food_verified, "imperial_state_verified": imperial_verified,
-                   "water_supply_verified": water_verified}
+                   "water_supply_verified": water_verified, "housing_state_verified": housing_verified}
         print(json.dumps(summary, indent=2))
     finally:
         error = sys.exc_info()[1]

@@ -24,6 +24,13 @@ def main():
         artifacts.ready = True
         artifacts.metadata["mission"] = info["mission"]
         initial = env.get_water_supply()
+        housing_initial = env.get_housing_state()
+        assert housing_initial["schema_version"] == 1
+        housing_query = env.lib.julius_env_get_housing_state
+        housing_tiny = ctypes.create_string_buffer(b"X" * 16)
+        assert housing_query(env.env_handle, housing_tiny, 4) == -1 and housing_tiny.raw[4:5] == b"X"
+        assert housing_query(None, housing_tiny, 16) == -1
+        assert housing_query(env.env_handle, None, 16) == -1
         query = env.lib.julius_env_get_water_supply
         tiny = ctypes.create_string_buffer(b"X" * 16)
         assert query(env.env_handle, tiny, 4) == -1 and tiny.raw[4:5] == b"X"
@@ -69,10 +76,16 @@ def main():
             water = env.get_water_supply()
             assert water["aqueducts"] and not any(tile["water"] for tile in water["aqueducts"]), water
             before = env.get_water_supply()
+            housing_before = env.get_housing_state()
+            housing_fingerprint = fingerprint(env, observation)
+            assert env.get_housing_state() == housing_before
+            assert fingerprint(env, observation) == housing_fingerprint
             actions = water_plan(env, info["mission"], home)
             assert env.get_water_supply() == before
             context, candidates = decision_context(env, observation, info["mission"], 0, 16000 - ticks)
             assert any(name.startswith("establish_water_supply_") for name in candidates)
+            assert any(name.startswith("landscape_district_") for name in candidates)
+            assert "housing" in context and env.get_housing_state() == housing_before
             assert "water_supply" in context and env.get_water_supply() == before
             candidate = Candidate("water", actions, fingerprint(env, observation), {})
             result, _, _ = preview_candidate(env, candidate, observation, 16000 - ticks, forecast_ticks=800)
@@ -130,20 +143,20 @@ def main():
                 assert result["status"] == "failed", result
             # Supply is not the only native prerequisite: the starter's nearby
             # safety/industry buildings also depress house desirability.
-            terrain, buildings, width, height = env.get_map_data()
-            hx, hy = home
-            garden_sites = [(x, y) for y in range(max(1, hy - 4), min(height - 1, hy + 5))
-                            for x in range(max(1, hx - 4), min(width - 1, hx + 5))
-                            if not buildings[y, x] and not terrain[y, x] & (NOT_CLEAR & ~0x11)]
-            garden_sites.sort(key=lambda p: (abs(p[0] - hx) + abs(p[1] - hy), p))
-            phase = []
-            for x, y in garden_sites[:12]:
-                if terrain[y, x] & 0x11:
-                    phase.append((A.CLEAR_LAND, x, y))
-                phase.append((A.BUILD_GARDEN, x, y))
-            apply("fixture_desirability", phase)
+            from julius_gym.housing import garden_plan
+            housing_before_gardens = env.get_housing_state()
+            blocked = [h for h in housing_before_gardens["houses"]
+                       if h["population"] > 0 and not h["desirability_allows_upgrade"]]
+            assert blocked
+            for _ in range(3):
+                terrain, buildings, width, height = env.get_map_data()
+                phase = garden_plan(terrain, buildings, width, height, home,
+                                    radius=housing_before_gardens["garden_model"]["desirability_range"])
+                apply("fixture_desirability", phase)
             apply("evolution", [(A.NONE, 0, 0)] * 8000)
             assert max(b["level"] for b in env.get_buildings()) >= 4
+            housing_after = env.get_housing_state()
+            assert any(h["level"] >= 4 and h["fountain"] for h in housing_after["houses"])
         summary = {"ticks": ticks, "population": int(observation["population_total"].item()),
                    "won": False, "verified_water_access": True,
                    "max_house_level": max(b["level"] for b in env.get_buildings())}

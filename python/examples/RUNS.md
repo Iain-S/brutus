@@ -16,6 +16,7 @@ runs/
         final.food_supply.json
         final.imperial.json
         final.water_supply.json
+        final.housing.json
         REVIEW.md
         final.png                 (add manually after Julius capture)
 ```
@@ -35,6 +36,8 @@ runs. Filenames inside a run stay fixed so they are easy to compare.
   fresh native gift quotes, separate from city treasury.
 - `final.water_supply.json`: full cached native water-structure diagnostics and
   aqueduct wet/dry tiles, without recalculating supply.
+- `final.housing.json`: all active houses and loaded house models, cached
+  desirability and independent current/next goods/service checks; no evolution.
 - `REVIEW.md`: screenshot capture instructions for that folder.
 - `final.png`: reserved name for the real-assets Julius screenshot; not created
   or imitated by the headless runner.
@@ -100,3 +103,8 @@ When `final.water_supply.json` is present, replay strictly compares all structur
 and aqueduct diagnostics and reports `water_supply_verified: true`. Older bundles
 without it retain existing checks and report this extra check as false. New
 output bundles do not rewrite historical source diagnostics.
+
+When `final.housing.json` is present, replay strictly compares the entire payload,
+including models, and reports `housing_state_verified: true`. Older bundles
+without it retain existing checks and report this extra check as false. A passing
+comparison verifies endpoint determinism, not a strategy or guaranteed upgrade.

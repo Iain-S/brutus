@@ -732,3 +732,28 @@ adds recent-action/service feedback and an optional composed wheat-supply macro.
 Its engine test builds the complete district in 50 paid actions with preview
 rollback and subsequent immigration. A live choice remains a separate test;
 the compound macro does not guarantee a staffed or productive food chain.
+# Housing Capability Checkpoint: 2026-11-12
+
+The planner now receives native housing models and independent desirability and
+goods/service checks, plus optional paid four-garden district proposals. These
+do not force an improvement order or bypass evolution, population, merging or
+space requirements. Full raw diagnostics are retained as `final.housing.json`;
+the prompt uses totals and the first eight rows with explicit omissions.
+
+The asset-backed water/housing control reached level 4 at 12,103 ticks with 116
+residents using three garden-helper batches and normal loaded models. This is
+a capability fixture, not a model-selected strategy or prosperity-25 citywide.
+Run suffix `water-capability_f378d64a` replayed with every existing check plus
+strict housing comparison (`replay_bdcdd306`). A pre-housing bundle ending
+`water-capability_5f241867` also replayed strictly, omitting only the absent housing
+comparison (`replay_a05c281e`). Neither run won Tarraco.
+
+Next establish taxation capability before a longer planner trial. Native tax
+collection requires collector coverage supplied by staffed, road-accessible
+forums or a senate; the proposal list currently offers neither. Existing tax
+rate actions alone cannot produce collector coverage. Add optional forum
+construction, native coverage/income feedback and lawful tax/wage controls,
+then measure monthly finances. Eight-year sustainability is unproven, not
+source-proven impossible. Trade and broader religious controls remain possible
+later needs, not established victory prerequisites. Preflight the enlarged
+housing prompt against the configured context budget before further model runs.
