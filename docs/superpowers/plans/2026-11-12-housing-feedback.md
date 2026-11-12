@@ -30,7 +30,7 @@ existing branch/workspace and preserve user staging.
 - [x] Implement native const predicate/query and bindings; test model guards, current/next distinction, cached desirability, raw services, immutability and buffer limits.
 - [x] Add bounded housing feedback and garden choices/forecasts; test paid fixture improvements and snapshot rollback without changing native rules.
 - [x] Strictly replay final.housing.json when present; verify older bundles remain compatible.
-- [ ] Build/run focused checks, source review, asset-backed control/replay and asset-free Linux CI; document limitations, commit and push source only.
+- [x] Build/run focused checks, source review, asset-backed control/replay and asset-free Linux CI; document limitations, commit and push source only.
 
 ## Validation
 
@@ -52,6 +52,16 @@ food query, nine housing blocks and imperial gifts) pass. Paid control
 No fixture or trial won the mission.
 
 Native housing target builds; Windows Application Control blocks its execution.
-Existing food/imperial fixtures run locally. Linux CI is still pending push.
+Existing observation/food/imperial fixtures run locally.
 Review identified signed negative house levels bypassing upper-bound validation;
 both new entry points now reject them and the native fixture covers -1.
+
+### Committed Verification
+
+Implementation `167388ad` was pushed. Linux Headless Gym Tests run
+[43246843495](https://github.com/Iain-S/brutus/actions/runs/43246843495) passed
+configure, all five native fixture builds and CTest. This resolves the native
+execution gap without changing Windows policy; graphical build status is separate.
+Postcommit paid control `water-capability_3f869213` repeated level 4 at 12,103 ticks
+with 116 residents. Independent `replay_d5ed0f61` matched all diagnostics,
+including housing. Neither run won Tarraco. User-staged model files were excluded.
