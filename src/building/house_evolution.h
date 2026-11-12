@@ -8,6 +8,12 @@
  */
 void building_house_process_evolve_and_consume_goods(void);
 
+/** Read only the native current/next goods-and-services predicate, using local
+ * demand counters. Returns -1 for an invalid/inactive house or no next model.
+ * Does not test desirability, population, merging, space or evolution timing.
+ */
+int building_house_goods_services_pass(const building *house, int for_upgrade);
+
 /**
  * Determine the text to show for evolution of a house, stored in house->evolve_text_id
  * @param house House to determine text for

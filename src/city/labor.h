@@ -29,6 +29,10 @@ void city_labor_calculate_workers(int num_plebs, int num_patricians);
 
 void city_labor_allocate_workers(void);
 
+/* Native round-robin state is transient and not part of standard save files. */
+int city_labor_water_allocation_cursor(void);
+void city_labor_restore_water_allocation_cursor(int cursor);
+
 void city_labor_update(void);
 
 void city_labor_set_priority(int category, int new_priority);

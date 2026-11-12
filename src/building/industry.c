@@ -22,7 +22,7 @@ int building_is_workshop(building_type type)
     return type >= BUILDING_WINE_WORKSHOP && type <= BUILDING_POTTERY_WORKSHOP;
 }
 
-static int max_progress(const building *b)
+int building_industry_max_progress(const building *b)
 {
     return b->subtype.workshop_type ? MAX_PROGRESS_WORKSHOP : MAX_PROGRESS_RAW;
 }
@@ -62,7 +62,7 @@ void building_industry_update_production(void)
             if (b->data.industry.blessing_days_left && building_is_farm(b->type)) {
                 b->data.industry.progress += b->num_workers;
             }
-            int max = max_progress(b);
+            int max = building_industry_max_progress(b);
             if (b->data.industry.progress > max) {
                 b->data.industry.progress = max;
             }
@@ -101,7 +101,7 @@ void building_industry_update_wheat_production(void)
 
 int building_industry_has_produced_resource(building *b)
 {
-    return b->data.industry.progress >= max_progress(b);
+    return b->data.industry.progress >= building_industry_max_progress(b);
 }
 
 void building_industry_start_new_production(building *b)

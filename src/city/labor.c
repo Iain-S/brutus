@@ -40,6 +40,8 @@ static const int CATEGORY_FOR_BUILDING_TYPE[] = {
     -1, -1, -1, -1, -1, -1, -1, -1, -1, -1 //120
 };
 
+static int water_allocation_cursor = 1;
+
 static struct {
     labor_category category;
     int workers;
@@ -309,7 +311,6 @@ static void set_building_worker_weight(void)
 
 static void allocate_workers_to_water(void)
 {
-    static int start_building_id = 1;
     labor_category_data *water_cat = &city_data.labor.categories[LABOR_CATEGORY_WATER];
 
     int percentage_not_filled = 100 - calc_percentage(water_cat->workers_allocated, water_cat->workers_needed);
@@ -322,8 +323,8 @@ static void allocate_workers_to_water(void)
     } else {
         workers_per_building = water_cat->workers_allocated / (water_cat->buildings - buildings_to_skip);
     }
-    int building_id = start_building_id;
-    start_building_id = 0;
+    int building_id = water_allocation_cursor;
+    water_allocation_cursor = 0;
     for (int guard = 1; guard < MAX_BUILDINGS; guard++, building_id++) {
         if (building_id >= MAX_BUILDINGS) {
             building_id = 1;
@@ -337,10 +338,10 @@ static void allocate_workers_to_water(void)
             if (percentage_not_filled > 0) {
                 if (buildings_to_skip) {
                     --buildings_to_skip;
-                } else if (start_building_id) {
+                } else if (water_allocation_cursor) {
                     b->num_workers = workers_per_building;
                 } else {
-                    start_building_id = building_id;
+                    water_allocation_cursor = building_id;
                     b->num_workers = workers_per_building;
                 }
             } else {
@@ -348,10 +349,20 @@ static void allocate_workers_to_water(void)
             }
         }
     }
-    if (!start_building_id) {
+    if (!water_allocation_cursor) {
         // no buildings assigned or full employment
-        start_building_id = 1;
+        water_allocation_cursor = 1;
     }
+}
+
+int city_labor_water_allocation_cursor(void)
+{
+    return water_allocation_cursor;
+}
+
+void city_labor_restore_water_allocation_cursor(int cursor)
+{
+    water_allocation_cursor = cursor > 0 && cursor < MAX_BUILDINGS ? cursor : 1;
 }
 
 static void allocate_workers_to_non_water_buildings(void)

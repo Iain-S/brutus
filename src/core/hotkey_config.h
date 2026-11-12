@@ -113,4 +113,10 @@ void hotkey_config_load(void);
  */
 void hotkey_config_save(void);
 
+/**
+ * Override hotkey config file path (useful for headless mode)
+ * @param path Full path to config file, or NULL to keep default
+ */
+void hotkey_config_set_file_path(const char *path);
+
 #endif // CORE_HOTKEY_CONFIG_H

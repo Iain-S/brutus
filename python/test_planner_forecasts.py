@@ -1,0 +1,162 @@
+"""Bounded forecast tests without game assets or a model service."""
+
+import unittest
+import importlib.util
+import json
+import subprocess
+import sys
+from pathlib import Path
+from unittest.mock import MagicMock, Mock, patch
+
+import numpy as np
+from julius_gym.planner import Candidate
+
+
+def observation(population, treasury):
+    return {"population_total": np.array(population), "finance_treasury": np.array(treasury),
+            "resources_food_stocks": np.array(0), "ratings_culture": np.array(7), "ratings_favor": np.array(50),
+            "ratings_prosperity": np.array(8)}
+
+
+class ForecastTests(unittest.TestCase):
+    def test_appended_gift_actions_are_not_misclassified_as_construction(self):
+        from julius_gym.env import ActionType as A
+        from julius_gym.planner import execute
+        for message, status in (("Sent SEND_MODEST_GIFT for 45 personal denarii", "completed"),
+                                ("Insufficient personal savings for imperial gift", "failed")):
+            self.env.step_at.return_value = (self.before, 0, False, False, {"message": message})
+            candidate = Candidate("gift", [(A.SEND_MODEST_GIFT, 0, 0)], "current", {})
+            with patch("julius_gym.planner.fingerprint", return_value="current"):
+                _, result, _, _ = execute(self.env, candidate, self.before, 1)
+            self.assertEqual(result["status"], status)
+
+    def test_runner_rejects_unbounded_forecast_horizons(self):
+        runner = Path(__file__).parent / "examples" / "run_planner.py"
+        for ticks in (-1, 8001):
+            result = subprocess.run([sys.executable, str(runner), "--data-dir", "unused",
+                                     "--lib-path", "unused", "--forecast-ticks", str(ticks)],
+                                    capture_output=True, text=True)
+            self.assertEqual(result.returncode, 2)
+            self.assertIn("--forecast-ticks must be from 0 to 8000", result.stderr)
+
+    def test_local_adapter_exposes_optional_forecast_columns(self):
+        spec = importlib.util.spec_from_file_location("forecast_adapter", Path(__file__).parent / "examples" / "ollama_planner.py")
+        adapter = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(adapter)
+        forecast = {"ticks": 800, "status": "completed", "population": 12, "food_stocks": 0,
+                    "residents_with_food": 0, "health": 50, "farm_workers": 0, "treasury": 90, "culture": 7,
+                    "granary_food_units": 120, "market_food_units": 30, "favor": 53, "personal_savings": 155,
+                    "prosperity": 8, "residents_with_fountain": 0, "desirability_blocked_houses": 0,
+                    "native_cached_prosperity_cap": 10, "max_house_level": -1,
+                    "covered_population": 0, "yearly_collected_denarii": 0}
+        context = {"decision_id": 0, "forecast_policy": {"minimum_ticks": 800},
+                   "candidates": [{"id": "housing", "forecast": forecast}]}
+        compact = json.loads(adapter.request_body(context, "test-model", 96)["prompt"])
+        self.assertEqual(compact["candidate_columns"][-1], "forecast")
+        self.assertEqual(dict(zip(compact["forecast_columns"], compact["candidates"][0][-1])), forecast)
+        self.assertEqual(compact["forecast_policy"], context["forecast_policy"])
+        del context["forecast_policy"]
+        context["candidates"] = [{"id": "wait"}]
+        compact = json.loads(adapter.request_body(context, "test-model", 96)["prompt"])
+        self.assertNotIn("forecast_columns", compact)
+        self.assertEqual(len(compact["candidates"][0]), 4)
+
+    def setUp(self):
+        self.env = MagicMock()
+        self.snapshot = self.env.snapshot.return_value.__enter__.return_value
+        self.env.get_buildings.return_value = []
+        self.env.get_population_info.return_value = {"health": 50}
+        self.env.get_imperial_state.return_value = {"personal_savings": 155}
+        self.env.get_housing_state.return_value = {"houses": [], "native_cached_prosperity_cap": 10}
+        self.env.get_finance_state.return_value = {"covered_population": 0, "yearly_collected_denarii": 0}
+        self.env.get_food_supply.return_value = {"schema_version": 1, "units_per_load": 100, "buildings": []}
+        self.candidate = Candidate("housing", [(5, 1, 1)], "current", {})
+        self.before = observation(0, 100)
+        self.built = observation(0, 90)
+        self.after = observation(12, 85)
+        self.built_result = {"status": "completed", "steps": [{"action": (5, 1, 1)}]}
+
+    def preview(self, execute, *, ticks=10, budget=20):
+        from julius_gym.planner import preview_candidate
+        with patch("julius_gym.planner.execute", execute), \
+                patch("julius_gym.planner.fingerprint", return_value="current"):
+            return preview_candidate(self.env, self.candidate, self.before, budget, ticks)
+
+    def test_disabled_preserves_construction_only(self):
+        execute = Mock(return_value=(self.built, self.built_result, False, False))
+        result, outlay, forecast = self.preview(execute, ticks=0)
+        self.assertEqual(result["status"], "completed")
+        self.assertEqual(outlay, 10)
+        self.assertIsNone(forecast)
+        self.assertEqual(execute.call_count, 1)
+        self.snapshot.restore.assert_called_once()
+
+    def test_finance_forecast_retains_coverage_and_actual_yearly_denarii(self):
+        from julius_gym.planner import forecast_state
+        self.env.get_finance_state.return_value = {"covered_population": 11, "yearly_collected_denarii": 7}
+        result = forecast_state(self.env, self.after, 800, "completed")
+        self.assertEqual(result["covered_population"], 11)
+        self.assertEqual(result["yearly_collected_denarii"], 7)
+
+    def test_continuation_is_bounded_and_cost_is_separate(self):
+        execute = Mock(side_effect=[(self.built, self.built_result, False, False),
+                                   (self.after, {"status": "completed", "steps": [{}] * 4}, False, False)])
+        _, outlay, forecast = self.preview(execute, budget=5)
+        self.assertEqual(outlay, 10)
+        self.assertEqual(forecast["ticks"], 5)
+        self.assertEqual(forecast["population"], 12)
+        self.assertEqual(forecast["culture"], 7)
+        self.assertEqual(forecast["favor"], 50)
+        self.assertEqual(forecast["personal_savings"], 155)
+        self.assertEqual(forecast["prosperity"], 8)
+        self.assertEqual(forecast["residents_with_fountain"], 0)
+        self.assertEqual(forecast["desirability_blocked_houses"], 0)
+        self.assertEqual(forecast["native_cached_prosperity_cap"], 10)
+        self.assertEqual(forecast["market_food_units"], 0)
+        self.assertEqual(forecast["treasury"], 85)
+        self.assertEqual(len(execute.call_args.args[1].actions), 4)
+        self.assertEqual(execute.call_args.args[3], 4)
+        self.snapshot.restore.assert_called_once()
+
+    def test_terminal_continuation_is_reported_not_rejected(self):
+        execute = Mock(side_effect=[(self.built, self.built_result, False, False),
+                                   (self.after, {"status": "lost", "steps": [{}]}, True, False)])
+        result, _, forecast = self.preview(execute)
+        self.assertEqual(result["status"], "completed")
+        self.assertEqual(forecast["status"], "lost")
+        self.assertEqual(forecast["ticks"], 2)
+
+    def test_construction_victory_does_not_continue(self):
+        execute = Mock(return_value=(self.built, {"status": "won", "steps": [{}]}, True, False))
+        _, _, forecast = self.preview(execute)
+        self.assertEqual(forecast["status"], "won")
+        self.assertEqual(execute.call_count, 1)
+
+    def test_failed_construction_is_not_forecast(self):
+        execute = Mock(return_value=(self.built, {"status": "failed", "steps": [{}]}, False, False))
+        _, _, forecast = self.preview(execute)
+        self.assertIsNone(forecast)
+        self.assertEqual(execute.call_count, 1)
+
+    def test_wait_loss_is_forecast_without_continuation(self):
+        self.candidate.id = "wait"
+        execute = Mock(return_value=(self.after, {"status": "lost", "steps": [{}]}, True, False))
+        _, _, forecast = self.preview(execute)
+        self.assertEqual(forecast["status"], "lost")
+        self.assertEqual(execute.call_count, 1)
+
+    def test_construction_can_consume_entire_budget(self):
+        execute = Mock(return_value=(self.built, self.built_result, False, False))
+        _, _, forecast = self.preview(execute, budget=1)
+        self.assertEqual(forecast["ticks"], 1)
+        self.assertEqual(execute.call_count, 1)
+
+    def test_exception_still_restores(self):
+        execute = Mock(side_effect=RuntimeError("simulation failure"))
+        with self.assertRaisesRegex(RuntimeError, "simulation failure"):
+            self.preview(execute)
+        self.snapshot.restore.assert_called_once()
+
+
+if __name__ == "__main__":
+    unittest.main()

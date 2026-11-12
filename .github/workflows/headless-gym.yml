@@ -1,0 +1,36 @@
+name: Headless Gym Tests
+
+on:
+  push:
+    paths:
+      - 'CMakeLists.txt'
+      - 'src/**'
+      - 'test/gymnasium/**'
+      - '.github/workflows/headless-gym.yml'
+  pull_request:
+    paths:
+      - 'CMakeLists.txt'
+      - 'src/**'
+      - 'test/gymnasium/**'
+      - '.github/workflows/headless-gym.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  native-tests:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Configure Headless Library
+        run: cmake -S . -B build-gym-ci -DHEADLESS_BUILD=ON -DBUILD_GYMNASIUM_LIB=ON
+      - name: Build Asset-Free Tests
+        run: >-
+          cmake --build build-gym-ci --parallel 2 --target
+          gym_observation_counts_test gym_food_supply_test
+          gym_imperial_test gym_water_supply_test gym_housing_test gym_finance_test
+          gym_labor_snapshot_test
+      - name: Run Native Tests
+        run: ctest --test-dir build-gym-ci -R '^gym_' --output-on-failure

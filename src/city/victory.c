@@ -13,10 +13,17 @@
 #include "window/mission_end.h"
 #include "window/victory_dialog.h"
 
-static struct {
-    int state;
-    int force_win;
-} data;
+static city_victory_snapshot data;
+
+void city_victory_capture_state(city_victory_snapshot *snapshot)
+{
+    *snapshot = data;
+}
+
+void city_victory_restore_state(const city_victory_snapshot *snapshot)
+{
+    data = *snapshot;
+}
 
 void city_victory_reset(void)
 {

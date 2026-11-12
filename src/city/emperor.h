@@ -20,6 +20,9 @@ void city_emperor_init_selected_gift(void);
 
 void city_emperor_calculate_gift_costs(void);
 
+/** Fresh cost without changing cached gift-dialog state; -1 for invalid size. */
+int city_emperor_gift_cost(int size);
+
 int city_emperor_set_gift_size(int size);
 
 int city_emperor_selected_gift_size(void);
