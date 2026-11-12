@@ -12,6 +12,16 @@ spec.loader.exec_module(replay)
 
 
 class ReplayTests(unittest.TestCase):
+    def test_optional_finance_state_is_strict(self):
+        env = SimpleNamespace(get_finance_state=Mock(return_value={"yearly_collected_denarii": 7}))
+        self.assertFalse(replay.verify_finance_state(env, SimpleNamespace(exists=lambda: False)))
+        env.get_finance_state.assert_not_called()
+        path = SimpleNamespace(exists=lambda: True, read_text=lambda **kwargs: '{"yearly_collected_denarii":7}')
+        self.assertTrue(replay.verify_finance_state(env, path))
+        env.get_finance_state.return_value["yearly_collected_denarii"] = 8
+        with self.assertRaisesRegex(AssertionError, "finance"):
+            replay.verify_finance_state(env, path)
+
     def test_optional_housing_state_compares_models_and_houses_strictly(self):
         env = SimpleNamespace(get_housing_state=Mock(return_value={"houses": [], "models": [{"water": 2}]}))
         self.assertFalse(replay.verify_housing_state(env, SimpleNamespace(exists=lambda: False)))

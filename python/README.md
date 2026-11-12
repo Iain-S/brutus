@@ -1,5 +1,42 @@
 # Julius Gymnasium Environment
 
+## Native Taxation And Finances
+
+Rebuild the headless library for `env.get_finance_state()`. The read-only JSON
+query separates current house collector coverage from cached monthly taxed
+population, raw monthly tax bases, annual collected/uncollected denarii and
+annual wages/interest/governor-salary counters. Monthly tax bases are not cash
+and need not correspond to the current tax rate. Annual counters reset at the
+native year boundary. Estimates and this/last-year overview totals are cached;
+the query does not collect taxes or recalculate them.
+
+Full raw diagnostics include all in-use house-size records (the native tax
+collector's accounting criterion), forum/senate staffing, figure IDs and both
+cached road flags and the read-only native road-access predicate used to spawn
+collectors. A native adjacent-road check is not a city-entry connectivity proof.
+`houses_covered_activity_cached` is a decaying, capped service-activity counter
+shared with labor seekers, not unique/current tax-covered houses.
+The planner retains accounting totals but only the first eight collector
+buildings by ID, with explicit omission counts. Coverage is not proof of cash
+collection: the tax rate may be zero, and collection happens monthly.
+
+Optional `add_forum_district_N` choices use normal paid, road-connected 2x2
+construction near the existing first-four district anchors. Existing native
+tax/wage +/-1 actions are also elective proposals, with native bounds enforced
+by previews. These do not prescribe a budget, tax rate or winning build order.
+Action count remains 61; no game rules or observation layouts change.
+
+```shell
+python test_finance.py --data-dir <ABSOLUTE_DATA_DIRECTORY> --lib-path <ABSOLUTE_LIBRARY_PATH>
+python -m unittest discover -s . -p test_finance_feedback.py
+cmake --build <ABSOLUTE_BUILD_DIRECTORY> --target gym_finance_test
+ctest --test-dir <ABSOLUTE_BUILD_DIRECTORY> -R gym_finance --output-on-failure
+```
+
+The paid fixture distinguishes occupied untaxed housing from staffed forum
+coverage and actual collected denarii. It is not a sustainability benchmark;
+trade and longer-term budget adequacy still need measurement.
+
 ## Native Housing Feedback
 
 Rebuild the headless library for `env.get_housing_state()`. This read-only JSON

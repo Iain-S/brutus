@@ -60,6 +60,8 @@ class RunArtifacts:
                     json.dumps(env.get_water_supply(), indent=2), encoding="utf-8")),
                 ("final.housing.json", lambda: (self.directory / "final.housing.json").write_text(
                     json.dumps(env.get_housing_state(), indent=2), encoding="utf-8")),
+                ("final.finance.json", lambda: (self.directory / "final.finance.json").write_text(
+                    json.dumps(env.get_finance_state(), indent=2), encoding="utf-8")),
             ):
                 try:
                     write()

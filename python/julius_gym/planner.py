@@ -8,7 +8,7 @@ from collections import Counter
 
 from .baseline import bridge_plan, building_plan, exclude_hazard, starter_plan
 from .env import ActionType as A
-from .diagnostics import food_summary, food_totals, water_summary, housing_summary, housing_totals
+from .diagnostics import food_summary, food_totals, water_summary, housing_summary, housing_totals, finance_summary
 from .housing import garden_plan
 from .water import water_plan
 
@@ -43,8 +43,11 @@ def execute(env, candidate, observation, budget):
         record = {"action": action, "reward": reward, **info}
         records.append(record)
         success_prefix = "Sent " if A.SEND_MODEST_GIFT <= action[0] <= A.SEND_LAVISH_GIFT else "Built "
-        failed = (not terminated and not truncated and action[0] >= A.BUILD_HOUSING
-                  and not info["message"].startswith(success_prefix))
+        control_messages = {A.ADJUST_TAX_UP: "Tax increased by 1%", A.ADJUST_TAX_DOWN: "Tax decreased by 1%",
+                            A.ADJUST_WAGES_UP: "Wages increased", A.ADJUST_WAGES_DOWN: "Wages decreased"}
+        failed = (not terminated and not truncated and (
+            (action[0] >= A.BUILD_HOUSING and not info["message"].startswith(success_prefix))
+            or (action[0] in control_messages and info["message"] != control_messages[action[0]])))
         if failed or terminated or truncated:
             break
     else:
@@ -64,6 +67,7 @@ def forecast_state(env, observation, ticks, status):
     buildings = env.get_buildings()
     food = food_totals(env.get_food_supply())
     housing = housing_totals(env.get_housing_state())
+    finance = env.get_finance_state()
     return {"ticks": ticks, "status": status,
             "population": int(observation["population_total"].item()),
             "culture": int(observation["ratings_culture"].item()),
@@ -79,6 +83,8 @@ def forecast_state(env, observation, ticks, status):
             "desirability_blocked_houses": housing["desirability_blocked_houses"],
             "native_cached_prosperity_cap": housing["native_cached_prosperity_cap"],
             "max_house_level": housing["max_house_level"],
+            "covered_population": finance["covered_population"],
+            "yearly_collected_denarii": finance["yearly_collected_denarii"],
             "health": env.get_population_info()["health"],
             "farm_workers": sum(b["workers"] for b in buildings if b["type"] == 100)}
 
@@ -210,11 +216,15 @@ def proposals(env, mission, radius):
             terrain, buildings, width, height, anchor, radius=garden_radius)
         yield f"establish_water_supply_district_{index}", lambda anchor=anchor: water_plan(env, mission, anchor, radius)
         for name, kind, size in (("market", A.BUILD_MARKET, 2), ("granary", A.BUILD_GRANARY, 3),
+                                 ("forum", A.BUILD_FORUM, 2),
                                  ("doctor", A.BUILD_DOCTOR, 1), ("temple", A.BUILD_TEMPLE_SMALL, 2),
                                  ("school", A.BUILD_SCHOOL, 2), ("library", A.BUILD_LIBRARY, 2),
                                  ("theater", A.BUILD_THEATER, 2), ("actor_colony", A.BUILD_ACTOR_COLONY, 3)):
             yield f"add_{name}_district_{index}", lambda kind=kind, size=size, anchor=anchor: building_plan(
                 terrain, buildings, width, height, entry, kind, size, anchor=anchor)
+    for name, kind in (("tax_up", A.ADJUST_TAX_UP), ("tax_down", A.ADJUST_TAX_DOWN),
+                       ("wages_up", A.ADJUST_WAGES_UP), ("wages_down", A.ADJUST_WAGES_DOWN)):
+        yield f"adjust_{name}", lambda kind=kind: [(kind, 0, 0)]
     for name, kind in (("modest", A.SEND_MODEST_GIFT), ("generous", A.SEND_GENEROUS_GIFT),
                        ("lavish", A.SEND_LAVISH_GIFT)):
         yield f"send_{name}_gift", lambda kind=kind: [(kind, 0, 0)]
@@ -275,6 +285,7 @@ def decision_context(env, observation, mission, decision_id, budget, last_result
                "food_supply": food_summary(env.get_food_supply(), buildings),
                "water_supply": water_summary(env.get_water_supply(), buildings),
                "housing": housing_summary(env.get_housing_state()),
+               "finance": finance_summary(env.get_finance_state()),
                "services": {"residents_with_food": sum(b["population"] for b in buildings if b["food"] > 0),
                             "residents_with_water": sum(b["population"] for b in buildings if b["well"] or b["fountain"]),
                             "health": env.get_population_info()["health"],

@@ -59,6 +59,14 @@ def verify_housing_state(env, path):
     return True
 
 
+def verify_finance_state(env, path):
+    if not path.exists():
+        return False
+    if env.get_finance_state() != json.loads(path.read_text(encoding="utf-8")):
+        raise AssertionError("Final finance diagnostics differ from recorded run")
+    return True
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("run", type=Path)
@@ -102,10 +110,12 @@ def main():
             raise AssertionError("Final population differs from recorded run")
         if env.get_victory_state() != manifest["victory_state"]:
             raise AssertionError("Final victory state differs from recorded run")
+        finance_verified = verify_finance_state(env, source / "final.finance.json")
         summary = {"verified": True, "ticks": len(steps), "population": population,
                    "source_run": str(source), "won": env.get_victory_state() == 1,
                    "food_supply_verified": food_verified, "imperial_state_verified": imperial_verified,
-                   "water_supply_verified": water_verified, "housing_state_verified": housing_verified}
+                   "water_supply_verified": water_verified, "housing_state_verified": housing_verified,
+                   "finance_state_verified": finance_verified}
         print(json.dumps(summary, indent=2))
     finally:
         error = sys.exc_info()[1]

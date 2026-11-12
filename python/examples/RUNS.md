@@ -17,12 +17,14 @@ runs/
         final.imperial.json
         final.water_supply.json
         final.housing.json
+        final.finance.json
         REVIEW.md
         final.png                 (add manually after Julius capture)
 ```
 
 Date and timestamp use UTC. Mode is `baseline`, `planner-smoke`,
-`planner-local`, `imperial-capability`/`water-capability` (native integration checks), or `replay`. The random suffix avoids collisions, including simultaneous
+`planner-local`, `imperial-capability`/`water-capability`/`finance-capability`
+(native integration checks), or `replay`. The random suffix avoids collisions, including simultaneous
 runs. Filenames inside a run stay fixed so they are easy to compare.
 
 - `actions.jsonl`: action/decision records.
@@ -38,6 +40,8 @@ runs. Filenames inside a run stay fixed so they are easy to compare.
   aqueduct wet/dry tiles, without recalculating supply.
 - `final.housing.json`: all active houses and loaded house models, cached
   desirability and independent current/next goods/service checks; no evolution.
+- `final.finance.json`: current house coverage, collector buildings and native
+  cached tax accounting, estimates and annual expense counters; no collection.
 - `REVIEW.md`: screenshot capture instructions for that folder.
 - `final.png`: reserved name for the real-assets Julius screenshot; not created
   or imitated by the headless runner.
@@ -108,3 +112,8 @@ When `final.housing.json` is present, replay strictly compares the entire payloa
 including models, and reports `housing_state_verified: true`. Older bundles
 without it retain existing checks and report this extra check as false. A passing
 comparison verifies endpoint determinism, not a strategy or guaranteed upgrade.
+
+When `final.finance.json` is present, replay strictly compares the whole finance
+payload and reports `finance_state_verified: true`. Older bundles retain their
+existing checks and report this extra comparison as false. Annual counters are
+scoped to the current native year; a replay match is not proof of solvency.

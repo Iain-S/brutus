@@ -757,3 +757,29 @@ then measure monthly finances. Eight-year sustainability is unproven, not
 source-proven impossible. Trade and broader religious controls remain possible
 later needs, not established victory prerequisites. Preflight the enlarged
 housing prompt against the configured context budget before further model runs.
+
+## Tax Collection Capability: 2026-11-12
+
+Optional normal forum construction and the existing tax/wage +/-1 actions are
+now available to the planner. Read-only finance feedback distinguishes current
+house collector coverage, native raw monthly tax bases, annual collected
+denarii, annual expense counters and cached estimates/overviews. Forum road
+access is checked with the same pure native predicate used for spawning; the
+generic cached flag is exposed separately because it is not maintained there.
+Service activity is not presented as unique current tax coverage.
+
+The paid control `finance-capability_7e3f0cd5` began with 70 occupied residents
+but zero coverage/income. After a normally staffed, entry-road-connected forum,
+it observed 58 covered residents and two denarii collected by tick 4,121 (sampled
+every 400 ticks). It ends after rate/wage checks at 4,125 ticks, population 94,
+treasury 6,878, tax 7%, wages 30, native current-year wages paid 33 and salary paid
+40. These figures demonstrate collection, not profitability or eight-year
+sustainability. Strict independent replay `replay_cc2da1bf` matched every action
+and final diagnostic, including the new `final.finance.json`. No mission win.
+
+First preflight the expanded local-model prompt for context headroom. Then
+evaluate model-selected choices with the newly available water, housing and
+taxation capabilities before imposing any further economic mechanism. Longer
+trials must account for annual counter resets, recurring expenses and the
+peace-rating time floor. The four-anchor service-search limit, broader gods
+and trade remain known limitations or possible needs, not proven solved.

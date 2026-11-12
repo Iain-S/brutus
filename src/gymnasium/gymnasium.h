@@ -87,6 +87,10 @@ int julius_env_get_population_info(julius_env_t *env, char *output, int capacity
 int julius_env_get_imperial_state(julius_env_t *env, char *output, int capacity);
 int julius_env_get_water_supply(julius_env_t *env, char *output, int capacity);
 int julius_env_get_housing_state(julius_env_t *env, char *output, int capacity);
+/** Read cached finance accounting and current coverage, including after episode end.
+ * Monthly tax bases are raw units, not actual income at the current tax rate.
+ */
+int julius_env_get_finance_state(julius_env_t *env, char *output, int capacity);
 
 /**
  * Capture the current environment state.

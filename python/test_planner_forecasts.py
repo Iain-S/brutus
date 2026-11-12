@@ -47,7 +47,8 @@ class ForecastTests(unittest.TestCase):
                     "residents_with_food": 0, "health": 50, "farm_workers": 0, "treasury": 90, "culture": 7,
                     "granary_food_units": 120, "market_food_units": 30, "favor": 53, "personal_savings": 155,
                     "prosperity": 8, "residents_with_fountain": 0, "desirability_blocked_houses": 0,
-                    "native_cached_prosperity_cap": 10, "max_house_level": -1}
+                    "native_cached_prosperity_cap": 10, "max_house_level": -1,
+                    "covered_population": 0, "yearly_collected_denarii": 0}
         context = {"decision_id": 0, "forecast_policy": {"minimum_ticks": 800},
                    "candidates": [{"id": "housing", "forecast": forecast}]}
         compact = json.loads(adapter.request_body(context, "test-model", 96)["prompt"])
@@ -67,6 +68,7 @@ class ForecastTests(unittest.TestCase):
         self.env.get_population_info.return_value = {"health": 50}
         self.env.get_imperial_state.return_value = {"personal_savings": 155}
         self.env.get_housing_state.return_value = {"houses": [], "native_cached_prosperity_cap": 10}
+        self.env.get_finance_state.return_value = {"covered_population": 0, "yearly_collected_denarii": 0}
         self.env.get_food_supply.return_value = {"schema_version": 1, "units_per_load": 100, "buildings": []}
         self.candidate = Candidate("housing", [(5, 1, 1)], "current", {})
         self.before = observation(0, 100)
@@ -88,6 +90,13 @@ class ForecastTests(unittest.TestCase):
         self.assertIsNone(forecast)
         self.assertEqual(execute.call_count, 1)
         self.snapshot.restore.assert_called_once()
+
+    def test_finance_forecast_retains_coverage_and_actual_yearly_denarii(self):
+        from julius_gym.planner import forecast_state
+        self.env.get_finance_state.return_value = {"covered_population": 11, "yearly_collected_denarii": 7}
+        result = forecast_state(self.env, self.after, 800, "completed")
+        self.assertEqual(result["covered_population"], 11)
+        self.assertEqual(result["yearly_collected_denarii"], 7)
 
     def test_continuation_is_bounded_and_cost_is_separate(self):
         execute = Mock(side_effect=[(self.built, self.built_result, False, False),

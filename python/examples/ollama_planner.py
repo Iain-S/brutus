@@ -44,11 +44,14 @@ def request_body(context, model, tokens, temperature=0.0, top_p=None, top_k=None
         compact["water_supply"] = context["water_supply"]
     if "housing" in context:
         compact["housing"] = context["housing"]
+    if "finance" in context:
+        compact["finance"] = context["finance"]
     if "forecast_policy" in context:
         columns = ["ticks", "status", "population", "food_stocks", "residents_with_food",
                    "health", "farm_workers", "treasury", "culture", "granary_food_units", "market_food_units",
                    "favor", "personal_savings", "prosperity", "residents_with_fountain",
-                   "desirability_blocked_houses", "native_cached_prosperity_cap", "max_house_level"]
+                   "desirability_blocked_houses", "native_cached_prosperity_cap", "max_house_level",
+                   "covered_population", "yearly_collected_denarii"]
         compact["forecast_policy"] = context["forecast_policy"]
         if forecast_format == "rows":
             compact["forecast_columns"] = columns
@@ -81,6 +84,9 @@ def request_body(context, model, tokens, temperature=0.0, top_p=None, top_k=None
                       "Housing desirability uses the current model threshold; upgrade goods/services use the next model. "
                       "Passing these checks does not guarantee evolution: population, space, merging and timing also apply. "
                       "Gardens affect desirability through normal engine updates. "
+                      "Tax income requires collector coverage from staffed road-connected forums or senate. "
+                      "Monthly tax bases are not denarii; yearly collected denarii reset each year. "
+                      "Finance overviews/estimates are cached, not guaranteed future income. "
                       "Return required JSON only. Keep the reason under eight words.",
             "prompt": json.dumps(compact),
             "options": options}

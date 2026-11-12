@@ -95,6 +95,15 @@ def housing_summary(state):
     return result
 
 
+def finance_summary(state):
+    """Keep native accounting scopes; bound collector detail without dropping totals."""
+    result = {key: value for key, value in state.items() if key not in ("houses", "collectors")}
+    collectors = sorted(state["collectors"], key=lambda row: row["id"])
+    result.update(collectors=collectors[:8], collectors_total=len(collectors),
+                  collectors_omitted=max(0, len(collectors) - 8))
+    return result
+
+
 def capture_outcome(env, observation):
     totals = food_totals(env.get_food_supply())
     buildings = env.get_buildings()

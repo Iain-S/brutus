@@ -712,6 +712,21 @@ class JuliusEnv(gym.Env):
             capacity *= 2
         raise RuntimeError("Cannot read housing diagnostics within 8 MiB")
 
+    def get_finance_state(self):
+        """Read cached accounting and current collector coverage without running finance updates."""
+        query = self.lib.julius_env_get_finance_state
+        query.argtypes = [c_void_p, POINTER(c_char), c_int32]
+        query.restype = c_int32
+        if not self.env_handle:
+            raise RuntimeError("Cannot read finance diagnostics")
+        capacity = 64 * 1024
+        while capacity <= 8 * 1024 * 1024:
+            output = ctypes.create_string_buffer(capacity)
+            if query(self.env_handle, output, capacity) == 0:
+                return json.loads(output.value)
+            capacity *= 2
+        raise RuntimeError("Cannot read finance diagnostics within 8 MiB")
+
     def get_buildings(self):
         """Read active building footprints, employment and household food/water.
 
