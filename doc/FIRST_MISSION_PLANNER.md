@@ -841,3 +841,46 @@ benefits, so neither rationale faithfulness nor better strategy is demonstrated.
 has changed. Next test an optional audited rationale profile on real outcomes,
 not a forced build order; see the context-guard plan for the bounded eight-choice
 design and strict-replay gate.
+
+## Optional Reason-First Trial: 2026-11-15
+
+Adapter `8e87bf6d` adds optional `--reason-first` while preserving default
+request bytes, all legal candidates and native behavior. Its 51 focused tests
+and source review pass. It is not the default and reasons remain unverified.
+
+Run `planner-local_d86b0c7e` used eight decisions, episode cap 12,800 ticks,
+800-tick cadence, 1,600-tick forecasts and the same pinned 4B instruct model /
+8K / output-256 sampling profile. Five calls selected housing; six responses
+were rejected, producing three logged wait fallbacks. With 53 candidates,
+prompts reached 8,560..8,582 tokens before server truncation. All six rejected
+responses reported 8,192 tokens; four hit inference/output-budget validation
+and two hit context-headroom validation. No rejected response was executed as
+a model decision. This is not a clean strategy comparison.
+
+Strict `replay_d12095ac` matches all steps and six native endpoints at 6,400
+ticks / population 218, without victory. Matched replayed prefixes, not the
+older 16-decision final state, give:
+
+| At 6,400 Ticks | Baseline | Reason First With Fallbacks |
+| --- | ---: | ---: |
+| Population | 39 | 218 |
+| Culture | 0 | 0 |
+| Health | 50 | 44 |
+| Treasury | 7,542 | 6,977 |
+| Residents With Food | 0 | 0 |
+| Residents With Fountain Access | 39 | 0 |
+
+Baseline prefix `planner-prefix-review_c5e9a958` matches its recorded next
+observations exactly; `planner-prefix-review_d3810ac3` measures the new full
+trace. Higher population is not mission competence: food/culture did not
+advance and health declined. Do not promote the profile from this run.
+
+The next bottleneck is input size, not a simulation population cap. A
+non-executing, lossless prototype encodes candidate forecasts as absolute
+overrides of the actual wait projection, keeping all 53 candidates and every
+projected scalar value/type. `planner-preflight_6bf0bd72` loads the same offending
+state at 5,806 tokens in 8K; its one-token output is only headroom evidence, not a
+valid JSON choice. `replay_a9fa89c0` strictly matches its frozen native state.
+No production encoding has changed. The next implementation/test gate is
+`docs/superpowers/plans/2026-11-15-forecast-overrides.md`, not limiting housing,
+hiding actions or weakening rejection/replay checks.
