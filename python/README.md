@@ -25,6 +25,11 @@ forecast-format settings; a larger context can reduce GPU offloading and slow
 inference. The occupied-state housing/finance probe fit 6,797 prompt tokens into
 8K using rows-format forecasts, but future decisions still need auditing.
 
+The adapter's optional `--reason-first` profile requests a brief forecast
+comparison before the choice. The default remains unchanged. It preserves all
+facts/tools and audits the selected profile; model reasons are not verified
+measurements. See `examples/PLANNER.md` for usage and limitations.
+
 ## Native Taxation And Finances
 
 Rebuild the headless library for `env.get_finance_state()`. The read-only JSON

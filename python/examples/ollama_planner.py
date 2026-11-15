@@ -8,12 +8,20 @@ import urllib.request
 
 
 def request_body(context, model, tokens, temperature=0.0, top_p=None, top_k=None, min_p=None,
-                 forecast_format="rows", context_tokens=4096):
+                 forecast_format="rows", context_tokens=4096, reason_first=False):
     schema = {"type": "object", "properties": {
         "decision_id": {"type": "integer", "enum": [context["decision_id"]]},
         "candidate_id": {"type": "string", "enum": [c["id"] for c in context["candidates"]]},
         "reason": {"type": "string"}},
         "required": ["decision_id", "candidate_id", "reason"], "additionalProperties": False}
+    instruction = "Return required JSON only. Keep the reason under eight words."
+    if reason_first:
+        keys = ["reason", "decision_id", "candidate_id"]
+        schema["properties"] = {key: schema["properties"][key] for key in keys}
+        schema["required"] = keys
+        instruction = ("In reason, briefly compare at least two listed candidates using the reported forecast values. "
+                       "Give this comparison before selecting candidate_id. Return required JSON only; "
+                       "keep the reason under 100 words.")
     state = context.get("state", {})
     aliases = {"population": "population_total", "housing_capacity": "buildings_housing_capacity",
                "treasury": "finance_treasury", "sentiment": "population_sentiment",
@@ -86,8 +94,7 @@ def request_body(context, model, tokens, temperature=0.0, top_p=None, top_k=None
                       "Gardens affect desirability through normal engine updates. "
                       "Tax income requires collector coverage from staffed road-connected forums or senate. "
                       "Monthly tax bases are not denarii; yearly collected denarii reset each year. "
-                      "Finance overviews/estimates are cached, not guaranteed future income. "
-                      "Return required JSON only. Keep the reason under eight words.",
+                      "Finance overviews/estimates are cached, not guaranteed future income. " + instruction,
             "prompt": json.dumps(compact),
             "options": options}
 
@@ -115,6 +122,8 @@ def main():
                         help="Candidate forecast representation; objects use more context tokens")
     parser.add_argument("--context-tokens", type=int, default=4096,
                         help="Ollama context capacity (2048..16384); larger budgets may use more memory/time")
+    parser.add_argument("--reason-first", action="store_true",
+                        help="Opt in to a brief forecast comparison before choosing; reasons remain unverified")
     args = parser.parse_args()
     if not 32 <= args.max_tokens <= 1024 or not 1 <= args.timeout <= 290:
         parser.error("max-tokens must be 32..1024 and timeout 1..290")
@@ -129,7 +138,8 @@ def main():
         parser.error("Explicit Qwen3 thinking-only tags are incompatible with this non-thinking adapter; use an instruct variant")
     context = json.load(sys.stdin)
     body = request_body(context, args.model, args.max_tokens, args.temperature, args.top_p, args.top_k, args.min_p,
-                        forecast_format=args.forecast_format, context_tokens=args.context_tokens)
+                        forecast_format=args.forecast_format, context_tokens=args.context_tokens,
+                        reason_first=args.reason_first)
     request = urllib.request.Request("http://127.0.0.1:11434/api/generate",
                                      json.dumps(body).encode("utf-8"),
                                      {"Content-Type": "application/json"})
@@ -137,7 +147,8 @@ def main():
         result = json.load(response)
     print(json.dumps({**{key: result.get(key) for key in ("model", "total_duration", "load_duration",
                                                         "prompt_eval_count", "eval_count")},
-                      "options": body["options"], "forecast_format": args.forecast_format}), file=sys.stderr)
+                      "options": body["options"], "forecast_format": args.forecast_format,
+                      "reason_first": args.reason_first}), file=sys.stderr)
     validate_inference_result(result, body["options"])
     choice = json.loads(result["response"])
     print(json.dumps(choice))

@@ -40,6 +40,21 @@ Model installation/download is separate; select an installed model appropriate
 to the machine. A slow cold start can exceed the timeout and trigger fallback.
 The adapter is provider-independent; Ollama is an example, not a dependency.
 
+## Optional Reason-First Profile
+
+Add `--reason-first` to the `examples/ollama_planner.py` command argv to request
+a brief comparison of reported forecasts before selecting the candidate ID.
+This is experimental and off by default. It changes only the generic rationale
+instruction and JSON property order, not game facts, legal candidates, native
+actions, sampling options or the three-field decision contract.
+
+The adapter audits `reason_first: true/false` on stderr, including responses
+rejected for insufficient headroom. Reasons are untrusted model text: previous
+probes invented numerical benefits. Judge native executed outcomes and strict
+replay, not explanation quality. Longer rationales consume the same configured
+output budget; exhaustion still fails rather than accepting a partial choice.
+No build order, candidate ranking or service-placement policy is imposed.
+
 ## Contract
 
 Input contains `decision_id`, victory goals and numeric city state, household
