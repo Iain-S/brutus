@@ -35,10 +35,33 @@ native simulation. No new dependency or native source change is needed.
 
 ## Tasks
 
-- [ ] RED: test roundtrip equality with existing object projections across varied values, unknown/missing forecasts, empty/missing wait, bool/int distinction and changed time/status. Test all candidate IDs/order and nonforecast fields remain identical; no input-context mutation; forecasts-disabled behavior; unchanged default request bytes; CLI forwarding and audit metadata. Observe failures before implementation.
-- [ ] GREEN: implement minimal optional encoder/CLI format. Keep existing context/output/server validation and bounded command auditing. Run the full focused planner/replay suites, compare request bytes to the measured prototype, review source, document semantics and commit/push source only.
+- [x] RED: test roundtrip equality with existing object projections across varied values, unknown/missing forecasts, empty/missing wait, bool/int distinction and changed time/status. Test all candidate IDs/order and nonforecast fields remain identical; no input-context mutation; forecasts-disabled behavior; unchanged default request bytes; CLI forwarding and audit metadata. Observe failures before implementation.
+- [x] GREEN: implement minimal optional encoder/CLI format. Keep existing context/output/server validation and bounded command auditing. Run the full focused planner/replay suites, compare request bytes to the measured prototype, review source, document semantics and commit/push source only.
 - [ ] Recheck occupied-state headroom on the known 53-candidate context, with all values/types roundtripping. Retain actual model token telemetry and normal native endpoint saves; one-token output is not an accepted decision or a strategy trial. Do not infer general 2,500-person/eight-year capacity from one state.
 - [ ] Run a bounded eight-decision reason-first plus overrides trial with unchanged episode/cadence/forecast/sampling/output/time budgets. Audit every attempt and strict independent replay of all six endpoints. Compare matched 6,400-tick measurements and explicitly distinguish encoding changes, fallback behavior and strategy quality. Never promote on rationale claims or population alone; record results and next checkpoint, then commit/push documentation.
+
+## Native Execution Blocker: 2026-11-16
+
+The canonical Gym DLL now fails Python loading with Windows error 4551,
+"An Application Control policy has blocked this file". Code Integrity event
+3077 identifies the unsigned DLL and `VerifiedAndReputableDesktop` policy.
+Its hash matches the previously verified binary; no native source or binary
+changed in this checkpoint. Five standalone C fixtures time out even outside
+the sandbox with 30-second limits; do not report those as passes. The normal
+Python/Gym snapshot-boundary smoke fails at DLL loading, before episode setup.
+
+Do not rebuild/rename the binary to evade the policy, change security settings,
+or substitute another binary. Live replay, new endpoint saves and the strategy
+trial require policy-compliant approval/signing of the native build. Read-only
+diagnostics and the local hash/policy details are retained in ignored
+`runs/overrides-native-block.json`; no machine-specific policy configuration
+belongs in source commits.
+
+Ruling: complete the unaffected Python implementation and model-input check
+using the previously verified saved context. Clearly label that check as
+saved-context-only; reference the old native save rather than copying it into
+a new folder or claiming a fresh simulation/replay. Leave live acceptance
+tasks pending until the native-library block is resolved.
 
 ## Existing Feasibility Evidence
 
@@ -48,3 +71,22 @@ value/type. The input loaded at 5,806 tokens rather than the original 8,569
 before truncation. This was one output token only; no choice executed.
 `replay_a9fa89c0` strictly matches its recorded actions and all six endpoint
 payloads. The prototype lives only in ignored run diagnostics, not production.
+
+## Implementation Evidence
+
+Observed failing tests for absent baseline encoding and CLI format choice.
+The minimal optional implementation then passes 60 focused planner tests and
+seven replay tests. Tests cover value/type reconstruction, null/missing data,
+empty/unknown wait, time/status, unchanged candidate/nonforecast data and input
+context, disabled forecasts, CLI audit/headroom refusal and four frozen legacy
+request hashes (rows/objects with both reason profiles). Direct comparisons on
+the occupied 53-candidate context confirm byte-identical legacy requests and
+byte-identical overrides output to the measured prototype.
+Fresh source review found no blockers and independently passed the nine new
+tests and four baseline request fixtures. The 60 planner and seven asset-free
+replay unit tests do not establish a fresh native simulation acceptance result.
+
+Ruling: continue in the previously authorized feature branch and workspace,
+preserving staged models and canonical paths. The Bash workspace helper again
+failed its sandbox signal-pipe setup; use an equivalent plan-scoped PowerShell
+ledger without changing Windows security settings.

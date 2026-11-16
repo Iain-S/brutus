@@ -61,7 +61,7 @@ def request_body(context, model, tokens, temperature=0.0, top_p=None, top_k=None
                    "desirability_blocked_houses", "native_cached_prosperity_cap", "max_house_level",
                    "covered_population", "yearly_collected_denarii"]
         compact["forecast_policy"] = context["forecast_policy"]
-        if forecast_format == "rows":
+        if forecast_format in ("rows", "overrides"):
             compact["forecast_columns"] = columns
         compact["candidate_columns"].append("forecast")
         for row, candidate in zip(compact["candidates"], context["candidates"]):
@@ -75,6 +75,21 @@ def request_body(context, model, tokens, temperature=0.0, top_p=None, top_k=None
         compact["recent_outcomes"] = [[r["candidate_id"], r["ticks"], r["status"],
                                        *[r["delta"][key] for key in metrics]]
                                       for r in context["recent_outcomes"][-4:]]
+    if forecast_format == "overrides" and "forecast_columns" in compact:
+        columns = compact.pop("forecast_columns")
+        index = compact["candidate_columns"].index("forecast")
+        wait = next((row for row in compact["candidates"] if row[0] == "wait"), None)
+        baseline = dict(zip(columns, wait[index])) if wait is not None else {}
+        compact["forecast_baseline"] = {"candidate_id": "wait" if wait is not None else None,
+                                        "forecast": baseline}
+        compact["forecast_semantics"] = (
+            "Absolute values override forecast_baseline.forecast; omitted fields equal baseline, "
+            "not zero. Null means unknown. Each candidate keeps its own ticks and status.")
+        for row in compact["candidates"]:
+            values = dict(zip(columns, row[index]))
+            # Numeric equality alone would lose distinctions such as false versus 0.
+            row[index] = {key: value for key, value in values.items() if key not in baseline
+                          or type(value) is not type(baseline[key]) or value != baseline[key]}
     options = {"num_predict": tokens, "num_ctx": context_tokens, "temperature": temperature}
     for name, value in (("top_p", top_p), ("top_k", top_k), ("min_p", min_p)):
         if value is not None:
@@ -118,8 +133,8 @@ def main():
     parser.add_argument("--top-p", type=float)
     parser.add_argument("--top-k", type=int)
     parser.add_argument("--min-p", type=float)
-    parser.add_argument("--forecast-format", choices=("rows", "objects"), default="rows",
-                        help="Candidate forecast representation; objects use more context tokens")
+    parser.add_argument("--forecast-format", choices=("rows", "objects", "overrides"), default="rows",
+                        help="Forecast representation; overrides losslessly factor out the wait projection")
     parser.add_argument("--context-tokens", type=int, default=4096,
                         help="Ollama context capacity (2048..16384); larger budgets may use more memory/time")
     parser.add_argument("--reason-first", action="store_true",

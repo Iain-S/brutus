@@ -55,6 +55,26 @@ replay, not explanation quality. Longer rationales consume the same configured
 output budget; exhaustion still fails rather than accepting a partial choice.
 No build order, candidate ranking or service-placement policy is imposed.
 
+## Optional Forecast Packing
+
+Add `--forecast-format overrides` to the Ollama adapter command to encode each
+forecast as named **absolute values** overriding the actual `wait` projection
+in `forecast_baseline.forecast`. Omitted fields equal that baseline, not zero;
+null still means unknown. Merge the baseline and a candidate's overrides to
+recover all emitted forecast fields, including its own time and status.
+
+The encoding preserves every legal candidate, its order, scalar values/types
+and all nonforecast fields. It neither ranks actions nor recommends waiting.
+If wait is absent, the baseline has null candidate ID and an empty forecast;
+each candidate then contains its full named projection. Disabled forecasts add
+no encoding. Existing `rows` (default) and `objects` requests are unchanged.
+
+Packing is independent of `--reason-first` and audited as the selected
+`forecast_format`; context/output validation remains enforced. Raw engine
+context and normal end-state review artifacts remain in the run bundle.
+Fitting one occupied-state prompt does not demonstrate full-mission scalability
+or a successful strategy, and model rationales remain unverified.
+
 ## Contract
 
 Input contains `decision_id`, victory goals and numeric city state, household

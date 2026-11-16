@@ -30,6 +30,21 @@ comparison before the choice. The default remains unchanged. It preserves all
 facts/tools and audits the selected profile; model reasons are not verified
 measurements. See `examples/PLANNER.md` for usage and limitations.
 
+Optional `--forecast-format overrides` losslessly packs forecasts around the
+actual wait projection, preserving every candidate/value/type without limiting
+population or filtering tools. Missing fields inherit that projection, not
+zero. The default remains `rows`, and all response guards still apply.
+
+If Windows rejects the Gym DLL with `WinError 4551`, inspect Code Integrity
+event 3077 under Event Viewer > Applications and Services Logs > Microsoft >
+Windows > CodeIntegrity > Operational. This is a native application-control
+block, not a Python-package or PowerShell execution-policy problem. Obtain a
+policy-compliant signed/approved build before running the game; do not rename,
+rebuild or disable controls to evade the block. Microsoft's
+[App Control troubleshooting](https://learn.microsoft.com/en-us/windows/security/application-security/application-control/app-control-for-business/operations/appcontrol-debugging-and-troubleshooting)
+and [Smart App Control signing guidance](https://learn.microsoft.com/en-us/windows/apps/develop/smart-app-control/overview)
+describe the diagnostic and trust requirements.
+
 ## Native Taxation And Finances
 
 Rebuild the headless library for `env.get_finance_state()`. The read-only JSON
