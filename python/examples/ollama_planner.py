@@ -87,9 +87,10 @@ def request_body(context, model, tokens, temperature=0.0, top_p=None, top_k=None
             "not zero. Null means unknown. Each candidate keeps its own ticks and status.")
         for row in compact["candidates"]:
             values = dict(zip(columns, row[index]))
-            # Numeric equality alone would lose distinctions such as false versus 0.
+            # Preserve scalar type and JSON representation, including signed float zero.
             row[index] = {key: value for key, value in values.items() if key not in baseline
-                          or type(value) is not type(baseline[key]) or value != baseline[key]}
+                          or type(value) is not type(baseline[key])
+                          or json.dumps(value) != json.dumps(baseline[key])}
     options = {"num_predict": tokens, "num_ctx": context_tokens, "temperature": temperature}
     for name, value in (("top_p", top_p), ("top_k", top_k), ("min_p", min_p)):
         if value is not None:

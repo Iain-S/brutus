@@ -1,5 +1,12 @@
 # Campaign Run Records
 
+Model-input checks that do not run the native game use a separate ignored
+`runs/planner-input-probes/YYYY-MM-DD/<UTCtimestamp>_<mode>_<uuid8>/` tree.
+Their `metadata.json` explicitly records `native_execution: false` and references
+the previously verified source context/save; `request.json` and
+`probe-response.json` retain model evidence. They create no new native save or
+image and are not campaign runs, independent native replays, or strategy wins.
+
 The baseline and planner runners now create unique folders under the checkout's
 ignored `runs/` directory, regardless of the directory they are launched from.
 Rebuild `julius_gym` to enable durable save export.

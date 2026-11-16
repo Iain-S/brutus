@@ -884,3 +884,27 @@ valid JSON choice. `replay_a9fa89c0` strictly matches its frozen native state.
 No production encoding has changed. The next implementation/test gate is
 `docs/superpowers/plans/2026-11-15-forecast-overrides.md`, not limiting housing,
 hiding actions or weakening rejection/replay checks.
+
+## Forecast Packing And Native Policy Block: 2026-11-16
+
+Commit `945fb4c7` implements optional `--forecast-format overrides`, preserving
+all candidates, projected values/types and existing rows/objects request bytes.
+The wait baseline is an actual native projection, not an action recommendation.
+Tests also harden signed floating-zero preservation; 61 focused planner tests
+and seven asset-free replay unit tests pass. Native gameplay was not changed.
+
+The model-only saved-context check `overrides_33a1a19f`, under
+`runs/planner-input-probes/2026-11-16/`, loads all 53 candidates at 5,806 prompt
+tokens in 8K. It verifies complete scalar reconstruction and request equality
+with the earlier prototype. Its one output token is not an accepted decision;
+the old native save/replay are referenced, not recreated or relabelled fresh.
+
+Live acceptance is blocked: the unchanged canonical DLL now fails loading with
+Windows error 4551 and Code Integrity event 3077 under
+`VerifiedAndReputableDesktop`. Its signature is absent; the hash matches the
+previously verified binary. Five native fixtures time out even outside the
+sandbox, and normal Python/Gym loading fails before episode setup. No native
+pass, fresh replay or new campaign outcome is claimed. No policy, binary name
+or native source was modified to bypass this. Resolve the build's trusted
+signing/approval through the active Windows policy before the planned bounded
+eight-decision run and strict replay; see the forecast-overrides plan.

@@ -82,6 +82,14 @@ class ForecastOverrideTests(unittest.TestCase):
         self.assertEqual(rows[1][index]["ticks"], 200)
         self.assertEqual(rows[2][index]["status"], "truncated")
 
+    def test_signed_float_zero_is_not_elided_as_numeric_equality(self):
+        context = self.context()
+        context["candidates"][0]["forecast"].update(health=-0.0, farm_workers=0.0)
+        context["candidates"][1]["forecast"].update(health=0.0, farm_workers=-0.0)
+        _, rows, index = self.assert_roundtrip(context)
+        self.assertIn("health", rows[1][index])
+        self.assertIn("farm_workers", rows[1][index])
+
     def test_missing_wait_uses_empty_baseline_and_full_named_forecasts(self):
         context = self.context()
         context["candidates"].pop(0)

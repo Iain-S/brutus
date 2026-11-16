@@ -70,7 +70,8 @@ population 193 preserved 53 candidates and roundtripped every scalar forecast
 value/type. The input loaded at 5,806 tokens rather than the original 8,569
 before truncation. This was one output token only; no choice executed.
 `replay_a9fa89c0` strictly matches its recorded actions and all six endpoint
-payloads. The prototype lives only in ignored run diagnostics, not production.
+payloads. This pre-implementation prototype was retained in ignored diagnostics;
+the optional implementation and current acceptance status are described below.
 
 ## Implementation Evidence
 
@@ -86,7 +87,35 @@ Fresh source review found no blockers and independently passed the nine new
 tests and four baseline request fixtures. The 60 planner and seven asset-free
 replay unit tests do not establish a fresh native simulation acceptance result.
 
+Additional scalar hardening observed RED for signed floating zero: numeric
+equality would elide a change from -0.0 to +0.0. Compare JSON representations as
+well as scalar types; the new regression passes with 61 focused planner tests.
+The measured native integer context still produces the exact same request.
+
 Ruling: continue in the previously authorized feature branch and workspace,
 preserving staged models and canonical paths. The Bash workspace helper again
 failed its sandbox signal-pipe setup; use an equivalent plan-scoped PowerShell
 ledger without changing Windows security settings.
+
+## Committed Saved-Context Input Check: 2026-11-16
+
+Implementation `945fb4c7` was committed/pushed before the input check. With the
+native library blocked, the check imports only the adapter and uses the prior
+verified context; it never creates a Gym environment or loads the DLL.
+
+Model-only diagnostic `planner-input-probes/2026-11-16/` suffix
+`overrides_33a1a19f` verifies all 53 candidate IDs/order, all 20 projected scalar
+values/types and nonforecast row fields, and confirms the request is
+byte-identical to the original prototype. The installed model digest still
+matches the pinned instruct profile. The input again loads at 5,806 tokens in
+8K, with room for a prospective 256-token output plus 128 extra. Actual output
+is one token and intentionally ends for length; zero model choices are accepted.
+The check took about 79 seconds, including loading/prefill. This is not a
+like-for-like runtime benchmark against the earlier warm probe.
+
+Metadata references the old native save and its prior verified replay, not a
+newly generated save. No old save was copied into a new game run. The later
+signed-zero hardening also reproduces that exact checked request. The current
+input encoding is implemented, but fresh native endpoint capture, the planned
+eight-decision trial and its independent replay remain pending. No campaign
+progress, victory, or profile promotion is claimed for this checkpoint.
