@@ -973,3 +973,37 @@ a non-executing choice-task check only if factual reading improves. Keep the
 same facts/tools/objective; do not add a winning order or strategic scores.
 Protocol, exact errors, evidence and limitations are in
 `docs/superpowers/plans/2026-11-18-planner-factual-grounding.md`.
+
+## Duration Scope And Choice Transfer: 2026-11-18
+
+Input-only `duration-scopes_de2ca5ae`, under
+`runs/planner-input-probes/2026-11-18/`, tests reversible duration labels on the
+same two states. Candidate macro duration, forecast elapsed duration, recent
+charged cycle duration and the two minimum-duration fields are distinguished;
+the wait macro is not misleadingly labelled construction. All candidates,
+native scalar values/types, objectives and other fields are retained.
+
+The concurrent original table again scores 46/48 factual answers; scoped
+labels score 48/48, correcting both 800-versus-25 housing duration errors.
+All eight responses pass inference/schema guards without retry, timeout or
+rejection. Scoped requests add eleven input tokens. This meets the predeclared
+factual gate, so four conditional calls use the original choice task/schema
+without factual questions or previous answers. All four propose housing;
+none is executed. All twelve raw responses and the independent audit are
+retained; no new native save/replay or mission outcome is produced.
+
+Clearer durations do not ensure grounded choice explanations. Both original
+and scoped reasons still include unsupported benefits: e.g. the scoped
+decision-7 reason describes 60 blocked houses as a reduction when wait
+projects 53. All endpoint prosperity values remain zero. The experiment does
+not prove that the identical action is wrong, or that labelling caused the
+broader strategic failure. Only two targeted states and a single choice per
+label/state are tested; factual repetitions return identical answers.
+
+Production behavior stays unchanged. The next design is optional
+machine-checked factual comparisons of model-selected alternatives before
+the final choice, not human-ranked actions or a prescribed build order.
+First validate the schema/quoted facts and output budget on frozen states,
+then consider a bounded native trial with strict replay. Full evidence,
+limitations and the unimplemented next checkpoint are in
+`docs/superpowers/plans/2026-11-18-planner-duration-scopes.md`.
