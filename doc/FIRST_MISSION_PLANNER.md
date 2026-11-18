@@ -908,3 +908,37 @@ pass, fresh replay or new campaign outcome is claimed. No policy, binary name
 or native source was modified to bypass this. Resolve the build's trusted
 signing/approval through the active Windows policy before the planned bounded
 eight-decision run and strict replay; see the forecast-overrides plan.
+
+## Clean Overrides Trial: 2026-11-18
+
+The user resolved the Windows policy block; the unchanged DLL loads again and
+all seven native CTests pass. A fresh production-encoder 53-candidate preflight
+(`8acef130`) again measures 5,806 input tokens, preserves every projected scalar
+value/type and strictly replays (`1046875b`). Its one-token output is only an
+input probe, not an accepted decision.
+
+On source `7baadbd6`, `planner-local_03ba650f` runs the same eight-decision
+reason-first profile and budgets with `--forecast-format overrides`. Eight
+calls produce eight accepted housing expansions, with no retry, rejection,
+fallback or timeout. Input peaks at 5,832 / 8,192 tokens; output is 95..147
+of 256 tokens. Independent `replay_7346dba4` matches every recorded step, all
+six final diagnostics, population and victory. Both bundles retain native
+end saves with no export errors; real-assets screenshots remain manual.
+
+At the matched 6,400 ticks, `planner-prefix-review_5eb8f93e` measures population
+284, treasury 6,373, health 44, culture/prosperity/peace zero and favor 50.
+Food delivery, fountain coverage and collected taxes are zero; maximum house
+level is still 1. The earlier short-reason baseline had population 39,
+treasury 7,542 and fountain coverage 39; the reason-first rows trace with
+three wait fallbacks had population 218 and treasury 6,977. Neither is a
+clean, repeated strategy ablation of this new encoding/profile.
+
+This completes the bounded context/execution gate, not a mission win or
+multi-goal competence claim. The next checkpoint is frozen-context factual
+grounding, not a longer housing-only trial: reasons misstate action durations
+and claim improved desirability despite forecasts showing more blocked houses.
+Diagnose reading of native facts separately from strategic action selection,
+without preferred actions or a human build order. See the completed
+`docs/superpowers/plans/2026-11-15-forecast-overrides.md` for full measurements,
+limitations and the proposed diagnostic gate. All new bundles are under
+`runs/tarraco/2026-11-18/`.
