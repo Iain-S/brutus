@@ -942,3 +942,34 @@ without preferred actions or a human build order. See the completed
 `docs/superpowers/plans/2026-11-15-forecast-overrides.md` for full measurements,
 limitations and the proposed diagnostic gate. All new bundles are under
 `runs/tarraco/2026-11-18/`.
+
+## Frozen Factual Grounding: 2026-11-18
+
+Input-only diagnostic `grounding_64250d06`, under
+`runs/planner-input-probes/2026-11-18/`, asks twelve factual questions on the
+verified trace's decisions 5 and 7. It compares the production candidate
+table with named candidate fields, retaining every candidate and all scalar
+forecast values/types. Two repetitions per state/layout make eight calls;
+no game environment, new save or model-selected action is executed.
+
+Every response completes within context/output budgets and passes the exact
+integer schema. Independently audited scores are 46/48 facts for the table
+and 40/48 for named fields. Current/projected populations, food stocks,
+blocked-house counts and all sixteen requested differences are correct.
+Wheat construction durations are correct in all eight responses, unlike the
+earlier free-text explanation. Remaining errors confuse housing construction
+or forecast duration with 800 ticks, the execution cadence/history duration.
+This is consistent with duration-scope confusion, not proof of its cause.
+
+Explicit outer labels did not help these probes and consumed more tokens;
+do not deploy them from this result. The targeted extraction schema differs
+from action selection, repeated answers are identical within each pair, and
+only two states are tested. Correct audit answers do not validate strategic
+choices or free-text reasons. No policy improvement or new mission outcome
+is claimed. Production behavior and defaults are unchanged.
+
+The next bounded diagnostic is scope-qualified duration labels, followed by
+a non-executing choice-task check only if factual reading improves. Keep the
+same facts/tools/objective; do not add a winning order or strategic scores.
+Protocol, exact errors, evidence and limitations are in
+`docs/superpowers/plans/2026-11-18-planner-factual-grounding.md`.
