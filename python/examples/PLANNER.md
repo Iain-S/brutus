@@ -108,6 +108,10 @@ coverage beyond the checked fields, or successful future construction. A
 forecast is a native continuation without later building decisions, not a
 mission-win guarantee. Null matches only unknown data. Evaluate transport,
 evidence correctness, fallback behavior and actual game outcomes separately.
+The first pinned instruct-model frozen trial rejected all four responses for
+incorrect quoted facts, despite completed inference and adequate token budgets.
+Do not treat this optional flag as a proven live policy or enable it by default;
+see `docs/superpowers/plans/2026-11-18-verified-planner-comparisons.md`.
 Test the optional boundary with:
 
 ```shell

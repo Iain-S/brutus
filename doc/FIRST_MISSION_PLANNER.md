@@ -1007,3 +1007,36 @@ First validate the schema/quoted facts and output budget on frozen states,
 then consider a bounded native trial with strict replay. Full evidence,
 limitations and the unimplemented next checkpoint are in
 `docs/superpowers/plans/2026-11-18-planner-duration-scopes.md`.
+
+## Optional Verified Evidence: 2026-11-18
+
+Commit `dbb70951` adds optional `--verify-comparisons`. The model selects its
+own two legal alternatives, quotes forecast facts, then chooses among them.
+The adapter independently checks exact values/types, including a blocked-house
+difference versus actual wait. It rejects wrong/unknown-substituted facts and
+duplicate keys rather than repairing them. Accepted evidence translates to
+the existing command protocol with a generated JSON evidence record, not a
+free-text reason. Default requests and runner retries/fallbacks are unchanged;
+75 focused planner tests and seven replay tests pass after observed RED/GREEN.
+
+The committed-code input-only probe `verified-comparisons_b8d3de13`, under
+`runs/planner-input-probes/2026-11-18/`, fails its frozen feasibility gate:
+**zero of four responses passes evidence validation**. All four inferences
+finish within context/output/time limits, with 5,668..5,895 input tokens and
+200..209 output tokens. Raw responses select wheat three times and water once,
+but none is accepted or executed. Different proposals alone are not strategy
+progress. No native trial, new save/replay or mission outcome is claimed.
+
+The independent full-field audit finds macro durations quoted as forecast
+durations, absolute blocked-house counts quoted as differences, invented
+culture and null substituted for known baseline zeros. The guard works, but
+the tested model/profile is not ready for live use. No checks or budgets are
+relaxed; the flag remains experimental and defaults stay unchanged.
+
+Next, design model-directed lookup: let the model name alternatives from the
+complete legal set, return explicitly labelled native facts for its own
+queries, then make an independently checked final choice. This two-stage
+interface is not implemented yet. It must retain provenance and bounded calls
+without human action ranking or a prescribed strategy. Full failure evidence
+and limits are in
+`docs/superpowers/plans/2026-11-18-verified-planner-comparisons.md`.
