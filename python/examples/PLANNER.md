@@ -75,6 +75,45 @@ context and normal end-state review artifacts remain in the run bundle.
 Fitting one occupied-state prompt does not demonstrate full-mission scalability
 or a successful strategy, and model rationales remain unverified.
 
+### Optional Verified Comparisons
+
+Add `--verify-comparisons` to the Ollama adapter command to replace unverified
+free-text reasons with checked forecast evidence. It is mutually exclusive
+with `--reason-first` and requires forecasts plus an actual wait projection.
+It works with rows, objects and overrides; `--forecast-format overrides`
+remains useful for input size. Existing defaults and legacy request bytes are
+unchanged when the new flag is absent.
+
+The model chooses two distinct legal alternatives (one if only wait exists),
+quotes their macro/forecast durations, population, culture, prosperity, food
+stock, blocked-house counts and blocked-house differences versus wait, then
+selects one of those alternatives. No action ranking, preferred tools or build
+order is supplied. Every original candidate remains selectable. Integers and
+nulls must match the original context exactly; unknown is not zero. Duplicate
+keys, stale IDs, wrong counts/types and incorrect facts reject the entire
+response rather than substituting repaired values.
+
+After normal inference/headroom checks and evidence validation, the adapter
+returns the SAME three-key command protocol below. Its `reason` contains
+adapter-generated JSON with `verified_comparisons`, not a model-written
+rationale. Stderr audits `verify_comparisons`, `comparison_validation`, checked
+facts on acceptance and a bounded `validation_error` on rejection. An inference
+failure leaves comparison validation `not_run`; no rejected choice reaches
+stdout. There is no internal retry. The runner still allows two attempts and
+then logs wait fallback; its retry input currently contains the generic
+command-failure error, not the detailed stderr mismatch.
+
+Matching quotes do not establish optimality, truthful unquoted claims,
+coverage beyond the checked fields, or successful future construction. A
+forecast is a native continuation without later building decisions, not a
+mission-win guarantee. Null matches only unknown data. Evaluate transport,
+evidence correctness, fallback behavior and actual game outcomes separately.
+Test the optional boundary with:
+
+```shell
+python -m unittest discover -s . -p 'test_planner_verified_comparisons.py'
+```
+
 ## Contract
 
 Input contains `decision_id`, victory goals and numeric city state, household

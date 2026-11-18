@@ -7,8 +7,77 @@ import sys
 import urllib.request
 
 
+def comparison_reference(context):
+    """Build evidence independently of its packed prompt representation."""
+    candidates = context.get("candidates")
+    if ("forecast_policy" not in context or type(context.get("decision_id")) is not int
+            or type(candidates) is not list or not candidates):
+        raise ValueError("Verified comparisons require forecasts and a current decision")
+    ids = [c.get("id") if type(c) is dict else None for c in candidates]
+    if any(type(key) is not str or not key for key in ids) or len(set(ids)) != len(ids):
+        raise ValueError("Verified comparisons require unique legal candidate IDs")
+    wait = next((c for c in candidates if c["id"] == "wait"), None)
+    if wait is None or type(wait.get("forecast")) is not dict:
+        raise ValueError("Verified comparisons require a real wait forecast")
+    wait_blocked = wait["forecast"].get("desirability_blocked_houses")
+    reference = {}
+    for candidate in candidates:
+        forecast = candidate.get("forecast", {})
+        if type(forecast) is not dict:
+            raise ValueError("Verified comparisons require forecast objects")
+        row = {"candidate_id": candidate["id"], "macro_ticks": candidate.get("ticks"),
+               "forecast_ticks": forecast.get("ticks"), "population": forecast.get("population"),
+               "culture": forecast.get("culture"), "prosperity": forecast.get("prosperity"),
+               "food_stocks": forecast.get("food_stocks"),
+               "blocked_houses": forecast.get("desirability_blocked_houses")}
+        if any(value is not None and type(value) is not int for key, value in row.items() if key != "candidate_id"):
+            raise ValueError("Verified forecast facts must be integers or unknown (null)")
+        blocked = row["blocked_houses"]
+        row["blocked_vs_wait"] = blocked - wait_blocked if type(blocked) is type(wait_blocked) is int else None
+        reference[candidate["id"]] = row
+    return reference
+
+
+def verified_comparison_choice(context, value):
+    reference = comparison_reference(context)
+    if (type(value) is not dict or set(value) != {"comparisons", "decision_id", "candidate_id"}
+            or type(value["decision_id"]) is not int or value["decision_id"] != context["decision_id"]
+            or type(value["candidate_id"]) is not str or value["candidate_id"] not in reference):
+        raise ValueError("Verified choice must match the current decision and exact response schema")
+    rows = value["comparisons"]
+    if type(rows) is not list or len(rows) != min(2, len(reference)):
+        raise ValueError("Verified choice must compare two distinct legal alternatives (one if only wait exists)")
+    compared = set()
+    for row in rows:
+        if (type(row) is not dict or type(row.get("candidate_id")) is not str
+                or row["candidate_id"] not in reference or row["candidate_id"] in compared):
+            raise ValueError("Comparisons must quote distinct listed candidate IDs")
+        expected = reference[row["candidate_id"]]
+        if set(row) != set(expected):
+            raise ValueError("Comparison must contain exactly the required factual fields")
+        for key, fact in expected.items():
+            if type(row[key]) is not type(fact) or row[key] != fact:
+                raise ValueError(f"Comparison {row['candidate_id']} {key}: expected {fact!r}, got {row[key]!r}")
+        compared.add(row["candidate_id"])
+    if value["candidate_id"] not in compared:
+        raise ValueError("Selected candidate must be among the verified comparisons")
+    reason = json.dumps({"verified_comparisons": rows})
+    if len(reason) > 2000:
+        raise ValueError("Verified comparison record exceeds the command reason limit")
+    return {"decision_id": value["decision_id"], "candidate_id": value["candidate_id"], "reason": reason}
+
+
+def unique_response_object(pairs):
+    result = {}
+    for key, value in pairs:
+        if key in result:
+            raise ValueError("Duplicate response key: " + key)
+        result[key] = value
+    return result
+
+
 def request_body(context, model, tokens, temperature=0.0, top_p=None, top_k=None, min_p=None,
-                 forecast_format="rows", context_tokens=4096, reason_first=False):
+                 forecast_format="rows", context_tokens=4096, reason_first=False, verify_comparisons=False):
     schema = {"type": "object", "properties": {
         "decision_id": {"type": "integer", "enum": [context["decision_id"]]},
         "candidate_id": {"type": "string", "enum": [c["id"] for c in context["candidates"]]},
@@ -22,6 +91,25 @@ def request_body(context, model, tokens, temperature=0.0, top_p=None, top_k=None
         instruction = ("In reason, briefly compare at least two listed candidates using the reported forecast values. "
                        "Give this comparison before selecting candidate_id. Return required JSON only; "
                        "keep the reason under 100 words.")
+    if verify_comparisons:
+        if reason_first:
+            raise ValueError("Verified comparisons and reason-first are mutually exclusive profiles")
+        reference = comparison_reference(context)
+        fields = {key: {"type": ["integer", "null"]} for key in next(iter(reference.values())) if key != "candidate_id"}
+        props = {"candidate_id": schema["properties"]["candidate_id"], **fields}
+        count = min(2, len(reference))
+        schema["properties"] = {"comparisons": {"type": "array", "minItems": count, "maxItems": count,
+            "items": {"type": "object", "properties": props, "required": list(props), "additionalProperties": False}},
+            "decision_id": schema["properties"]["decision_id"], "candidate_id": schema["properties"]["candidate_id"]}
+        schema["required"] = list(schema["properties"])
+        instruction = (
+            "Before selecting candidate_id, quote comparisons for two distinct listed alternatives of your choice "
+            "(one if only wait exists). Select one of those compared. Return required JSON only, no free-text reason. "
+            "macro_ticks quotes candidate ticks, not execution cadence; forecast_ticks quotes forecast ticks. "
+            "population, culture, prosperity and food_stocks are absolute forecast endpoints; blocked_houses quotes "
+            "forecast desirability_blocked_houses. blocked_vs_wait is that count minus wait's forecast count. "
+            "Omitted forecast overrides equal the baseline, not zero. Quote null for unknown facts or differences. "
+            "Every quoted fact will be checked against the native forecast; do not invent improvements.")
     state = context.get("state", {})
     aliases = {"population": "population_total", "housing_capacity": "buildings_housing_capacity",
                "treasury": "finance_treasury", "sentiment": "population_sentiment",
@@ -140,7 +228,11 @@ def main():
                         help="Ollama context capacity (2048..16384); larger budgets may use more memory/time")
     parser.add_argument("--reason-first", action="store_true",
                         help="Opt in to a brief forecast comparison before choosing; reasons remain unverified")
+    parser.add_argument("--verify-comparisons", action="store_true",
+                        help="Require exact quoted forecast evidence before accepting a model choice")
     args = parser.parse_args()
+    if args.verify_comparisons and args.reason_first:
+        parser.error("--verify-comparisons and --reason-first are mutually exclusive")
     if not 32 <= args.max_tokens <= 1024 or not 1 <= args.timeout <= 290:
         parser.error("max-tokens must be 32..1024 and timeout 1..290")
     if not 2048 <= args.context_tokens <= 16384:
@@ -155,18 +247,35 @@ def main():
     context = json.load(sys.stdin)
     body = request_body(context, args.model, args.max_tokens, args.temperature, args.top_p, args.top_k, args.min_p,
                         forecast_format=args.forecast_format, context_tokens=args.context_tokens,
-                        reason_first=args.reason_first)
+                        reason_first=args.reason_first, verify_comparisons=args.verify_comparisons)
     request = urllib.request.Request("http://127.0.0.1:11434/api/generate",
                                      json.dumps(body).encode("utf-8"),
                                      {"Content-Type": "application/json"})
     with urllib.request.urlopen(request, timeout=args.timeout) as response:
         result = json.load(response)
-    print(json.dumps({**{key: result.get(key) for key in ("model", "total_duration", "load_duration",
-                                                        "prompt_eval_count", "eval_count")},
-                      "options": body["options"], "forecast_format": args.forecast_format,
-                      "reason_first": args.reason_first}), file=sys.stderr)
-    validate_inference_result(result, body["options"])
-    choice = json.loads(result["response"])
+    metadata = {**{key: result.get(key) for key in ("model", "total_duration", "load_duration",
+                                                  "prompt_eval_count", "eval_count")},
+                "options": body["options"], "forecast_format": args.forecast_format,
+                "reason_first": args.reason_first}
+    if args.verify_comparisons:
+        metadata.update(verify_comparisons=True, comparison_validation="not_run")
+        try:
+            validate_inference_result(result, body["options"])
+            metadata["comparison_validation"] = "rejected"
+            if type(result.get("response")) is not str:
+                raise ValueError("Local inference response must be a JSON string")
+            value = json.loads(result["response"], object_pairs_hook=unique_response_object)
+            choice = verified_comparison_choice(context, value)
+            metadata.update(comparison_validation="accepted", comparisons=value["comparisons"])
+        except (ValueError, RuntimeError) as error:
+            metadata["validation_error"] = str(error)[:300]
+            raise
+        finally:
+            print(json.dumps(metadata), file=sys.stderr)
+    else:
+        print(json.dumps(metadata), file=sys.stderr)
+        validate_inference_result(result, body["options"])
+        choice = json.loads(result["response"])
     print(json.dumps(choice))
 
 
