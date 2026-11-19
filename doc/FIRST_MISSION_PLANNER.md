@@ -1104,3 +1104,41 @@ audit, then verify native health and run eight decisions with the existing
 matched budgets and strict six-endpoint replay. No wrapper/live integration is
 implemented yet. Full evidence, limits and next checkpoint are in
 `docs/superpowers/plans/2026-11-19-planner-lookup-selection.md`.
+
+## Bounded Native Lookup Trial: 2026-11-19
+
+Commit `fa5ec135` adds the separate bounded `ollama_lookup_planner.py` command,
+full per-stage audit artifacts and attempted/returned API accounting. Fourteen
+command tests pass with 105 planner tests and seven replay tests after three
+reviewed deadline/raw-response/counting regressions were reproduced and fixed.
+Old commands, runner retry policy and native rules are unchanged.
+
+Native DLL/model health, all seven C fixtures and snapshot/reset boundaries
+pass before `planner-local_d54f5084`. All eight commands are accepted: 16 API
+attempts/responses, no retry, failure, timeout or fallback. At 6,400 ticks the
+city has population 56, fountain access 42, health 50 and treasury 7,234.
+Culture/prosperity/peace, food delivery and collected taxes remain zero; favor
+is 50 and maximum house level 1. There is no victory. Different choices alone
+are not evidence of faster winning play.
+
+Strict `replay_a909eb19` matches every recorded step and all six final endpoint
+payloads, population and victory. `planner-prefix-review_0a31f0cf` independently
+measures the matched trace. All three bundles under `runs/tarraco/2026-11-19/`
+retain native end saves without artifact errors; real-assets PNGs remain manual.
+Child command audits are joined to parent receipt/status and exact input hashes,
+including validation errors. Inference takes about 423 seconds plus 76 seconds
+previewing; runtime and strategy comparisons remain uncontrolled single trials.
+
+The model chooses two housing expansions, three markets, one water supply and
+two garden macros, but never queries the complete wheat-supply macro (offered
+all eight decisions) or culture services (offered after the first decision).
+Final selection is limited to its own shortlist, so those options never reach
+the final model. This identifies a concrete breadth limitation, not proof that
+simply removing it yields a good strategy. No tools are human-ranked or masked.
+
+Next, test a separately defined full-domain final selector on matched frozen
+contexts, preserving complete native facts/evidence and the old membership
+contract. Do not prescribe food/culture choices or promote the current policy;
+if broader access still fails, planning depth/model capability is the next
+question. Full measured comparison and limits are in
+`docs/superpowers/plans/2026-11-19-live-lookup-command.md`.
