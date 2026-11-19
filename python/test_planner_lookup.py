@@ -259,6 +259,88 @@ class LookupTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, 'reason limit'):
             lookup.adapter_owned_lookup_choice(context, data, dict(decision_id=5, candidate_id='food'))
 
+    def test_full_domain_retains_every_compact_field_candidate_order_and_forecast_value(self):
+        context = self.context()
+        data = lookup.materialize_lookup(context, self.query())
+        before = copy.deepcopy((context, data))
+        for fmt in ('rows', 'objects', 'overrides'):
+            options = dict(forecast_format=fmt, context_tokens=8192, temperature=.7, top_p=.8, top_k=20, min_p=0.)
+            base = adapter.request_body(context, 'm', 256, **options)
+            body = lookup.full_domain_lookup_selection_request_body(context, data, 'm', 256, **options)
+            packed = json.loads(body['prompt'])
+            self.assertEqual({k: v for k, v in packed.items() if k != 'lookup'}, json.loads(base['prompt']))
+            self.assertEqual(packed['lookup'], data)
+            self.assertEqual(body['options'], base['options'])
+            schema = body['format']
+            self.assertEqual(set(schema['properties']), {'decision_id', 'candidate_id'})
+            self.assertEqual(schema['required'], ['decision_id', 'candidate_id'])
+            self.assertFalse(schema['additionalProperties'])
+            self.assertEqual(schema['properties']['candidate_id']['enum'], ['wait', 'housing', 'food'])
+            self.assertEqual(schema['properties']['decision_id']['enum'], [5])
+            self.assertIn('any current legal', body['system'])
+        self.assertEqual((context, data), before)
+
+    def test_full_domain_accepts_unqueried_selection_without_fabricating_query_or_model_facts(self):
+        context = self.context()
+        data = lookup.materialize_lookup(context, self.query())
+        value = dict(decision_id=5, candidate_id='wait')
+        before = copy.deepcopy((context, data, value))
+        choice = lookup.adapter_owned_full_domain_choice(context, data, value)
+        self.assertEqual(choice['candidate_id'], 'wait')
+        self.assertEqual(set(choice), {'decision_id', 'candidate_id', 'reason'})
+        evidence = json.loads(choice['reason'])
+        expected_wait = dict(candidate_id='wait', macro_ticks=800, forecast_ticks=1600, population=100,
+            culture=0, prosperity=0, food_stocks=0, blocked_houses=10, blocked_vs_wait=0)
+        self.assertEqual(evidence, dict(evidence_origin='adapter', selection_domain='all_current_candidates',
+            context_sha256=lookup.context_fingerprint(context), requested_ids=['food', 'housing'],
+            selected_id='wait', native_comparisons=self.answer()['comparisons']+[expected_wait]))
+        self.assertEqual((context, data, value), before)
+        with self.assertRaises(ValueError):
+            lookup.adapter_owned_lookup_choice(context, data, value)
+
+    def test_full_domain_deduplicates_queried_selection_and_rejects_invalid_model_responses(self):
+        context = self.context()
+        data = lookup.materialize_lookup(context, self.query())
+        good = dict(decision_id=5, candidate_id='food')
+        evidence = json.loads(lookup.adapter_owned_full_domain_choice(context, data, good)['reason'])
+        self.assertEqual(evidence['native_comparisons'], self.answer()['comparisons'])
+        for bad in (None, [], {}, {**good, 'decision_id': True}, {**good, 'decision_id': 6},
+                    {**good, 'candidate_id': True}, {**good, 'candidate_id': 'unknown'},
+                    {**good, 'reason': 'claim'}, {**good, 'comparisons': []}):
+            with self.subTest(bad=bad), self.assertRaises(ValueError):
+                lookup.adapter_owned_full_domain_choice(context, data, bad)
+
+    def test_full_domain_revalidates_tampered_and_stale_lookup(self):
+        context = self.context()
+        original = lookup.materialize_lookup(context, self.query())
+        value = dict(decision_id=5, candidate_id='wait')
+        for mutate in (lambda d: d.update(context_sha256='bad'),
+                       lambda d: d['alternatives'][0]['forecast'].update(population=-1),
+                       lambda d: d['wait_forecast'].update(culture=False)):
+            data = copy.deepcopy(original)
+            mutate(data)
+            with self.assertRaises(ValueError):
+                lookup.full_domain_lookup_selection_request_body(context, data, 'm', 256)
+            with self.assertRaises(ValueError):
+                lookup.adapter_owned_full_domain_choice(context, data, value)
+        context['state']['population_total'] += 1
+        with self.assertRaises(ValueError):
+            lookup.adapter_owned_full_domain_choice(context, original, value)
+
+    def test_full_domain_preserves_unknowns_single_wait_and_reason_limit(self):
+        context = self.context()
+        context['candidates'] = [dict(id='wait', ticks=800, forecast={})]
+        data = lookup.materialize_lookup(context, dict(decision_id=5, candidate_ids=['wait']))
+        body = lookup.full_domain_lookup_selection_request_body(context, data, 'm', 256)
+        self.assertEqual(body['format']['properties']['candidate_id']['enum'], ['wait'])
+        choice = lookup.adapter_owned_full_domain_choice(context, data, dict(decision_id=5, candidate_id='wait'))
+        self.assertIsNone(json.loads(choice['reason'])['native_comparisons'][0]['population'])
+        context = self.context()
+        context['candidates'].append(dict(id='x'*1900, ticks=1, forecast={}))
+        data = lookup.materialize_lookup(context, self.query())
+        with self.assertRaisesRegex(ValueError, 'reason limit'):
+            lookup.adapter_owned_full_domain_choice(context, data, dict(decision_id=5, candidate_id='x'*1900))
+
 
 if __name__ == '__main__':
     unittest.main()

@@ -146,3 +146,42 @@ def adapter_owned_lookup_choice(context, lookup, value):
     if len(reason) > 2000:
         raise ValueError("Adapter-owned evidence exceeds the command reason limit")
     return {"decision_id": value["decision_id"], "candidate_id": value["candidate_id"], "reason": reason}
+
+
+def full_domain_lookup_selection_request_body(context, lookup, model, tokens, **options):
+    """Expose the complete legal menu in a distinct final-selection contract."""
+    _validate_materialized(context, lookup)
+    body = _body(context, model, tokens, options)
+    compact = json.loads(body["prompt"])
+    compact["lookup"] = copy.deepcopy(lookup)
+    body["prompt"] = json.dumps(compact)
+    props = body["format"]["properties"]
+    keys = ["decision_id", "candidate_id"]
+    body["format"] = {"type": "object", "properties": {key: props[key] for key in keys},
+                      "required": keys, "additionalProperties": False}
+    body["system"] = _system_prefix(body) + (
+        "The complete candidates table and forecasts remain available. Lookup supplies additional native details "
+        "for the alternatives you requested; it is not a restriction on final selection. "
+        "Select any current legal candidate in the complete table, whether queried or not. "
+        "Return only decision_id and candidate_id, without comparisons, numeric claims or a reason. "
+        "Attached factual evidence will be adapter-owned, not model-quoted.")
+    return body
+
+
+def adapter_owned_full_domain_choice(context, lookup, value):
+    _validate_materialized(context, lookup)
+    reference = adapter.comparison_reference(context)
+    if (type(value) is not dict or set(value) != {"decision_id", "candidate_id"}
+            or type(value["decision_id"]) is not int or value["decision_id"] != context["decision_id"]
+            or type(value["candidate_id"]) is not str or value["candidate_id"] not in reference):
+        raise ValueError("Full-domain selection must match the current decision and legal-ID schema")
+    evidence_ids = list(lookup["candidate_ids"])
+    if value["candidate_id"] not in evidence_ids:
+        evidence_ids.append(value["candidate_id"])
+    evidence = {"evidence_origin": "adapter", "selection_domain": "all_current_candidates",
+                "context_sha256": context_fingerprint(context), "requested_ids": list(lookup["candidate_ids"]),
+                "selected_id": value["candidate_id"], "native_comparisons": [reference[key] for key in evidence_ids]}
+    reason = json.dumps(evidence)
+    if len(reason) > 2000:
+        raise ValueError("Adapter-owned full-domain evidence exceeds the command reason limit")
+    return {"decision_id": value["decision_id"], "candidate_id": value["candidate_id"], "reason": reason}

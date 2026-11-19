@@ -216,6 +216,24 @@ Adapter-owned evidence verifies the supplied facts, not model comprehension or
 strategic quality. Treat a live trial and strict native replay as separate
 checks; the previous frozen gates are not retroactively changed.
 
+### Experimental Full-Domain Final Selection
+
+Separate pure helpers `full_domain_lookup_selection_request_body` and
+`adapter_owned_full_domain_choice` test broader final access. The complete
+original compact menu, forecasts, order and common facts remain visible,
+alongside the model-requested lookup. The final two-key response may select
+any CURRENT legal candidate, not just a queried one. No action is recommended,
+ranked or forced. Old narrow selectors still enforce queried membership;
+the live command has no full-domain flag or automatic behavior change.
+
+Evidence explicitly records `selection_domain: all_current_candidates`,
+original requested IDs and the selected ID. Native comparisons include the
+query IDs plus an unqueried selection once, derived from the raw context.
+Provenance/type/identity checks, unknown-null semantics and the reason-size
+bound remain. An unqueried selection is not labelled as queried or as a model
+quote. Broader access alone is not strategy quality; the paired frozen
+protocol is `docs/superpowers/plans/2026-11-19-full-domain-selection.md`.
+
 ## Contract
 
 Input contains `decision_id`, victory goals and numeric city state, household
