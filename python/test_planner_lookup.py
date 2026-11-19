@@ -174,6 +174,91 @@ class LookupTests(unittest.TestCase):
         value = dict(decision_id=5, candidate_id='wait', comparisons=[data['alternatives'][0]['comparison_facts']])
         self.assertEqual(lookup.verified_lookup_choice(context, data, value)['candidate_id'], 'wait')
 
+    def test_selection_request_keeps_lookup_and_options_but_has_only_two_output_keys(self):
+        context = self.context()
+        data = lookup.materialize_lookup(context, self.query())
+        before = copy.deepcopy((context, data))
+        for fmt in ('rows', 'objects', 'overrides'):
+            options = dict(forecast_format=fmt, context_tokens=8192, temperature=.7, top_p=.8, top_k=20, min_p=0.)
+            old = lookup.lookup_choice_request_body(context, data, 'm', 256, **options)
+            new = lookup.lookup_selection_request_body(context, data, 'm', 256, **options)
+            self.assertEqual({k: v for k, v in new.items() if k not in ('system', 'format')},
+                             {k: v for k, v in old.items() if k not in ('system', 'format')})
+            self.assertEqual(set(new['format']['properties']), {'decision_id', 'candidate_id'})
+            self.assertEqual(new['format']['required'], ['decision_id', 'candidate_id'])
+            self.assertFalse(new['format']['additionalProperties'])
+            self.assertEqual(new['format']['properties']['decision_id']['enum'], [5])
+            self.assertEqual(new['format']['properties']['candidate_id']['enum'], ['food', 'housing'])
+            self.assertIn('adapter-owned', new['system'])
+            self.assertNotIn('Return comparisons quoting', new['system'])
+        self.assertEqual((context, data), before)
+
+    def test_selection_evidence_is_explicitly_adapter_owned_and_derived_from_native_context(self):
+        context = self.context()
+        data = lookup.materialize_lookup(context, self.query())
+        before = copy.deepcopy((context, data))
+        for selected in data['candidate_ids']:
+            value = dict(decision_id=5, candidate_id=selected)
+            choice = lookup.adapter_owned_lookup_choice(context, data, value)
+            self.assertEqual(set(choice), {'decision_id', 'candidate_id', 'reason'})
+            self.assertEqual(choice['candidate_id'], selected)
+            self.assertEqual(choice['decision_id'], 5)
+            evidence = json.loads(choice['reason'])
+            self.assertEqual(evidence, dict(evidence_origin='adapter', context_sha256=lookup.context_fingerprint(context),
+                                            requested_ids=['food', 'housing'], native_comparisons=self.answer()['comparisons']))
+            self.assertNotIn('verified_comparisons', evidence)
+            self.assertLessEqual(len(choice['reason']), 2000)
+        self.assertEqual((context, data), before)
+
+    def test_selection_rejects_extra_quotes_rationales_wrong_identity_and_unqueried_ids(self):
+        context = self.context()
+        data = lookup.materialize_lookup(context, self.query())
+        good = dict(decision_id=5, candidate_id='food')
+        for value in (None, [], {}, {'decision_id': 5}, {**good, 'decision_id': True},
+                      {**good, 'decision_id': 6}, {**good, 'candidate_id': True},
+                      {**good, 'candidate_id': 'wait'}, {**good, 'candidate_id': 'unknown'},
+                      {**good, 'reason': 'a claim'}, {**good, 'comparisons': self.answer()['comparisons']}):
+            with self.subTest(value=value), self.assertRaises(ValueError):
+                lookup.adapter_owned_lookup_choice(context, data, value)
+
+    def test_selection_rejects_stale_or_tampered_provenance_in_both_helpers(self):
+        context = self.context()
+        original = lookup.materialize_lookup(context, self.query())
+        value = dict(decision_id=5, candidate_id='food')
+        for mutate in (lambda d: d.update(context_sha256='wrong'),
+                       lambda d: d['alternatives'][0]['comparison_facts'].update(food_stocks=False),
+                       lambda d: d['alternatives'][0]['forecast'].update(population=-1),
+                       lambda d: d['wait_forecast'].update(culture=False)):
+            data = copy.deepcopy(original)
+            mutate(data)
+            with self.assertRaises(ValueError):
+                lookup.lookup_selection_request_body(context, data, 'm', 256)
+            with self.assertRaises(ValueError):
+                lookup.adapter_owned_lookup_choice(context, data, value)
+        context['state']['population_total'] += 1
+        with self.assertRaises(ValueError):
+            lookup.adapter_owned_lookup_choice(context, original, value)
+
+    def test_selection_single_wait_keeps_unknown_native_facts_null(self):
+        context = self.context()
+        context['candidates'] = [dict(id='wait', ticks=800, forecast={})]
+        data = lookup.materialize_lookup(context, dict(decision_id=5, candidate_ids=['wait']))
+        body = lookup.lookup_selection_request_body(context, data, 'm', 256)
+        self.assertEqual(body['format']['properties']['candidate_id']['enum'], ['wait'])
+        choice = lookup.adapter_owned_lookup_choice(context, data, dict(decision_id=5, candidate_id='wait'))
+        facts = json.loads(choice['reason'])['native_comparisons'][0]
+        self.assertIsNone(facts['population'])
+        self.assertIsNone(facts['blocked_vs_wait'])
+        self.assertEqual(facts['macro_ticks'], 800)
+
+    def test_selection_refuses_oversized_native_evidence_instead_of_truncating(self):
+        context = self.context()
+        long_id = 'long_' + 'x'*1900
+        context['candidates'][1]['id'] = long_id
+        data = lookup.materialize_lookup(context, dict(decision_id=5, candidate_ids=[long_id, 'food']))
+        with self.assertRaisesRegex(ValueError, 'reason limit'):
+            lookup.adapter_owned_lookup_choice(context, data, dict(decision_id=5, candidate_id='food'))
+
 
 if __name__ == '__main__':
     unittest.main()

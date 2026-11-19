@@ -149,6 +149,18 @@ budget. Zero final choices were accepted. No completed final responses exist
 to assess quote accuracy; this is a latency failure, not evidence of corrected
 or incorrect final quotes. No live integration is promoted from these probes.
 
+Separate helpers `lookup_selection_request_body` and
+`adapter_owned_lookup_choice` test a smaller final contract: the model returns
+only the current `decision_id` and one requested `candidate_id`. The same
+native lookup/provenance is checked, but factual evidence is attached by the
+adapter with `evidence_origin: adapter`, context hash, requested IDs and native
+comparisons. It is NOT labelled as verified model quotes. Extra numeric claims,
+comparisons and reasons reject instead of being ignored. Old quote-checking
+helpers and default commands are unchanged, and no live CLI is provided.
+Matching adapter-owned facts cannot establish that the model understands them
+or chooses well. This distinct contract has its own frozen timing gate in
+`docs/superpowers/plans/2026-11-19-planner-lookup-selection.md`.
+
 ## Contract
 
 Input contains `decision_id`, victory goals and numeric city state, household

@@ -114,3 +114,35 @@ def verified_lookup_choice(context, lookup, value):
     if {row["candidate_id"] for row in value["comparisons"]} != set(lookup["candidate_ids"]):
         raise ValueError("Final comparisons must match the model's own requested alternatives")
     return choice
+
+
+def lookup_selection_request_body(context, lookup, model, tokens, **options):
+    """A distinct final contract: select an ID, without model-quoted evidence."""
+    body = lookup_choice_request_body(context, lookup, model, tokens, **options)
+    props = body["format"]["properties"]
+    keys = ["decision_id", "candidate_id"]
+    body["format"] = {"type": "object", "properties": {key: props[key] for key in keys},
+                      "required": keys, "additionalProperties": False}
+    base = _body(context, model, tokens, options)
+    body["system"] = _system_prefix(base) + (
+        "You requested the alternatives in lookup.candidate_ids. Use the supplied native forecasts, "
+        "macro durations/outlay and comparison_facts to select one requested alternative. "
+        "Return only decision_id and candidate_id. Do not return comparisons, numeric claims or a reason. "
+        "Factual evidence attached to the result will be adapter-owned, not model-quoted.")
+    return body
+
+
+def adapter_owned_lookup_choice(context, lookup, value):
+    _validate_materialized(context, lookup)
+    if (type(value) is not dict or set(value) != {"decision_id", "candidate_id"}
+            or type(value["decision_id"]) is not int or value["decision_id"] != context["decision_id"]
+            or type(value["candidate_id"]) is not str or value["candidate_id"] not in lookup["candidate_ids"]):
+        raise ValueError("Selection must match the current decision and exact queried-ID schema")
+    reference = adapter.comparison_reference(context)
+    evidence = {"evidence_origin": "adapter", "context_sha256": context_fingerprint(context),
+                "requested_ids": list(lookup["candidate_ids"]),
+                "native_comparisons": [reference[key] for key in lookup["candidate_ids"]]}
+    reason = json.dumps(evidence)
+    if len(reason) > 2000:
+        raise ValueError("Adapter-owned evidence exceeds the command reason limit")
+    return {"decision_id": value["decision_id"], "candidate_id": value["candidate_id"], "reason": reason}
