@@ -91,6 +91,27 @@ Legacy RL training examples retain their own model/checkpoint layout.
 
 ## Independent Replay
 
+The optional lookup model command also writes separate, ignored audit records:
+`runs/planner-command-calls/YYYY-MM-DD/<UTC>_lookup_<uuid8>/`. These are command
+invocations, NOT native campaign runs, and contain no `final.sav` or screenshot.
+Each has `context.json`, exact source snapshots/hashes, `query.request.json` /
+`query.response.json`, `native-lookup.json`, `choice.request.json` /
+`choice.response.json` when reached, and `manifest.json`. Missing responses
+remain explicitly unavailable; request files are not evidence of a response.
+Complete raw HTTP bodies are also saved as `query.response.body` /
+`choice.response.body` before parsing, including invalid JSON and duplicates.
+Returned-body counts do not imply valid inference; request preparations are
+not counted as transport attempts. A killed prepared/running record can leave
+the actual in-flight transport count unknown until independently reconciled.
+
+Find the directory in the parent `actions.jsonl` attempt's initial/terminal
+stderr JSON. The manifest distinguishes attempted/returned API counts from
+the runner's command-invocation count, and records errors/progress even if a
+choice is rejected. Hard kills can leave partial/running records. Validate
+parent receipt/return status as well as the child audit; child evidence alone
+does not prove a game action was executed. Each command uses the exact saved
+input, including per-attempt validation errors, for its provenance hash.
+
 ```shell
 python examples/replay_run.py <ABSOLUTE_RUN_FOLDER> --data-dir <ABSOLUTE_DATA_DIRECTORY> --lib-path <ABSOLUTE_LIBRARY_PATH>
 ```

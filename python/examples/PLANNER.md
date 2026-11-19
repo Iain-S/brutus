@@ -168,6 +168,54 @@ in the preceding probe, so these timings do not isolate a schema-only benefit.
 This is interface feasibility on two frozen states, not model comprehension,
 strategy quality, a native trial or a passing result for the older quote gates.
 
+### Bounded Lookup Command
+
+`ollama_lookup_planner.py` is a SEPARATE command for the ID-only interface.
+Use its absolute path and the active interpreter in `--model-command`, e.g.:
+
+```json
+["<ABSOLUTE_PYTHON>", "<ABSOLUTE_REPO>/python/examples/ollama_lookup_planner.py", "--model", "qwen3:4b-instruct-2507-q4_K_M"]
+```
+
+It reads the existing JSON context and returns the same three-key choice only
+after lookup, selection, provenance validation and final audit persistence.
+Defaults match the frozen probe: 8K context, 256 output tokens, instruct
+sampling, `--api-timeout 170` and `--total-timeout 290`. Use an outer runner
+`--model-timeout 300` plus enabled forecasts. There is no internal retry or
+native action in the command. Old commands, flags and runner fallback policy
+are unchanged. Two runner attempts can make up to four API attempts per
+decision; runner `model_calls` still means COMMAND invocations, not API calls.
+
+Every invocation archives input, source hashes/snapshots, both requests/raw
+responses, native lookup and terminal manifest in
+`runs/planner-command-calls/YYYY-MM-DD/<UTC>_lookup_<uuid8>/`. Override the root
+with `--audit-root`. Initial stderr provides an audit pointer before inference;
+the compact terminal summary includes actual attempted/returned API counts
+and stage statuses. Full details belong in that directory, not truncated
+stderr. Input fingerprints include per-attempt validation errors, so do not
+compare them to a base decision context with those fields omitted.
+
+Raw HTTP bodies are saved as `query.response.body` / `choice.response.body`
+before JSON parsing; malformed or duplicate-key payloads remain available.
+Returned-response counts mean complete bodies received, not valid JSON or
+accepted choices. Prepared requests are separate from transport attempts;
+an audit-write failure before transport must not count as an API attempt.
+The elapsed per-call acceptance deadline is enforced in addition to socket
+and whole-command timeouts, with a hard 170-second per-call maximum.
+
+Wrong queries/selections, unsafe inference, late returns and audit-write
+failure produce no choice on stdout. A process kill cannot guarantee terminal
+audit finalization; retain the initial pointer/progress and cross-check the
+parent attempt's return status and received choice. An audit manifest alone
+does not establish native execution or successful receipt. Command artifacts
+contain no new native save; normal parent campaign bundles retain those.
+If a hard kill leaves only a prepared/running stage, its eventual transport
+count can be unknown; do not treat an old progress counter as exact zero.
+
+Adapter-owned evidence verifies the supplied facts, not model comprehension or
+strategic quality. Treat a live trial and strict native replay as separate
+checks; the previous frozen gates are not retroactively changed.
+
 ## Contract
 
 Input contains `decision_id`, victory goals and numeric city state, household
