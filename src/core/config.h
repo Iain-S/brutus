@@ -77,6 +77,12 @@ const char *config_get_default_string_value(config_string_key key);
 void config_load(void);
 
 /**
+ * Override config file path (useful for headless mode)
+ * @param path Full path to config file, or NULL to keep default
+ */
+void config_set_file_path(const char *path);
+
+/**
  * Save config to file
  */
 void config_save(void);

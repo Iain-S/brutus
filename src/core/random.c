@@ -1,10 +1,11 @@
 #include "core/random.h"
 
 #include <string.h>
+#include <stdlib.h>
 
 #define MAX_RANDOM 100
 
-static struct {
+struct random_snapshot {
     uint32_t iv1;
     uint32_t iv2;
     int8_t random1_7bit;
@@ -13,7 +14,28 @@ static struct {
     int16_t random2_15bit;
     int pool_index;
     int32_t pool[MAX_RANDOM];
-} data;
+};
+
+static struct random_snapshot data;
+
+random_snapshot *random_snapshot_create(void)
+{
+    random_snapshot *snapshot = malloc(sizeof(*snapshot));
+    if (snapshot) {
+        *snapshot = data;
+    }
+    return snapshot;
+}
+
+void random_snapshot_restore(const random_snapshot *snapshot)
+{
+    data = *snapshot;
+}
+
+void random_snapshot_destroy(random_snapshot *snapshot)
+{
+    free(snapshot);
+}
 
 void random_init(void)
 {

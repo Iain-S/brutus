@@ -9,6 +9,14 @@ enum {
 
 void city_victory_reset(void);
 
+typedef struct {
+    int state;
+    int force_win;
+} city_victory_snapshot;
+
+void city_victory_capture_state(city_victory_snapshot *snapshot);
+void city_victory_restore_state(const city_victory_snapshot *snapshot);
+
 void city_victory_force_win(void);
 
 int city_victory_state(void);

@@ -1,0 +1,81 @@
+"""Geometry regressions for placement rules that success messages cannot catch."""
+
+import unittest
+import numpy as np
+
+from julius_gym.baseline import ROAD, building_plan, connected_roads, exclude_hazard, starter_plan
+from julius_gym.env import ActionType
+
+
+class PlacementTests(unittest.TestCase):
+    def housing_side_entry_map(self, alternative=False):
+        terrain = np.full((23, 30), 2, dtype=np.uint16)
+        terrain[12, :10] = ROAD
+        terrain[6:9, 5:12] = 0
+        terrain[8:12, 9] = 0
+        if alternative:
+            # A longer clear route reaches the end of another legal strip.
+            terrain[13:19, 1] = 0
+            terrain[18, 1:25] = 0
+            terrain[7:19, 24] = 0
+            terrain[7, 20:25] = 0
+            terrain[6:9, 14:21] = 0
+        return terrain, np.zeros_like(terrain)
+
+    def test_housing_rejects_access_through_its_own_occupied_strip(self):
+        terrain, buildings = self.housing_side_entry_map()
+        with self.assertRaises(RuntimeError):
+            starter_plan(terrain, buildings, 30, 23, (0, 12))
+
+    def test_housing_search_continues_after_self_crossing_candidate(self):
+        terrain, buildings = self.housing_side_entry_map(alternative=True)
+        actions = starter_plan(terrain, buildings, 30, 23, (0, 12))
+        road_list = [(x, y) for kind, x, y in actions if kind == ActionType.BUILD_ROAD]
+        occupied = {(x, y) for kind, x, y in actions if kind != ActionType.BUILD_ROAD}
+        self.assertFalse(set(road_list) & occupied)
+        self.assertEqual(len(road_list), len(set(road_list)))
+        self.assertTrue(all(x >= 14 for x, y in occupied))
+
+    def test_hazard_mask_preserves_engine_map_and_access(self):
+        terrain = np.zeros((12, 12), dtype=np.uint16)
+        terrain[6, 6] = ROAD
+        terrain[7, 6] = 4
+        masked = exclude_hazard(terrain, {"severity": 3, "x": 6, "y": 6}, 2)
+        self.assertEqual(terrain[5, 5], 0)
+        self.assertEqual(masked[5, 5], 2)
+        self.assertEqual(masked[6, 6], ROAD)
+        self.assertEqual(masked[7, 6], 4)
+        self.assertEqual(masked[0, 0], 0)
+
+    def setUp(self):
+        self.terrain = np.zeros((30, 30), dtype=np.uint16)
+        self.buildings = np.zeros_like(self.terrain)
+        self.terrain[15, :21] = ROAD
+        self.entry = (0, 15)
+
+    def test_granary_entrance_meets_center_of_edge(self):
+        actions = building_plan(self.terrain, self.buildings, 30, 30, self.entry,
+                                ActionType.BUILD_GRANARY, 3)
+        kind, x, y = actions[-1]
+        for action, rx, ry in actions[:-1]:
+            if action == ActionType.BUILD_ROAD:
+                self.terrain[ry, rx] = ROAD
+        self.assertEqual(kind, ActionType.BUILD_GRANARY)
+        entrances = ((x + 1, y - 1), (x + 3, y + 1), (x + 1, y + 3), (x - 1, y + 1))
+        self.assertTrue(any(self.terrain[ey, ex] & ROAD for ex, ey in entrances))
+
+    def test_local_service_stays_near_anchor(self):
+        actions = building_plan(self.terrain, self.buildings, 30, 30, self.entry,
+                                ActionType.BUILD_PREFECTURE, 1, anchor=(19, 12))
+        _, x, y = actions[-1]
+        self.assertLessEqual(abs(x - 19) + abs(y - 12), 4)
+
+    def test_disconnected_road_is_not_used_as_root(self):
+        self.terrain[4, 4:8] = ROAD
+        roads = connected_roads(self.terrain, 30, 30, self.entry)
+        self.assertNotIn((4, 4), roads)
+        self.assertIn((20, 15), roads)
+
+
+if __name__ == "__main__":
+    unittest.main()
