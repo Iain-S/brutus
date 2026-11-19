@@ -118,6 +118,32 @@ Test the optional boundary with:
 python -m unittest discover -s . -p 'test_planner_verified_comparisons.py'
 ```
 
+### Experimental Model-Directed Lookup
+
+`ollama_planner_lookup.py` provides pure request/validation helpers for an
+input-only two-stage experiment; it is NOT a runner command or new CLI flag.
+Stage 1 presents the full existing compact context and legal candidate set.
+The model requests two distinct IDs of its choice (one for a wait-only set).
+Stage 2 retains the common context and returns fully expanded native forecasts
+for those alternatives and actual wait, explicit comparison facts, native
+macro outlay and a full-context SHA-256 provenance record.
+
+The final schema permits only the model's own requested alternatives. A final
+choice must quote the same strict evidence fields as `--verify-comparisons`;
+the lookup contents/hash and quoted facts are rechecked against the ORIGINAL
+context, never trusted merely because they appear in the lookup. The helper
+then returns the old three-key command response. Invalid/stale/tampered data
+is rejected, not repaired. Existing adapter commands/defaults are unchanged.
+
+Explicit facts supplied before generation are a different interface, not
+proof of independent fact reconstruction, strategic understanding or optimal
+self-shortlisting. Initial selection can still miss a better alternative.
+Two stages also cost two API calls: a future command needs explicit aggregate
+timeouts and API-call telemetry, not the runner's command-invocation counter
+silently relabelled as model calls. No live integration is provided here.
+See `docs/superpowers/plans/2026-11-19-planner-fact-lookup.md` for the bounded
+frozen transaction protocol and its separate feasibility gate.
+
 ## Contract
 
 Input contains `decision_id`, victory goals and numeric city state, household
