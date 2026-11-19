@@ -1142,3 +1142,36 @@ contract. Do not prescribe food/culture choices or promote the current policy;
 if broader access still fails, planning depth/model capability is the next
 question. Full measured comparison and limits are in
 `docs/superpowers/plans/2026-11-19-live-lookup-command.md`.
+
+## Full-Domain Frozen Comparison: 2026-11-19
+
+Commit `cde48533` adds separate full-domain helpers, preserving old queried-only
+guards. The complete native menu/forecasts remain visible and selectable;
+an unqueried selection gets its own raw-derived evidence row without pretending
+the model queried it. No live flag, native rule change or human action ranking.
+All 110 focused planner tests and seven replay tests pass after observed RED/GREEN.
+
+Frozen `full-domain_ab0ae6bc`, under
+`runs/planner-input-probes/2026-11-19/`, reuses exact model queries/lookups from
+native decisions 1/3/5/7 and makes sixteen FINAL-only calls: two profiles and
+two repetitions per state. Query API calls and game actions are zero. All
+eight full and eight narrow responses pass exact inference/provenance/domain
+checks, but full-domain selections remain inside the old query eight of eight.
+Full chooses water six times and housing twice; narrow chooses four markets,
+two water supplies and two housing expansions. Neither the complete wheat-supply
+macro nor a cultural-service macro is chosen; markets are food-related tools.
+
+Broader input changes four paired choices from market to water, but does not
+demonstrate improved exploration or play. The hard membership restriction is
+not a sufficient explanation of the prior behavior on these states; lookup
+salience, horizon, model priors/capability and resource tradeoffs remain open.
+Complete-menu visibility and a synthetic unqueried-selection audit pass;
+this is not a hidden eligibility failure. Repeated choices are identical
+within state/profile, and no native delivery, ratings, population or victory
+outcome is measured. Earlier native and failed-gate evidence is unchanged.
+
+Next, design compound native previews for model-proposed short plans with
+rollback/replay controls and equal charged time, not human build orders or
+more transport-only optimization. This is unimplemented and not a promised
+fix; model capability remains a separate question. Full evidence and limits
+are in `docs/superpowers/plans/2026-11-19-full-domain-selection.md`.

@@ -233,6 +233,13 @@ Provenance/type/identity checks, unknown-null semantics and the reason-size
 bound remain. An unqueried selection is not labelled as queried or as a model
 quote. Broader access alone is not strategy quality; the paired frozen
 protocol is `docs/superpowers/plans/2026-11-19-full-domain-selection.md`.
+The first paired final-call probe accepts eight narrow and eight full-domain
+responses, but all eight full selections stay inside the recorded query.
+Full chooses water six times and housing twice; no game action is executed.
+Access/schema feasibility is not strategic improvement or proof that query
+membership alone caused the earlier omissions. The full-domain helper remains
+experimental with no live flag; the next proposed diagnostic concerns native
+multi-step plan consequences, not another claim of better play from formatting.
 
 ## Contract
 
