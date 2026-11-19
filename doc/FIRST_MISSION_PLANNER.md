@@ -1072,3 +1072,35 @@ not establish independent fact reconstruction or pass the old quote-checking
 gate. It needs its own tests and frozen timing/acceptance gate before any live
 integration; no such interface is implemented yet. Full bounds, evidence and
 limitations are in `docs/superpowers/plans/2026-11-19-planner-fact-lookup.md`.
+
+## ID-Only Lookup Selection: 2026-11-19
+
+Commit `1b1b072a` adds a separate pure-helper selection contract after the same
+lookup: the model returns only `decision_id` and a requested `candidate_id`.
+The adapter rechecks the full native lookup/context hash and exact selection,
+then attaches raw-context-derived evidence labelled `evidence_origin: adapter`.
+No model-written numbers or reason are accepted. Old quote validators, default
+commands, native rules and runner behavior are unchanged. All 91 focused
+planner tests and seven replay tests pass after observed RED/GREEN.
+
+Frozen `lookup-selection_cc5746dd`, under
+`runs/planner-input-probes/2026-11-19/`, passes this NEW feasibility gate:
+four complete transactions, eight API calls, no retry/rejection/timeout.
+All native facts/provenance, request schemas, selected membership and adapter
+evidence independently match. The model selects district-0 gardens twice and
+a district-0 market twice; none is executed. There is no new native save,
+replay, population, service, finance or victory result.
+
+Totals are 62.6..66.8 seconds per transaction under the same 170-second
+per-call / 290-second transaction bounds. Final responses are 18..19 tokens
+under the unchanged 256-token cap. The byte-identical query stage also runs
+much faster than before; do not claim the smaller response alone caused the
+speedup. Runtime/cache conditions and unseeded repetitions were not controlled.
+The older timeout and factual-quote failure gates remain failed historical
+results, not repaired or relabelled successes.
+
+Next, separately test a bounded live command wrapper with API-call/provenance
+audit, then verify native health and run eight decisions with the existing
+matched budgets and strict six-endpoint replay. No wrapper/live integration is
+implemented yet. Full evidence, limits and next checkpoint are in
+`docs/superpowers/plans/2026-11-19-planner-lookup-selection.md`.

@@ -160,6 +160,13 @@ helpers and default commands are unchanged, and no live CLI is provided.
 Matching adapter-owned facts cannot establish that the model understands them
 or chooses well. This distinct contract has its own frozen timing gate in
 `docs/superpowers/plans/2026-11-19-planner-lookup-selection.md`.
+The first frozen ID-only probe completes all four transactions without retry,
+rejection or timeout (eight API calls, 62.6..66.8 seconds per transaction).
+Native evidence/provenance and both-stage requests are independently audited.
+No actions are executed. The unchanged query stage is also much faster than
+in the preceding probe, so these timings do not isolate a schema-only benefit.
+This is interface feasibility on two frozen states, not model comprehension,
+strategy quality, a native trial or a passing result for the older quote gates.
 
 ## Contract
 
