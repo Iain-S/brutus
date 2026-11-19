@@ -1040,3 +1040,35 @@ interface is not implemented yet. It must retain provenance and bounded calls
 without human action ranking or a prescribed strategy. Full failure evidence
 and limits are in
 `docs/superpowers/plans/2026-11-18-verified-planner-comparisons.md`.
+
+## Model-Directed Fact Lookup: 2026-11-19
+
+Commit `7e26d3fb` adds pure experimental lookup helpers, not a live command.
+The model requests alternatives from the complete legal set; the helper
+returns their full native forecasts and wait-relative facts with context-hash
+provenance. Final quotes must match the original raw context and the model's
+own queried IDs. Stale/tampered data and unqueried alternatives reject. All
+85 focused planner tests and seven replay tests pass; old adapter requests,
+defaults and runner behavior remain unchanged.
+
+Frozen `fact-lookup_deb60310`, under
+`runs/planner-input-probes/2026-11-19/`, fails its transaction feasibility gate:
+**zero of four transactions completes**. All four lookup queries are legal,
+and the independent audit matches every returned native fact/type/hash. But
+the final-choice calls time out before returning complete API responses.
+There are eight API attempts, no retry, no accepted final choice and no game
+execution, native save or new replay. Query IDs are not final action choices.
+
+Each call is capped at 170 seconds with a NEW 290-second total transaction
+deadline. The valid queries take 120.5..157.9 seconds, leaving 132.0..169.4
+seconds for the final call. Query inputs are 5,586..5,813 tokens; outputs only
+23..27, with most query time spent in prompt evaluation. Final token/quote
+accuracy is unknown: do not misclassify timeouts as bad factual answers or
+output-length stops. The failed earlier one-pass evidence gate is preserved.
+
+Next, test a distinct smaller final-response contract: the model selects an ID
+after lookup while the adapter owns the attached native evidence. That would
+not establish independent fact reconstruction or pass the old quote-checking
+gate. It needs its own tests and frozen timing/acceptance gate before any live
+integration; no such interface is implemented yet. Full bounds, evidence and
+limitations are in `docs/superpowers/plans/2026-11-19-planner-fact-lookup.md`.

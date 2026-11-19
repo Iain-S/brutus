@@ -54,14 +54,14 @@ miss better alternatives; stage 1 can request any original legal candidate.
   and `context_fingerprint`. No network/session/runner code. Document the
   experimental interface and limits, run all focused planner/replay tests,
   compare old requests against `346402c2`, review and commit/push source only.
-- [ ] On committed helpers, run four frozen transactions (two repetitions on
+- [x] On committed helpers, run four frozen transactions (two repetitions on
   decisions 5 and 7 of verified `planner-local_03ba650f`). Each has at most two
   API calls and no retry, fallback or game action. Same pinned instruct model,
   8K context, 256 output tokens and existing sampling per call. Each API call
   retains the 170-second cap; a transaction has a 290-second total deadline,
   including both stages and validation. Record per-call and cumulative time,
   all request/response/error data, queried IDs and exact native lookup facts.
-- [ ] Independently audit both stages, all scalar values/types and provenance,
+- [x] Independently audit both stages, all scalar values/types and provenance,
   exact membership/quotes, token/headroom checks and cumulative deadlines.
   Frozen feasibility passes only with four accepted complete transactions.
   Do not run stage 2 after invalid query/inference, silently retry, repair
@@ -107,3 +107,86 @@ cases (both states, three forecast formats, all three existing profiles) are
 byte-identical to `346402c2`. No native, runner, CLI or default-profile change
 is introduced. The four frozen transaction gate remains pending; passing
 helper tests is not evidence that the local model can use the new interface.
+
+## Frozen Result: Transaction Gate Failed
+
+Committed helpers `7e26d3fb` were used for
+`runs/planner-input-probes/2026-11-19/20261119T084846.341881Z_fact-lookup_deb60310/`.
+The pinned model digest and original source hashes match. Exact helper,
+adapter, probe and protocol snapshots/hashes, both contexts, all eight API
+requests, four completed query responses, four native lookup records and the
+independent `evaluation-audit.json` with audit source are retained. There are
+NO completed final-choice responses; request files are not response evidence.
+No new native environment, game action, save, replay or screenshot exists.
+
+All four stage-1 requests pass inference/schema/identity/ID checks. The
+independent audit reconstructs every lookup directly from the raw source:
+all twenty forecast fields/types for each requested alternative and actual
+wait, macro outlay/duration, derived comparison facts and context provenance
+match. Stage-2 schemas permit only the model-requested alternatives, and the
+original common context is retained. This validates supplied facts, not a
+model's final understanding or choice.
+
+| Decision / Repetition | Model-Requested Alternatives | Query Seconds | Final-Call Allowance | Result |
+| --- | --- | ---: | ---: | --- |
+| 5 / 0 | Farmland, District-0 Gardens | 157.9 | 132.0 s | Timeout |
+| 5 / 1 | Farmland, District-0 Gardens | 129.8 | 160.1 s | Timeout |
+| 7 / 0 | District-0 Water, District-0 Market | 126.8 | 163.1 s | Timeout |
+| 7 / 1 | District-0 Water, District-0 Forum | 120.5 | 169.4 s | Timeout |
+
+**Zero of four transactions completes: the frozen feasibility gate fails.**
+There are eight API attempts, zero retries, zero accepted final choices and
+zero executed actions. Each final call times out on the remaining transaction
+allowance, not on a numeric-evidence mismatch. No final raw response or token
+telemetry is available, so quote correctness and final output termination
+cannot be assessed. Do not describe these as four failed factual answers or
+output-length rejections, and do not treat lookup IDs as final selected actions.
+
+Query inputs measure 5,586..5,813 tokens; outputs are 23..27 tokens with normal
+stop reasons. Query API telemetry attributes about 100.7..122.4 seconds to
+prompt evaluation and 16.8..18.9 seconds to generation. The first query also
+includes about 18.1 seconds loading. Total query wall time is 120.5..157.9
+seconds. The final calls receive the remaining 132.0..169.4 seconds; none
+returns a complete response. Transactions finish at about 290 seconds each,
+with at most 0.030 seconds observed timeout/cleanup overhead, about 1,160
+seconds combined. No over-deadline result is accepted.
+
+A read-only server-status snapshot is retained; no model installation,
+offload/server configuration, Windows policy or inference settings changed.
+These measurements are not a controlled hardware or cache benchmark. The
+common context and long final response may contribute to runtime, but absent
+final telemetry does not isolate the cause. The earlier one-pass evidence
+failures remain separate historical results, not repaired or relabelled here.
+
+The helper remains experimental, with no live CLI/runner integration or
+default behavior change. A passing unit/provenance check cannot promote a
+pipeline that misses its deadline, and no strategy or mission outcome follows
+from four legal lookup requests.
+
+Final review caught an auditor gap: its missing-response branch skipped some
+final-request checks. A synthetic mutated-enum timeout fixture reproduced the
+false audit pass before those checks moved ahead of the response branch.
+Negative enum/lookup/common-context fixtures now reject, and the regenerated
+audit explicitly verifies all eight original requests even without a final
+response. The reviewer had independently confirmed the original requests were
+valid; counts, timeout classification and failed gate are unchanged. Original
+requests, responses, lookup records and source metadata were not modified.
+
+### Next Checkpoint
+
+Test a smaller final-response interface rather than silently extending this
+gate's deadlines: after the SAME model-directed query and native lookup, ask
+for only `decision_id` and the selected queried `candidate_id`. The adapter,
+not the model, would own the factual evidence attached to the legacy response.
+Validate the original context hash, lookup contents, selected membership and
+adapter-owned facts independently; permit no model-written numeric claims or
+free-text benefits in that interface.
+
+This would be a DIFFERENT choice task and acceptance contract, not a pass of
+the failed model-quoted-comparison gate or proof the model reads facts correctly.
+Do not silently synthesize missing quote fields into the old response and
+call them model-verified. Preserve both failed gates. Predeclare bounds and
+API telemetry, test failure/immutability/provenance cases, then compare frozen
+completion and latency with this baseline before any live command. A smaller
+response is a performance hypothesis to test, not an established fix or a
+human-ranked winning strategy. No such interface is implemented here.

@@ -143,6 +143,11 @@ timeouts and API-call telemetry, not the runner's command-invocation counter
 silently relabelled as model calls. No live integration is provided here.
 See `docs/superpowers/plans/2026-11-19-planner-fact-lookup.md` for the bounded
 frozen transaction protocol and its separate feasibility gate.
+The first four transactions all produced valid lookup requests/native facts,
+but the final-choice calls timed out within the 290-second total transaction
+budget. Zero final choices were accepted. No completed final responses exist
+to assess quote accuracy; this is a latency failure, not evidence of corrected
+or incorrect final quotes. No live integration is promoted from these probes.
 
 ## Contract
 
