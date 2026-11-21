@@ -637,6 +637,16 @@ class JuliusEnv(gym.Env):
             raise RuntimeError("Failed to export final save")
         return path
 
+    def get_observation(self):
+        """Read current native scalars without advancing the simulation."""
+        query = self.lib.julius_env_get_observation
+        query.argtypes = [c_void_p, POINTER(Observation)]
+        query.restype = c_int32
+        output = Observation()
+        if query(self.env_handle, ctypes.byref(output)) != 0:
+            raise RuntimeError("Cannot read observation: reset an active environment first")
+        return self._obs_to_dict(output)
+
     def get_state_token(self):
         """Opaque identity for exact reset/step/snapshot state, not a tick count."""
         query = self.lib.julius_env_get_state_token

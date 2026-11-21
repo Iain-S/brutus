@@ -521,3 +521,49 @@ truncation and failed construction are not offered. Execution reports `won` or
 `terminated`. Other termination reasons remain separate from confirmed victory.
 The current runner summary still needs richer outcome and performance accounting
 before cross-model benchmarking.
+
+### Experimental two-step native previews
+
+`julius_gym.compound` provides an additive Python interface for one or two
+candidate-name steps. `validate_short_plan(proposal, context, candidates)` accepts
+exactly `decision_id`, `candidate_ids` (a list of one or two names), and `reason`.
+It binds the plan to the initial candidate fingerprint and requires the first
+name to be in the current legal menu. The second name is conditional: its
+availability and placement are resolved from a newly generated successor menu.
+A district index or building ID in a name does not promise stable coordinates
+or identity across states. Candidate objects and proposed action arrays are
+never accepted as future steps.
+
+`preview_short_plan(env, plan, observation, mission, budget, minimum_ticks=800)`
+regenerates and engine-validates each step, uses the existing charged execution
+cycle, and restores one outer native snapshot on success, failure or exception.
+It rejects stale initial plans and observations using current native scalars
+(`env.get_observation()` reads these without advancing time). Budgets are 1..8000
+ticks; per-step minimum durations are 0..800. Both construction and observation
+ticks consume the budget. A failed, terminal or unfinished step stops the plan;
+an unavailable successor returns the valid prefix as `invalid_successor`.
+
+The returned `plan` and `control` branches retain raw actions/messages/rewards,
+actual ticks and status, all scalar observations and six final diagnostic
+payloads. Executed plan stages also retain before/after state, raw diagnostics,
+construction/observation tick counts and net treasury change across the whole
+stage (including simulation income/expenses; this is not a quoted build cost).
+The control waits from the same base for the plan's actual charged ticks.
+Check both `plan.valid` and `equal_time`: an invalid prefix is not an accepted
+plan, and an early terminal control can have unequal duration. Neither field
+assigns a strategic score. Exceptions propagate after restoration.
+
+No live command or model adapter uses this interface yet. Validate it with:
+
+```shell
+python -m unittest discover -s . -p test_compound.py
+python test_compound_engine.py --data-dir <ABSOLUTE_DATA_DIRECTORY> --lib-path <ABSOLUTE_LIBRARY_PATH>
+```
+
+The native check uses fixed engineering fixtures, explicitly marked as not
+model-proposed. It checks all six diagnostics at stage boundaries and after
+rollback, then continues directly from the restored base with raw actions.
+It retains real saves and traces under the normal Tarraco run convention for
+fresh-process verification with `examples/replay_run.py`. Run without `-O`:
+disabled assertions are refused before native execution. These controls establish
+preview fidelity; they do not establish autonomous improvement or a campaign win.
