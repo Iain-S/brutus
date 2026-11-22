@@ -60,7 +60,7 @@ def _finish(env, observation, status, stages, steps, valid):
             "diagnostics": native_diagnostics(env)}
 
 
-def _rollout(env, plan, observation, mission, budget, minimum_ticks, radius):
+def _rollout(env, plan, observation, mission, budget, minimum_ticks, radius, on_step=None):
     stages, steps = [], []
     status = "completed"
     for index, name in enumerate(plan.candidate_ids):
@@ -81,8 +81,9 @@ def _rollout(env, plan, observation, mission, budget, minimum_ticks, radius):
         before = forecast_state(env, observation, len(steps), "before_step")
         before_observation = _scalars(observation)
         treasury = int(observation["finance_treasury"].item())
+        callbacks = {"on_step": on_step} if on_step is not None else {}
         observation, result, terminated, truncated = execute_cycle(
-            env, candidates[name], observation, remaining, minimum_ticks)
+            env, candidates[name], observation, remaining, minimum_ticks, **callbacks)
         steps.extend(result["steps"])
         status = result["status"]
         stages.append({**result, "legal": True, "before": before,
@@ -97,14 +98,7 @@ def _rollout(env, plan, observation, mission, budget, minimum_ticks, radius):
     return _finish(env, observation, status, stages, steps, valid)
 
 
-def preview_short_plan(env, plan, observation, mission, budget, minimum_ticks=800, radius=14):
-    """Simulate a plan and equal-time idle control, restoring the base on every exit.
-
-    The control targets the *actual* ticks of the plan, including an invalid
-    prefix. If the control ends early, `equal_time` is false. A comparison is
-    usable only when the plan is valid and equal_time is true; no score or
-    strategic ranking is assigned here. Exceptions propagate after restoration.
-    """
+def _check_entry(env, plan, observation, budget, minimum_ticks):
     if (not isinstance(plan, ShortPlan) or type(budget) is not int or not 1 <= budget <= 8000
             or type(minimum_ticks) is not int or not 0 <= minimum_ticks <= 800):
         raise ValueError("Require a ShortPlan, budget 1..8000 and minimum_ticks 0..800")
@@ -113,7 +107,49 @@ def preview_short_plan(env, plan, observation, mission, budget, minimum_ticks=80
     current = env.get_observation()
     if _scalars(current) != _scalars(observation):
         raise ValueError("Stale observation: read current native state")
-    observation = current
+    return current
+
+
+def execute_short_plan(env, plan, observation, mission, budget, minimum_ticks=800, radius=14, on_step=None):
+    """Execute checked successor macros; retain live partial progress on failure."""
+    observation = _check_entry(env, plan, observation, budget, minimum_ticks)
+    return _rollout(env, plan, observation, mission, budget, minimum_ticks, radius, on_step)
+
+
+def successor_context(env, candidate, observation, mission, decision_id, budget,
+                      minimum_ticks=800, forecast_ticks=800, radius=14):
+    """Discover a real successor menu, without leaking future candidate objects."""
+    observation = _check_entry(env, ShortPlan(candidate.state, (candidate.id,)),
+                               observation, budget, minimum_ticks)
+    if type(forecast_ticks) is not int or not 0 <= forecast_ticks <= 8000:
+        raise ValueError("Successor forecast_ticks must be 0..8000")
+    with env.snapshot() as snapshot:
+        try:
+            after, result, terminated, truncated = execute_cycle(
+                env, candidate, observation, budget, minimum_ticks)
+            ticks = len(result["steps"])
+            if result["status"] != "completed" or terminated or truncated or ticks >= budget:
+                raise ValueError("Successor discovery requires a completed nonterminal prefix and remaining budget")
+            context, _ = decision_context(env, after, mission, decision_id, budget - ticks,
+                                           radius=radius, forecast_ticks=forecast_ticks)
+            context["compound_prefix"] = {"candidate_id": candidate.id, "ticks": ticks,
+                                          "forecast": forecast_state(env, after, ticks, result["status"]),
+                                          "steps": result["steps"], "observation": _scalars(after),
+                                          "diagnostics": native_diagnostics(env)}
+            return context
+        finally:
+            snapshot.restore()
+
+
+def preview_short_plan(env, plan, observation, mission, budget, minimum_ticks=800, radius=14):
+    """Simulate a plan and equal-time idle control, restoring the base on every exit.
+
+    The control targets the *actual* ticks of the plan, including an invalid
+    prefix. If the control ends early, `equal_time` is false. A comparison is
+    usable only when the plan is valid and equal_time is true; no score or
+    strategic ranking is assigned here. Exceptions propagate after restoration.
+    """
+    observation = _check_entry(env, plan, observation, budget, minimum_ticks)
     with env.snapshot() as snapshot:
         try:
             result = _rollout(env, plan, observation, mission, budget, minimum_ticks, radius)

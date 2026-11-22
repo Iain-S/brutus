@@ -32,7 +32,7 @@ class Candidate:
     preview: dict
 
 
-def execute(env, candidate, observation, budget):
+def execute(env, candidate, observation, budget, on_step=None):
     """Execute a macro, retaining and reporting partial progress on failure."""
     if fingerprint(env, observation) != candidate.state:
         raise ValueError("Stale candidate: regenerate from current state")
@@ -42,6 +42,8 @@ def execute(env, candidate, observation, budget):
         observation, reward, terminated, truncated, info = env.step_at(*action)
         record = {"action": action, "reward": reward, **info}
         records.append(record)
+        if on_step is not None:
+            on_step({**record, "terminated": terminated, "truncated": truncated})
         success_prefix = "Sent " if A.SEND_MODEST_GIFT <= action[0] <= A.SEND_LAVISH_GIFT else "Built "
         control_messages = {A.ADJUST_TAX_UP: "Tax increased by 1%", A.ADJUST_TAX_DOWN: "Tax decreased by 1%",
                             A.ADJUST_WAGES_UP: "Wages increased", A.ADJUST_WAGES_DOWN: "Wages decreased"}
@@ -112,9 +114,10 @@ def preview_candidate(env, candidate, observation, budget, forecast_ticks=0):
     return result, outlay, forecast
 
 
-def execute_cycle(env, candidate, observation, budget, minimum_ticks=0):
+def execute_cycle(env, candidate, observation, budget, minimum_ticks=0, on_step=None):
     """Optionally observe effects before the next model call; charge every tick."""
-    observation, result, terminated, truncated = execute(env, candidate, observation, budget)
+    callbacks = {"on_step": on_step} if on_step is not None else {}
+    observation, result, terminated, truncated = execute(env, candidate, observation, budget, **callbacks)
     macro_ticks = len(result["steps"])
     result["macro_ticks"] = macro_ticks
     result["observation_ticks"] = 0
@@ -124,7 +127,7 @@ def execute_cycle(env, candidate, observation, budget, minimum_ticks=0):
     if wait_ticks:
         wait = Candidate("observe_effects", [(A.NONE, 0, 0)] * wait_ticks,
                          fingerprint(env, observation), {})
-        observation, observed, terminated, truncated = execute(env, wait, observation, wait_ticks)
+        observation, observed, terminated, truncated = execute(env, wait, observation, wait_ticks, **callbacks)
         result["steps"].extend(observed["steps"])
         result["observation_ticks"] = len(observed["steps"])
         result["status"] = observed["status"]

@@ -567,3 +567,42 @@ It retains real saves and traces under the normal Tarraco run convention for
 fresh-process verification with `examples/replay_run.py`. Run without `-O`:
 disabled assertions are refused before native execution. These controls establish
 preview fidelity; they do not establish autonomous improvement or a campaign win.
+
+### Bounded compound model experiment
+
+`examples/run_compound_planner.py` is a separate experimental command. It keeps
+the installed instruct model and sampling settings recorded in the planner results.
+Each decision makes three audited local API calls: choose a first macro from the
+complete current menu, choose a second from its simulated successor menu, then
+select among the resulting compound, that same first macro followed by waiting,
+and waiting alone. Every final alternative lasts 1600 native ticks. Future names
+come from the actual successor menu, without guessed building or district IDs.
+
+The proposal and selection contracts are checked separately. Invalid proposals,
+incomplete/token-limited inference, missing context headroom, unequal/partial
+previews or audit-write failures stop the experiment; there are no retries or
+fallback actions. Final output is ID-only. Native evidence is adapter-owned and
+free-text proposal reasons are not verified factual reasoning. The single-macro
+control shares the model's root choice; this is a feasibility test, not a controlled
+comparison with an independently optimized one-step policy.
+
+```shell
+python examples/run_compound_planner.py --data-dir <ABSOLUTE_DATA_DIRECTORY> --lib-path <ABSOLUTE_LIBRARY_PATH> --max-decisions 4
+```
+
+The command caps execution at four decisions/6400 ticks within an 8000-tick
+episode, with at most twelve API attempts at 170 seconds each. Archives retain
+full source/library hashes, exact requests/raw responses, native successor
+contexts, preview/comparison payloads, selected IDs and execution verification.
+Every actual primitive action is logged immediately, including a partial failed
+macro. Real saves and six final diagnostics use the normal run directory format.
+Use `examples/replay_run.py` for independent replay. The existing live planner
+command and its defaults are unchanged.
+
+`successor_context(...)` and `execute_short_plan(...)` are the underlying Python
+interfaces. The former always restores its one-cycle simulation and returns a
+JSON context without future candidate objects. The latter shares the preview
+rollout and regenerates legal candidates at every actual successor; it retains
+partial progress on failure. Its optional `on_step` callback receives each
+returned primitive result before another action runs. A callback error propagates
+and stops execution; native effects already delivered cannot be rolled back.

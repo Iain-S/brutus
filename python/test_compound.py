@@ -95,6 +95,56 @@ class CompoundTests(unittest.TestCase):
             with self.subTest(update=update), self.assertRaises(ValueError):
                 compound.validate_short_plan({**proposal, **update}, context, candidates)
 
+    def test_live_plan_shares_preview_and_retains_actual_progress(self):
+        expected = self.preview(budget=10, minimum_ticks=3)["plan"]
+        actual = compound.execute_short_plan(self.env, self.plan(), self.observation, {}, 10, 3)
+        self.assertEqual(actual, expected)
+        self.assertEqual(self.env.tick, 6)
+        self.assertEqual(len(self.env.actions), 6)
+
+    def test_live_invalid_successor_keeps_only_checked_prefix(self):
+        self.unavailable = True
+        result = compound.execute_short_plan(self.env, self.plan(), self.observation, {}, 10, 3)
+        self.assertEqual(result["status"], "invalid_successor")
+        self.assertEqual(self.env.tick, 3)
+        self.assertEqual(len(result["steps"]), 3)
+
+    def test_live_action_sink_records_partial_failure_before_stopping(self):
+        records = []
+        self.env.fail_at = 4
+        result = compound.execute_short_plan(self.env, self.plan(), self.observation, {}, 10, 3,
+                                              on_step=records.append)
+        self.assertEqual(result["status"], "failed")
+        self.assertEqual(len(records), 4)
+        self.assertEqual(records[-1]["message"], "Blocked")
+        self.assertEqual(self.env.tick, 4)
+
+    def test_live_action_sink_failure_stops_before_next_action(self):
+        def sink(record):
+            raise OSError("trace disk failure")
+        with self.assertRaisesRegex(OSError, "trace disk failure"):
+            compound.execute_short_plan(self.env, self.plan(), self.observation, {}, 10, 3, on_step=sink)
+        self.assertEqual(self.env.tick, 1)
+
+    def test_successor_context_uses_successor_then_restores(self):
+        candidate = Candidate("first", [(5, 0, 0)], "0", {})
+        context = compound.successor_context(self.env, candidate, self.observation, {}, 9, 10, 3, 3)
+        self.assertEqual(context["compound_prefix"]["candidate_id"], "first")
+        self.assertEqual(context["compound_prefix"]["ticks"], 3)
+        self.assertEqual(self.menus, [(3, 7)])
+        self.assertEqual(self.env.tick, 0)
+
+    def test_successor_context_exception_and_terminal_restore(self):
+        candidate = Candidate("first", [(5, 0, 0)], "0", {})
+        with patch("julius_gym.compound.decision_context", side_effect=RuntimeError("menu")):
+            with self.assertRaisesRegex(RuntimeError, "menu"):
+                compound.successor_context(self.env, candidate, self.observation, {}, 9, 10, 3, 3)
+        self.assertEqual(self.env.tick, 0)
+        self.env.end_at = 2
+        with self.assertRaisesRegex(ValueError, "completed"):
+            compound.successor_context(self.env, candidate, self.observation, {}, 9, 10, 3, 3)
+        self.assertEqual(self.env.tick, 0)
+
     def test_resolves_future_only_after_first_cycle_and_charges_waits(self):
         result = self.preview(budget=10, minimum_ticks=3)
         self.assertEqual(self.menus, [(0, 10), (3, 7)])
