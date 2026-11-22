@@ -55,7 +55,7 @@ strategy score, fabricated model reasoning or claim of a new native result.
   lifecycle manifests/source hashes and fail-closed acceptance. Tests cover source
   tampering, invalid responses, audit failure and zero native execution.
 - [x] All unittest modules and fresh source review; commit source before inference.
-- [ ] Run the fourteen-call diagnostic, independently audit, preserve all results
+- [x] Run the fourteen-call diagnostic, independently audit, preserve all results
   and update results/TODO. No promotion to live campaign play.
 - [x] Inspect native food/staffing and annual rating update code, documenting the
   timescale limits of this eight-month prefix before recommending longer trials.
@@ -110,3 +110,30 @@ staffing, cart generation and actual transport/delivery still take native time.
 The source policy never builds a farm, so longer waiting alone cannot establish
 its food-production competence. Do not attribute its zero food merely to an
 annual harvest assumption or equate annual-rating delay with construction failure.
+
+## Completed Frozen Result
+
+On source `56519054`, archive
+`runs/planner-input-probes/2026-11-22/20261122T151628.185019Z_compound-order_4af8da6b/`
+retains all fourteen accepted final API calls and their raw evidence. There are
+zero root/successor proposal calls, zero retries/fallbacks and zero native actions.
+Both exact original-order repeats select compound, matching the first seeded
+original-order calls. The historical unseeded decision-3 single choice is not
+counted as a seeded control or a repeated result.
+
+Balanced-block choices for decision 2 are compound twice/wait four times; for
+decision 3, compound once/wait five times. Single is never selected. Position
+counts across the twelve balanced calls are first 7, second 3, third 2. Thus
+changing combined row/schema presentation changes choices under this fixed-seed
+profile; it is not an always-first rule or a measured campaign improvement.
+All native values/types and instructions remain intact. Root selection, search
+breadth, horizon and model capability are not thereby isolated.
+
+Independent audit validates the exact predeclared schedule, byte-identical
+control requests, allowed transformations only, every raw/accepted selection,
+strict telemetry/deadlines, immutable and copied source hashes and self-contained
+historical evidence. Its source and JSON are retained inside the probe directory.
+Calls take 22.2..52.5 seconds, 445.7 total; wall time is 452.4 seconds. Inputs are
+5680..5866 tokens and every output is 15, under unchanged 8K/256-token bounds.
+The results document contains the complete order/choice table and interpretation
+limits. All 193 unittest cases pass. No live selector is promoted or changed.

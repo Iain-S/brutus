@@ -1,6 +1,7 @@
 # Campaign Planner Remaining Work
 
-Updated: 2026-11-22. Compound-model source: `03089798`; preview foundation: `3ce633ac`.
+Updated: 2026-11-22. Frozen-order source: `56519054`; compound-model source:
+`03089798`; preview foundation: `3ce633ac`.
 See [results and evidence](PLANNER_RESULTS.md) before interpreting progress.
 
 ## Completed Checkpoint: Native Compound Previews
@@ -46,17 +47,38 @@ A legal first step still never authorizes an unchecked second action.
   capability, lookup anchoring, or tool coverage needs separate investigation.
   A larger model is an option to evaluate, not an established requirement.
 
-## Next Checkpoint: Planning Quality Diagnosis
+## Completed Checkpoint: Frozen Selection Presentation Diagnosis
 
-- [ ] Use the frozen audited comparisons to examine selection of additional
+- [x] Use the frozen audited comparisons to examine selection of additional
   construction with no improvement in named native goal/service endpoints and
   lower treasury. Do not infer verified reasoning from ID-only answers.
-- [ ] Choose a separately controlled diagnostic for root selection/search
-  breadth, model capability or horizon. The feasibility run isolates none of
-  these. Include presentation/order controls if comparing frozen selections.
-- [ ] Account for food/staffing and annual-rating timescales before choosing
+- [x] Run a separately controlled presentation diagnostic on the frozen late
+  comparisons: all six row/schema orders on two states plus two exact repeats.
+  Both repeated controls agree, while choices change with presentation. This
+  does not isolate root selection, search breadth, model capability or horizon.
+- [x] Account for food/staffing and annual-rating timescales before choosing
   a longer native evaluation. Keep all legal choices available and avoid a
   prescribed winning sequence or human-weighted score.
+
+The fourteen-call input probe makes no native actions and creates no new native
+save. Facts, labels and system instructions are retained; row/schema order change
+together under one fixed seed. Do not describe the result as a first-item rule,
+general model diagnosis or improved campaign play. See results for the full table.
+
+## Next Checkpoint: Selection Capability And Native Planning
+
+- [ ] Establish selection reliability with a separately scoped capability or
+  selection-mechanism comparison using the same audited native facts, balanced
+  presentation and repeated controls. A stronger or reasoning model is an option
+  to evaluate, not an established requirement. Do not merely put a desired answer
+  first or introduce a human-ranked strategy score.
+- [ ] Choose a controlled root-search/breadth or horizon experiment after
+  accounting for presentation sensitivity. Keep root proposal, endpoint selection
+  reliability and delivered campaign progress as separate questions.
+- [ ] Distinguish worker/transport-dependent food timing from annual rating
+  updates when choosing native horizons. The current eight-month prefix has no
+  farm and no annual ratings update; longer waiting alone does not establish
+  food-production competence.
 - [ ] Require demonstrable delivered multi-goal progress before promoting the
   compound policy or extending it unchanged toward a whole-campaign attempt.
 

@@ -1,7 +1,8 @@
 # Campaign Planner Results
 
 Updated: 2026-11-22. Latest model experiment: 2026-11-22.
-Compound-model source: `03089798`; native-preview foundation: `3ce633ac`;
+Frozen-order source: `56519054`; compound-model source: `03089798`;
+native-preview foundation: `3ce633ac`;
 earlier single-macro model checkpoint: `936cc933`.
 
 ## Objective And Current Approach
@@ -19,7 +20,98 @@ DNN reinforcement-learning policy. The model is
 **No campaign win or demonstrated fast-win strategy has been achieved.**
 See [remaining work](PLANNER_TODO.md) for the next checkpoint.
 
-## Latest Model Run: Verified Compound Execution, No Strategic Fix
+## Latest Diagnostic: Frozen Choices Change With Presentation
+
+Input-only archive:
+`runs/planner-input-probes/2026-11-22/20261122T151628.185019Z_compound-order_4af8da6b/`.
+This uses only saved decisions 2 and 3 from the native compound run below.
+There are **zero new game ticks, executed choices, proposal/query calls, saves
+or screenshots**. Historical native forecasts remain predictions from that
+source; they are not relabelled as delivered outcomes of this diagnostic.
+
+Each state receives all six permutations of the same three native comparison
+rows and response enum, followed by a byte-identical repeat of the original
+order. State order alternates within adjacent pairs. Every alternative occupies
+every position twice in the twelve-call balanced block. Seed 20261122 is added
+to every request in this separate profile; other sampling/model/digest/context
+and token/deadline settings remain unchanged. Historical unseeded answers are
+not paired controls. Labels and system instructions stay fixed.
+
+All fourteen calls pass inference, schema, headroom, HTTP, deadline, immutable
+source and audit checks, with no retries or fallback. **Both exact repeated
+controls reproduce their first choice.** Nevertheless, each frozen state changes
+between compound and wait under different presentations of unchanged facts.
+
+| Comparison Row And Schema Order | Decision 2 Choice | Decision 3 Choice |
+| --- | --- | --- |
+| compound, single, wait | compound | compound |
+| single, wait, compound | wait | wait |
+| wait, compound, single | wait | wait |
+| compound, wait, single | compound | wait |
+| wait, single, compound | wait | wait |
+| single, compound, wait | wait | wait |
+| Original-order repeat (separate controls) | compound | compound |
+
+In the balanced block, decision 2 selects compound twice and wait four times;
+decision 3 selects compound once and wait five times. Single is never selected.
+Seven choices occupy the first position, three the second and two the third:
+this is not a literal always-pick-first rule. The two repeated controls are
+excluded from these balanced counts.
+
+On decision 3, compound and wait report the same population (49), food, ratings,
+fountain coverage, blocked-house count and maximum housing level, but treasury
+7443 versus 7473. Presentation changes which is selected. Other diagnostic or
+future-capacity effects can differ; this is not a proof of global strategic
+dominance. On decision 2, compound forecasts population 49 versus wait's 45,
+with treasury 7499 versus 7566: presentation also changes that explicit
+population/finance tradeoff. No weighted strategy score is introduced.
+
+### Interpretation And Evidence
+
+The current fixed-seed selector is sensitive to combined row/schema presentation
+on these two states. Do not treat a single accepted response as evidence of a
+stable strategic preference, or fix the policy by placing a desired answer
+first. The intervention does not separate visible row order from schema enum
+order; fixed system-label order, one seed, two targeted states, and uncontrolled
+cache/runtime behavior limit generalization. The matching repeats support the
+observed sensitivity but do not prove determinism for every future request.
+Root selection, search breadth, horizon and model capability remain unisolated.
+There is no new campaign result or demonstrated fast-win strategy.
+
+Input counts are 5680..5866 tokens and all outputs are 15 tokens. Calls take
+22.2..52.5 seconds, 445.7 seconds total; whole probe time is 452.4 seconds.
+Ollama version is recorded as 0.16.2. The archive pins the exact old manifest,
+requests, raw responses and accepted audits, and copies the original records and
+source so the historical inputs can be audited without the original directory.
+
+`independent-audit.json` and its retained audit source verify every allowed
+transformation, preserved value/type, exact schedule, strict raw response,
+accepted answer, call count, source hash, condition proof and byte-identical
+control request. The audit makes no model calls or native actions. All 193
+unittest cases pass, including eleven new order/provenance/lifecycle tests.
+Existing live command behavior and historical evidence are unchanged. See
+[the diagnostic plan](superpowers/plans/2026-11-22-compound-order-diagnostic.md).
+
+### Native Timescales Before Further Campaign Evaluation
+
+Source inspection establishes 50 ticks/day, 16 days/month and 12 months/year:
+800 ticks/month and 9600/year. Actual prosperity and peace update on annual
+rollover. From zero peace and zero peace-years, an illustrative clean sequence
+is 2, 4, 9, 14, 19, 24, 29, 34 across eight annual updates; crime, riots and
+destruction can reduce progress. This is not a guaranteed trajectory. The native
+eight-month prefix cannot assess annual rating progression. See
+[calendar code](../src/game/time.c), [update dispatch](../src/game/tick.c) and
+[ratings](../src/city/ratings.c).
+
+Farm production instead requires labor coverage and workers, advancing daily
+worker-based work toward 200 raw-resource points, with an extra eligible
+non-northern wheat update. There is no annual harvest gate in that production
+path. Staffing, carts and delivery still require actual native time; source
+inspection does not guarantee delivery within a chosen horizon. The source
+policy never built a farm, so its zero food should not be excused solely as an
+annual-harvest delay. See [industry code](../src/building/industry.c).
+
+## Latest Native Model Run: Verified Compound Execution, No Strategic Fix
 
 Run directory, relative to the checkout:
 `runs/tarraco/2026-11-22/20261122T101738.483176Z_compound-model_11fb32a7/`.
