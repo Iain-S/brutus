@@ -553,7 +553,8 @@ Check both `plan.valid` and `equal_time`: an invalid prefix is not an accepted
 plan, and an early terminal control can have unequal duration. Neither field
 assigns a strategic score. Exceptions propagate after restoration.
 
-No live command or model adapter uses this interface yet. Validate it with:
+The standard `run_planner.py` command does not use this interface. The separate
+experimental command is described below. Validate the native foundation with:
 
 ```shell
 python -m unittest discover -s . -p test_compound.py

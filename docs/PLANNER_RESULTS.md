@@ -1,7 +1,8 @@
 # Campaign Planner Results
 
-Updated: 2026-11-21. Latest model experiment: 2026-11-19.
-Compound-preview source checkpoint: `3ce633ac`; earlier model checkpoint: `936cc933`.
+Updated: 2026-11-22. Latest model experiment: 2026-11-22.
+Compound-model source: `03089798`; native-preview foundation: `3ce633ac`;
+earlier single-macro model checkpoint: `936cc933`.
 
 ## Objective And Current Approach
 
@@ -17,6 +18,95 @@ DNN reinforcement-learning policy. The model is
 
 **No campaign win or demonstrated fast-win strategy has been achieved.**
 See [remaining work](PLANNER_TODO.md) for the next checkpoint.
+
+## Latest Model Run: Verified Compound Execution, No Strategic Fix
+
+Run directory, relative to the checkout:
+`runs/tarraco/2026-11-22/20261122T101738.483176Z_compound-model_11fb32a7/`.
+
+The separate experimental command makes three model calls per decision: select
+a first macro from the whole legal menu, select a continuation from its native
+simulated successor menu, then select the compound, the same first macro plus
+waiting, or waiting alone. All final alternatives last 1600 native ticks. One
+root and one continuation are proposed per decision; this is not broad tree
+search or a comparison with an independently optimized single-step policy.
+
+All twelve calls pass exact schema, model identity, native provenance, complete
+inference, token/headroom and deadline checks. Four decisions deliver 6400 actual
+ticks with no retries, repairs, fallback, validation failure or timeout. The
+pinned model/digest and .7/.8/20/0 sampling are unchanged. Input sizes are
+2581..5866 tokens, outputs 15..34; calls take 46.6..68.3 seconds, 730.7 seconds
+total. The whole model run takes 988.2 seconds, including native previews and
+execution. It stops at the decision budget, not victory or episode truncation.
+
+| Decision | Model-Proposed First / Second Macro | Selected Execution | End Population | Fountain Residents | Treasury |
+| --- | --- | --- | --- | --- | --- |
+| 0 | Housing / Water supply | Both | 42 | 42 | 7,708 |
+| 1 | Landscaping / Market | Both | 52 | 52 | 7,592 |
+| 2 | Landscaping / Water supply | Both | 49 | 49 | 7,499 |
+| 3 | Water supply / Water supply | First, then wait | 49 | 49 | 7,458 |
+
+The final city has health 50, favor 50, personal savings 64, maximum housing
+level 1 and native cached prosperity cap 10. Actual prosperity, culture and peace
+remain zero. Food stocks, granary/market inventory, household food delivery, farm
+workers, tax coverage and collected tax denarii remain zero. No farm or cultural
+service is selected. The complete wheat-supply macro is legal in all eight
+proposal menus; cultural services are legal in seven (all after the initial
+empty-city menu). A market is food-related, so this is not evidence that the
+model ignored every food tool.
+
+### What The Equal-Time Comparisons Establish
+
+- At decision 0, housing plus water delivers 42 fountain-covered residents;
+  housing alone forecasts the same population with no fountain coverage.
+- At decision 1, landscaping plus market delivers population 52, compared with
+  forecast 48 for landscaping alone and 44 for waiting. This is a local native
+  endpoint difference, not evidence of sustained food delivery or campaign wins.
+- At decision 2, the selected compound forecasts the same population, fountain
+  coverage, blocked-house count, housing level, food and ratings as its single
+  control, but 17 fewer treasury denarii. Other diagnostics/future capacity can
+  differ; no general optimality claim or weighted score is assigned.
+- At decision 3, the model declines its second water build, retaining 15 more
+  denarii than the compound. Waiting alone forecasts another 15 denarii with the
+  same population, food, coverage, blocked-house count, level and ratings. The
+  ID-only answer does not establish the model's reasoning for its choice.
+
+The final menus report equivalent action-trace groups explicitly; none of this
+run's alternatives has an identical action trace. Three compound selections and
+one single selection therefore demonstrate working selection access, not a
+strategic advantage of planning depth. Final menu order is fixed, sampling is
+unseeded, and there is only one sequential run. Root selection, limited search
+breadth, horizon, model capability and presentation effects are not isolated.
+Compared with earlier single-macro experiments, protocol and decision cadence
+also differ. **Better campaign play remains unproven.** Do not extend this policy
+unchanged and describe it as a fast-win strategy.
+
+### Audit And Replay
+
+Every accepted proposal matches its original raw model response. Both preview
+prefixes match the actions, full native scalars and six diagnostics of the exact
+successor shown to the model. Every selected macro is regenerated and validated
+again in the actual successor. All four actual traces and stage/final endpoints
+match their forecasts. `independent-protocol-audit.json` and its retained audit
+source independently reconstruct requests, schemas, choices, provenance, API
+accounting, source hashes, actual trace and final artifacts from the archive.
+This audit makes no new model calls or native actions.
+
+Fresh-process strict native replay matches all 6400 messages/rewards, population,
+victory state and all six final diagnostic payloads:
+`runs/tarraco/2026-11-22/20261122T103511.549786Z_replay_081a68e5/`.
+The source archive retains its actual `final.sav`, six diagnostics, per-decision
+requests/raw bodies/HTTP status, full successor/proposal/preview/comparison/actual
+payloads, before/after model digests and source/library hashes. Screenshot capture
+is still manual/pending; no `final.png` has been fabricated.
+
+Source verification passes all 182 unittest cases (40 compound-related), native
+forecast health and previous rollback controls. A fixture-only orchestration
+control also passes independent replay; it is labelled separately and contributes
+zero model calls to this experiment. Source-review findings about prefix binding,
+real process deadlines, completion telemetry and damaged-audit finalization are
+fixed with regression coverage. See
+[the experiment plan](superpowers/plans/2026-11-22-compound-model-evaluation.md).
 
 ## Native Compound Preview Checkpoint: 2026-11-21
 
@@ -84,7 +174,7 @@ Windows cp1252. The complete set of actual unittest-class modules passes. Exact
 script names and fresh-review corrections are in
 [the implementation plan](superpowers/plans/2026-11-21-compound-previews.md).
 
-## Latest Native Run
+## Previous Single-Macro Native Run: 2026-11-19
 
 Run directory, relative to the checkout:
 `runs/tarraco/2026-11-19/20261119T105542.706780Z_planner-local_d54f5084/`.
@@ -153,8 +243,8 @@ The full-domain helpers have not been promoted into the live command.
   Missing industrial macros therefore do not by themselves prove that the
   prosperity target is unreachable. Actual staffing, food, evolution,
   finances, and annual ratings still need to be demonstrated.
-- The native multi-step preview foundation is now tested as described above;
-  model-proposed compound evaluation has not been implemented or run.
+- Native multi-step previews and a bounded model-proposed compound experiment
+  are now verified as described above; neither establishes strategic improvement.
 
 ## Artifacts And Manual Review
 

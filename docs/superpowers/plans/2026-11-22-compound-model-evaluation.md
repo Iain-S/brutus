@@ -63,7 +63,7 @@ feasibility experiment, not a causal planning-depth benchmark.
   inference and actual partial actions, shared rollout equality and native replay.
 - [x] Fresh review and all unittest modules, native health and controls. Commit
   verified source separately from generated evidence and unrelated staged work.
-- [ ] Run bounded model experiment, audit and independently replay. Record outcomes
+- [x] Run bounded model experiment, audit and independently replay. Record outcomes
   and limits in results/TODO; stop at a reviewable result, with failures preserved.
 
 Review priorities: future menu/state identity; double-charged or uncharged time;
@@ -110,3 +110,32 @@ without asking the model to quote raw diagnostic JSON. Equivalent action-trace
 groups are explicit in final comparisons: choosing a compound label under a tie
 does not demonstrate preference for construction depth. No review findings are
 deferred, and the existing planner CLI remains unchanged.
+
+## Completed Experiment
+
+On source `03089798`, archive
+`runs/tarraco/2026-11-22/20261122T101738.483176Z_compound-model_11fb32a7/`
+records four accepted decisions, twelve accepted API calls, no retries/fallbacks,
+6400 delivered ticks and exact per-stage/final forecast matches. Selections are
+housing/water, gardens/market, gardens/water, then water/wait after rejecting the
+model-proposed second water macro. End population/fountain coverage are 49/49,
+treasury 7458, health 50, favor 50, with food/culture/prosperity/peace/tax zero.
+No native win or strategic improvement is claimed.
+
+Independent archive audit reconstructs all requests, native prefix proofs and
+final comparisons, validates raw response provenance/strict telemetry, source
+hashes, menu availability, charged trace, selected execution and final payloads.
+Its code and JSON are retained inside the source run. Fresh-process strict replay
+at `runs/tarraco/2026-11-22/20261122T103511.549786Z_replay_081a68e5/`
+matches every message/reward and all six native diagnostic endpoints. All 182
+unittest cases, native health and controls pass; pip check passes. Actual saves
+and six diagnostics are retained; real-asset PNG capture remains manual/pending.
+
+Calls use 2581..5866 input and 15..34 output tokens, 46.6..68.3 seconds each,
+730.7 inference seconds total; whole native run takes 988.2 seconds. Wheat supply
+is legal in all eight model proposal menus and cultural services in seven, but
+neither is selected. The market is still a food-related choice. Native comparison
+facts and selection/execution gates pass, while strategy competence remains
+unproven. Fixed final menu order, unseeded sampling, one chosen root/continuation
+and the same-root single control preclude a causal planning-depth claim. All
+four decisions have distinct alternative action traces (no tie-selection evidence).

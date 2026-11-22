@@ -1,12 +1,12 @@
 # Campaign Planner Remaining Work
 
-Updated: 2026-11-21. Compound-preview source checkpoint: `3ce633ac`.
+Updated: 2026-11-22. Compound-model source: `03089798`; preview foundation: `3ce633ac`.
 See [results and evidence](PLANNER_RESULTS.md) before interpreting progress.
 
 ## Completed Checkpoint: Native Compound Previews
 
-The native two-step interface and engineering controls are implemented. Model
-proposal/evaluation remains the next checkpoint; the live planner is unchanged.
+The native two-step interface and engineering controls are implemented. The
+separate compound experiment is now evaluated below; the standard planner is unchanged.
 
 - [x] Define a bounded short-plan interface, initially two steps, and how
   future actions are identified without trusting stale candidate objects.
@@ -25,24 +25,40 @@ proposal/evaluation remains the next checkpoint; the live planner is unchanged.
 - [x] Obtain source review and commit verified source changes separately
   from generated artifacts and the user's staged model files.
 
-## Next Checkpoint: Bounded Model Evaluation
+## Completed Checkpoint: Bounded Model Feasibility Evaluation
 
-Use the conditional successor-name contract documented in
-`python/examples/PLANNER.md`. Add an audited model proposal transport and
-selection protocol before any native model run; no compound adapter or live
-execution mode exists yet. A legal first step does not imply a legal plan.
+The separate audited command and sequential proposal protocol are documented in
+`python/examples/PLANNER.md`. Four decisions/twelve model calls deliver 6400 ticks
+and pass independent protocol audit and native replay. Final population is 49
+with fountain coverage 49; food delivery/culture/prosperity remain zero. The
+model declines one second water build, but better campaign play is not established.
+A legal first step still never authorizes an unchecked second action.
 
-- [ ] Run a small audited experiment with model-proposed short plans only
+- [x] Run a small audited experiment with model-proposed short plans only
   after native controls pass. Do not supply a hand-picked winning sequence.
-- [ ] Compare explicit native goal and state outcomes at equal charged time,
+- [x] Compare explicit native goal and state outcomes at equal charged time,
   without introducing human-weighted scores or changing simulation rules.
-- [ ] Keep proposal validity, forecast reliability, action execution, and
+- [x] Keep proposal validity, forecast reliability, action execution, and
   strategic improvement as separate acceptance gates.
-- [ ] Record failures as failures; do not weaken validation or replay checks
+- [x] Record failures as failures; do not weaken validation or replay checks
   to promote a run. Distinguish predicted outcomes from delivered outcomes.
-- [ ] Decide from evidence whether planning depth helps or whether model
+- [x] Decide from evidence whether planning depth helps or whether model
   capability, lookup anchoring, or tool coverage needs separate investigation.
   A larger model is an option to evaluate, not an established requirement.
+
+## Next Checkpoint: Planning Quality Diagnosis
+
+- [ ] Use the frozen audited comparisons to examine selection of additional
+  construction with no improvement in named native goal/service endpoints and
+  lower treasury. Do not infer verified reasoning from ID-only answers.
+- [ ] Choose a separately controlled diagnostic for root selection/search
+  breadth, model capability or horizon. The feasibility run isolates none of
+  these. Include presentation/order controls if comparing frozen selections.
+- [ ] Account for food/staffing and annual-rating timescales before choosing
+  a longer native evaluation. Keep all legal choices available and avoid a
+  prescribed winning sequence or human-weighted score.
+- [ ] Require demonstrable delivered multi-goal progress before promoting the
+  compound policy or extending it unchanged toward a whole-campaign attempt.
 
 ## Campaign Completion And Optimization
 
