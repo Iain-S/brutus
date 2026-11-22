@@ -607,3 +607,27 @@ rollout and regenerates legal candidates at every actual successor; it retains
 partial progress on failure. Its optional `on_step` callback receives each
 returned primitive result before another action runs. A callback error propagates
 and stops execution; native effects already delivered cannot be rolled back.
+
+### Frozen compound presentation diagnostic
+
+`examples/probe_compound_order.py --source-run <ABSOLUTE_SOURCE_RUN_DIRECTORY>`
+is an input-only probe on the two designated comparisons from the verified
+2026-11-22 run. It checks immutable historical manifest/request/response/audit
+hashes before inference. A different native run requires a separately specified
+diagnostic; there is no flag to bypass the source anchors.
+
+The probe presents all six row/schema-enum permutations on decisions 2 and 3,
+then repeats each original-order request exactly, for fourteen final-selection
+calls maximum. All native values, labels and system instructions are retained.
+Every call adds seed 20261122 to the previous sampling profile; historical
+unseeded choices are not paired controls. Row and schema order change together,
+while fixed system-label order remains a limitation. Repeated-control agreement
+is checked rather than assuming the seed guarantees determinism.
+
+Archives under `runs/planner-input-probes/` retain original historical records,
+source snapshots, complete frozen inputs, every condition/request/raw response,
+strict inference telemetry and a final manifest. Missing or contradictory audits
+fail acceptance and report unverifiable counts as unknown. No query/proposal API
+calls, native environment, game actions, new save or native screenshot are produced.
+Refer to the original run's save/replay for native evidence. This helper does not
+change any live selector or establish campaign improvement.
