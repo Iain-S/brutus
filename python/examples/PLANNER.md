@@ -631,3 +631,27 @@ fail acceptance and report unverifiable counts as unknown. No query/proposal API
 calls, native environment, game actions, new save or native screenshot are produced.
 Refer to the original run's save/replay for native evidence. This helper does not
 change any live selector or establish campaign improvement.
+
+### Frozen thinking-profile feasibility check
+
+`examples/probe_compound_capability.py --reference-probe <ABSOLUTE_ORDER_PROBE_DIRECTORY>`
+uses the exact pinned prior order archive. It requires the already installed
+instruct and thinking model digests; it performs no installation or native action.
+Model metadata/templates/defaults are retained before and after inference.
+
+Two instruct original-order controls must reproduce before a thinking canary on
+saved decision 3. The candidate enables thinking with a 1536 generated-token cap,
+the same 8K context and 170-second hard process/acceptance deadline. The model,
+thinking mode and output allowance differ, so this compares profiles rather than
+isolating thinking alone. All native facts, prompts, labels, sampling and seed
+are preserved. The separate thinking field is retained as unverified output.
+
+An incomplete, length-limited, timed-out or invalid canary stops the check with
+no retry or raised budget. If it succeeds, the command completes all six orders
+on each saved state and two exact repeats, counting the canary in that sweep:
+sixteen inference calls maximum (two instruct and fourteen thinking), zero query
+or proposal calls and zero game ticks. Copied reference records and per-call raw
+evidence remain local under `runs/planner-input-probes/`. Observations and verified
+gates are separate; missing audits or identity evidence withdraw success gates.
+Neither feasible reasoning output nor stable selection establishes better native
+campaign play. Existing planner commands and previous probe profiles are unchanged.
