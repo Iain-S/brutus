@@ -655,3 +655,15 @@ evidence remain local under `runs/planner-input-probes/`. Observations and verif
 gates are separate; missing audits or identity evidence withdraw success gates.
 Neither feasible reasoning output nor stable selection establishes better native
 campaign play. Existing planner commands and previous probe profiles are unchanged.
+
+The first real check stops after two accepted instruct controls and a rejected
+thinking canary: 19 generated tokens, complete stop telemetry, empty final
+`response`, and answer-shaped JSON only in `thinking`. That output is never
+promoted to a final answer. The thinking sweep is unassessed; see
+`docs/PLANNER_RESULTS.md`. The failed archive and original gates remain unchanged.
+
+For future checks, metadata identity ignores parameter-group display order and
+the redundant generated Modelfile text. It still compares effective values,
+ordered repeated values, exact templates, digests and other model metadata;
+raw before/after responses remain archived. This fixes a presentation-only
+identity alarm in that first run without accepting its failed canary.

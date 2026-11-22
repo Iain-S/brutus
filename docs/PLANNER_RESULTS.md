@@ -1,7 +1,8 @@
 # Campaign Planner Results
 
 Updated: 2026-11-22. Latest model experiment: 2026-11-22.
-Frozen-order source: `56519054`; compound-model source: `03089798`;
+Thinking-check source: `747ae57e`; frozen-order source: `56519054`;
+compound-model source: `03089798`;
 native-preview foundation: `3ce633ac`;
 earlier single-macro model checkpoint: `936cc933`.
 
@@ -20,7 +21,47 @@ DNN reinforcement-learning policy. The model is
 **No campaign win or demonstrated fast-win strategy has been achieved.**
 See [remaining work](PLANNER_TODO.md) for the next checkpoint.
 
-## Latest Diagnostic: Frozen Choices Change With Presentation
+## Latest Diagnostic: Thinking Canary Has No Final Answer
+
+The bounded installed-profile check stops after **three calls and three HTTP
+responses: two accepted instruct controls and one rejected thinking canary**.
+Both instruct controls reproduce the historical original-order compound choices
+on saved decisions 2 and 3. There are no retries, native actions or new saves.
+
+The installed `qwen3:4b-thinking` canary returns HTTP 200, complete generation
+and stop telemetry after 19 generated tokens, taking 72.1 seconds. Its final
+`response` field is empty. The separate `thinking` field contains 50 characters
+of answer-shaped JSON with `candidate_id` and `decision_id` keys. That field is
+unverified output, never accepted as the final answer or executed. Strict final
+JSON parsing correctly rejects the empty response. Neither the 1536-token cap
+nor the 170-second deadline was exhausted; context headroom remains valid.
+
+The conditional fourteen-call thinking sweep and repeat controls are **not run**.
+Selection reliability and model quality remain unassessed for this profile.
+Weights, template, thinking mode and token allowance differ from instruct, so
+this also cannot isolate a thinking effect. A schema/template/channel interaction
+is a hypothesis requiring a separate controlled diagnostic, not an established
+cause. Increasing the generation budget does not address this observed failure.
+
+The original metadata guard also reports a change because `/api/show` reorders
+parameter groups and generated Modelfile parameter lines. Independent audit
+finds unchanged digests, templates and effective defaults. The archived run
+remains failed, including its withdrawn identity and success gates; observed
+control agreement is not a retrospective promotion of those gates. A regression
+fix for future runs compares parameter groups by name, preserving actual values
+and repeated-value order, and retains the original raw metadata. No inference
+is repeated after this fix.
+
+Evidence:
+`runs/planner-input-probes/2026-11-22/20261122T214852.589224Z_thinking-capability_0f329319/`.
+Its retained `independent-audit.json` and audit source verify the failed record,
+three receipts, reference/source integrity, wrong-channel output and metadata
+presentation diagnosis. All **209 unittest cases pass**, including regressions
+for parameter-order normalization and rejecting answer-shaped thinking as a final
+answer. Generated evidence remains local. See
+[the check plan](superpowers/plans/2026-11-22-thinking-selection-capability.md).
+
+## Previous Diagnostic: Frozen Choices Change With Presentation
 
 Input-only archive:
 `runs/planner-input-probes/2026-11-22/20261122T151628.185019Z_compound-order_4af8da6b/`.

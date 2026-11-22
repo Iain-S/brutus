@@ -67,6 +67,18 @@ general model diagnosis or improved campaign play. See results for the full tabl
 
 ## Next Checkpoint: Selection Capability And Native Planning
 
+- [x] Run the separately bounded installed-thinking-profile canary on frozen
+  facts. Two instruct controls reproduce, but the thinking final field is empty;
+  reject it and stop after three calls. Preserve the failed archive and original
+  gates, including the metadata presentation false alarm. No native actions.
+- [ ] Isolate final-channel compatibility in a separate bounded transport
+  diagnostic before evaluating thinking selection reliability. One candidate
+  intervention is removing provider-side `format` while retaining the exact
+  strict client-side final JSON validator and frozen native facts. Predeclare
+  controls and bounds; schema/template interaction is only a hypothesis. Never
+  reinterpret the thinking field as a final answer or retry the failed profile
+  with a larger budget. Only valid final-channel completion can authorize a
+  separately scoped balanced capability comparison.
 - [ ] Establish selection reliability with a separately scoped capability or
   selection-mechanism comparison using the same audited native facts, balanced
   presentation and repeated controls. A stronger or reasoning model is an option

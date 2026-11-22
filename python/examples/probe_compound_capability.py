@@ -172,18 +172,42 @@ def validate_metadata(metadata):
     for name, expected in PROFILES.items():
         observed = metadata.get(name, {})
         show = observed.get("show", {})
+        capabilities = show.get("capabilities", [])
         if (observed.get("model") != expected["model"] or observed.get("digest") != expected["digest"]
                 or type(show.get("template")) is not str or not show["template"].strip()
                 or type(show.get("parameters")) is not str or not show["parameters"].strip()
                 or type(show.get("model_info")) is not dict or not show["model_info"]
-                or "completion" not in show.get("capabilities", [])
-                or (name == "thinking" and "thinking" not in show.get("capabilities", []))):
+                or type(capabilities) is not list or any(type(value) is not str for value in capabilities)
+                or "completion" not in capabilities or (name == "thinking" and "thinking" not in capabilities)):
             raise ValueError("Required observed digest, template/defaults or capabilities are missing or changed")
+        parameter_groups(show["parameters"])
+
+
+def parameter_groups(parameters):
+    """Ollama displays a parameter map; retain each key's ordered value list."""
+    result = {}
+    for line in parameters.splitlines():
+        if not line.strip():
+            continue
+        parts = line.split(None, 1)
+        if len(parts) != 2:
+            raise ValueError("Malformed displayed model parameter")
+        result.setdefault(parts[0], []).append(parts[1].strip())
+    return result
 
 
 def metadata_signature(metadata):
-    return {"server_version": metadata["server_version"],
-            **{name: {key: metadata[name][key] for key in ("model", "digest", "show")} for name in PROFILES}}
+    signature = {"server_version": metadata["server_version"]}
+    for name in PROFILES:
+        observed, show = metadata[name], metadata[name]["show"]
+        # The generated modelfile repeats these fields and can reorder PARAMETER
+        # lines. Preserve its raw text in the archive, not in effective identity.
+        signature[name] = {"model": observed["model"], "digest": observed["digest"],
+            "template": show["template"], "system": show.get("system"),
+            "parameters": parameter_groups(show["parameters"]),
+            "capabilities": sorted(show["capabilities"]), "model_info": show["model_info"],
+            "details": show.get("details")}
+    return signature
 
 
 def transport_counts(child, attempt):

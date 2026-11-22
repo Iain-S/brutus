@@ -90,6 +90,7 @@ class CapabilityTests(unittest.TestCase):
                 if mode == "length": result.update(done_reason="length", eval_count=1536, response="")
                 if mode == "failed_counts": result.update(done_reason="length", eval_count=1536, response="")
                 if mode == "missing_thinking": result.pop("thinking")
+                if mode == "wrong_channel": result.update(thinking=json.dumps(answer), response="", eval_count=19)
                 if mode == "partial_timeout":
                     Path(raw_path).write_bytes(b'{"partial":')
                     protocol.write_json(status_path, {"http_status": 200, "body_complete": False})
@@ -232,6 +233,32 @@ class CapabilityTests(unittest.TestCase):
         with patch.object(capability.urllib.request, "urlopen", side_effect=network):
             metadata = capability.model_metadata()
         self.assertEqual(metadata["thinking"]["digest"], "observed-wrong-digest")
+
+    def test_parameter_group_display_order_does_not_change_profile_identity(self):
+        before = {"server_version": "0.16.2"}
+        for name, profile in capability.PROFILES.items():
+            before[name] = {"model": profile["model"], "digest": profile["digest"], "show": {
+                "template": "same template", "system": None, "model_info": {"parameters": 4000000000},
+                "parameters": 'top_p 0.8\nstop "a"\nstop "b"\nrepeat_penalty 1',
+                "capabilities": ["completion", "thinking"], "modelfile": "PARAMETER top_p 0.8\nPARAMETER stop a"}}
+        after = copy.deepcopy(before)
+        for name in capability.PROFILES:
+            after[name]["show"]["parameters"] = 'repeat_penalty 1\nstop "a"\nstop "b"\ntop_p 0.8'
+            after[name]["show"]["modelfile"] = "PARAMETER stop a\nPARAMETER top_p 0.8"
+        self.assertEqual(capability.metadata_signature(before), capability.metadata_signature(after))
+        after["thinking"]["show"]["parameters"] = after["thinking"]["show"]["parameters"].replace("top_p 0.8", "top_p 0.9")
+        self.assertNotEqual(capability.metadata_signature(before), capability.metadata_signature(after))
+        after = copy.deepcopy(before)
+        after["thinking"]["show"]["parameters"] = 'top_p 0.8\nstop "b"\nstop "a"\nrepeat_penalty 1'
+        self.assertNotEqual(capability.metadata_signature(before), capability.metadata_signature(after))
+
+    def test_answer_shaped_thinking_is_never_used_as_final_response(self):
+        calls, manifest = self.execute("wrong_channel")
+        self.assertEqual(len(calls), 3)
+        self.assertEqual(len(manifest["results"]), 2)
+        self.assertFalse(manifest["gates"]["thinking_canary_feasible"])
+        self.assertFalse(manifest["gates"]["thinking_sweep_complete"])
+        self.assertEqual(manifest["api_calls"], 3)
 
 
 if __name__ == "__main__":

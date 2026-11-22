@@ -71,9 +71,9 @@ call demonstrates new delivered native outcomes.
   partial failure preservation, unknown/missing audit accounting and no native init.
 - [x] Run all unittest classes and fresh read-only review. Fix material findings
   with regressions, commit source before inference.
-- [ ] Execute the bounded check. Independently audit accepted AND failed gates,
+- [x] Execute the bounded check. Independently audit accepted AND failed gates,
   raw body/telemetry, reference integrity and counters. Preserve failed canaries.
-- [ ] Record the result and useful next step in results/TODO; keep generated
+- [x] Record the result and useful next step in results/TODO; keep generated
   artifacts local, preserve unrelated staged work, commit/push source/docs.
 
 Review focus: profile identity/defaults, token caps counting complete generation,
@@ -115,3 +115,27 @@ is changed. All 207 unittest cases pass. Model, reference and inference-audit
 failures are separate finalization evidence; only missing/contradictory transport
 audits make call counters unknown. Before/after observed metadata is retained even
 when identity/default validation fails. Source integration precedes the canary.
+
+Executed source `747ae57e`; archive:
+`runs/planner-input-probes/2026-11-22/20261122T214852.589224Z_thinking-capability_0f329319/`.
+Two instruct controls reproduce. The thinking canary stops after 19 tokens in
+72.1 seconds with an empty final response and answer-shaped JSON only in its
+thinking field. Strict parsing rejects it. Three calls/three responses total;
+no retries, new native actions, budget exhaustion or conditional thinking sweep.
+The independently audited record remains failed; selection consistency and
+native progress are unassessed.
+
+The original identity guard also mistakes reordered `/api/show` parameter
+groups/generated Modelfile lines for a profile change. Independent diagnosis
+confirms unchanged effective defaults, digests and templates, but does not
+rewrite the archived gates. A failing regression precedes the future-only fix:
+group display order is ignored, actual values and repeated-value order still
+matter, and raw metadata is retained. Answer-shaped thinking remains invalid
+as a final answer. All 209 unittest cases pass after these regressions/fixes.
+
+Next is a separately bounded channel compatibility diagnostic, potentially
+varying provider-side schema enforcement while retaining strict client final
+JSON validation. No schema/template cause is established by this failed check.
+Do not rerun this failed profile with larger budgets or promote its thinking
+field. A valid final-channel completion must precede a balanced reliability
+comparison. No model download or live policy change is justified here.
