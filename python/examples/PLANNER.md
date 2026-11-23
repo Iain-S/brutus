@@ -667,3 +667,12 @@ the redundant generated Modelfile text. It still compares effective values,
 ordered repeated values, exact templates, digests and other model metadata;
 raw before/after responses remain archived. This fixes a presentation-only
 identity alarm in that first run without accepting its failed canary.
+
+`examples/probe_compound_channel.py --reference-probe <ABSOLUTE_ORDER_PROBE_DIRECTORY>`
+is a separate four-call transport diagnostic on frozen decision 3. It varies only
+provider `format` presence in schema/omitted/omitted/schema order. The thinking
+model, native facts, prompts, seed, sampling, 1536-token cap and 170-second
+deadline are fixed. Exact client-side final JSON validation is always required.
+Complete rejected outputs are recorded; transport/deadline failure stops the
+remaining conditions. Metadata/reference/audit failures withdraw verified results.
+This does not change the live planner or reopen the failed capability gate.
