@@ -82,14 +82,12 @@ general model diagnosis or improved campaign play. See results for the full tabl
   effort=medium is rejected before generation; a separately recorded default-mode
   follow-up times out. Three attempts/two responses, no automatic retries or
   native actions; temporary aliases removed and original environment preserved.
-- [ ] Compare selection mechanisms on the working instruct profile using the
-  same frozen native facts. Pydantic AI ToolOutput is now a feasible candidate
-  for comparison with ID-only selection; pairwise selection is another option.
-  Predeclare the complete alternative domain, order counterbalances,
-  exact repeats and consistency checks before inference. Test order sensitivity
-  and contradictory preferences without a desired answer or human-weighted
-  score. Do not spend more calls on the unchanged thinking profile; any new
-  model, prompt or budget would need a separately scoped feasibility experiment.
+- [x] Compare instruct ToolOutput on the same frozen native facts: three cyclic
+  orders per state plus two exact repeats, eight valid calls total. Both repeats
+  agree; both states change choices with order. Five of six balanced choices
+  match the historical ID-only subset. Schema validity is established for these
+  calls; selection reliability and strategic improvement are not. Reverse orders
+  and causal isolation of the library effect remain untested.
 - [ ] Establish selection reliability with a separately scoped capability or
   selection-mechanism comparison using the same audited native facts, balanced
   presentation and repeated controls. A stronger or reasoning model is an option
@@ -97,7 +95,13 @@ general model diagnosis or improved campaign play. See results for the full tabl
   first or introduce a human-ranked strategy score.
 - [ ] Choose a controlled root-search/breadth or horizon experiment after
   accounting for presentation sensitivity. Keep root proposal, endpoint selection
-  reliability and delivered campaign progress as separate questions.
+  reliability and delivered campaign progress as separate questions. The
+  ToolOutput follow-up documents sensitivity; a new native experiment can
+  measure additional root forecasts or service/rating horizons without treating
+  that as a solved selector gate. Keep legal choices available and require
+  delivered native multi-goal progress before promotion. Do not spend more calls
+  on the unchanged thinking profile; any new model, prompt or budget would need
+  a separately scoped feasibility experiment.
 - [ ] Distinguish worker/transport-dependent food timing from annual rating
   updates when choosing native horizons. The current eight-month prefix has no
   farm and no annual ratings update; longer waiting alone does not establish

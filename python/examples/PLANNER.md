@@ -691,3 +691,10 @@ thinking receives an unsupported-effort HTTP 400, then a separately recorded
 default-mode follow-up times out. Raw evidence and independent audits remain in
 the linked local archives. All temporary model aliases are removed. A broader
 typed-output migration or selection-quality improvement is not established.
+
+The eight-call instruct order follow-up passes all schema/raw-output checks and
+both exact-repeat controls. Choices change with presentation on both frozen
+states; five of six balanced choices match the historical ID-only subset. It
+tests three cyclic orders, not all six permutations, and delivers no new native
+outcomes. The runner remains ignored experimental code. See
+`docs/superpowers/plans/2026-11-23-tooloutput-order-followup.md` and the results.

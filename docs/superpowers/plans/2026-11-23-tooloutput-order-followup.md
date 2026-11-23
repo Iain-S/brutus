@@ -45,10 +45,10 @@ effect, general superiority, latency improvement or campaign progress claim.
   thinking-only/invalid/extra-field rejection without retries.
 - [x] Inspect the complete emitted dry-run requests against frozen inputs;
   commit the protocol before inference. Run at most eight sequential calls.
-- [ ] Independently audit raw accepted/failed evidence, request schedule/body
+- [x] Independently audit raw accepted/failed evidence, request schedule/body
   equality, counters, model/alias/reference identity and cleanup. Withhold
   positive gates on missing or contradictory evidence; preserve failures.
-- [ ] Record outcomes, limitations and next useful work; commit/push docs only.
+- [x] Record outcomes, limitations and next useful work; commit/push docs only.
 
 ## Ledger
 
@@ -64,3 +64,31 @@ Independent `runs/audit_tooloutput_order.py` inspects every full emitted request
 exact native transformation, dynamic schema, raw/typed match, receipt and repeat
 body bytes. The dry-run audit passes without model calls. Installed dependency
 `pip check` passes. Source/helpers and audit code are copied into local archives.
+
+## Result
+
+Protocol commit `599ab83f`; actual runner bytes/hash and helper snapshots retained
+in the ignored archive:
+`runs/planner-input-probes/2026-11-23/20261123T145332.122978Z_tooloutput-order_d6cf7852/`.
+Eight calls/eight responses pass all strict raw/typed and receipt checks. No
+retries, deadline/validation failures, native actions or new saves. Input counts
+5816..6002, outputs 28 tokens each. Worker wall times including imports total
+401.3 seconds; whole probe 424.9 seconds. No latency attribution is established.
+
+CSW/SWC/WCS choices are C/S/W on state 2 and C/W/W on state 3. Both original-order
+repeats return C and their request body bytes match exactly. Thus both states
+change choices under presentation despite repeated-control agreement. Five of
+six balanced choices match their historical ID-only conditions. In that balanced
+block, five selections occupy the first position and one the second; do not
+describe the model as always selecting first or infer verified reasoning.
+
+Independent retained audit code/JSON validates reference/source hashes, exact
+full request transforms, all schemas/arguments, usage/finish telemetry, call
+counts, historical matches and control bytes. Original model/defaults remain
+unchanged; temporary alias is deleted and absence verified. Empty DELETE parsing
+is corrected only in this runner; historical archives stay unchanged.
+
+No production integration follows from this spike. Next useful work is a
+controlled native root-breadth or service/rating-horizon experiment, explicitly
+separating forecast value, unresolved selector sensitivity and delivered native
+progress. Policy promotion still requires demonstrable multi-goal improvement.

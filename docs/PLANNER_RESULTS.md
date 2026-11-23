@@ -22,7 +22,67 @@ DNN reinforcement-learning policy. The model is
 **No campaign win or demonstrated fast-win strategy has been achieved.**
 See [remaining work](PLANNER_TODO.md) for the next checkpoint.
 
-## Latest Spike: Pydantic AI ToolOutput
+## Latest Follow-up: ToolOutput Choices Change With Presentation
+
+The instruct ToolOutput follow-up completes **eight accepted calls/eight received
+responses**, with no retry, timeout, malformed tool arguments or native action.
+Three cyclic orders are tested on each of the same two frozen comparisons,
+then original-order requests are repeated exactly. Each alternative occupies
+every position once per state in the six-call balanced block. The three reverse
+orders from the earlier fourteen-call diagnostic are not tested here.
+
+| Comparison Row And Output Enum Order | ToolOutput Decision 2 | ToolOutput Decision 3 | Historical ID-only Decision 2 | Historical ID-only Decision 3 |
+| --- | --- | --- | --- | --- |
+| compound, single, wait | compound | compound | compound | compound |
+| single, wait, compound | single | wait | wait | wait |
+| wait, compound, single | wait | wait | wait | wait |
+| Exact original-order repeat | compound | compound | compound | compound |
+
+**Both exact repeats agree. Both states change choices across presentations.**
+Decision 2 selects all three alternatives; decision 3 selects compound or wait.
+Five of the six balanced choices match their corresponding historical ID-only
+choices. Single is selected once here, compared with none in that matched old
+subset. Five choices occupy the first position and one the second, so this is
+not an always-pick-first rule. The two repeats are excluded from those counts.
+
+All native facts, labels and system instructions are unchanged. Row and enum
+order change together, so their effects are not isolated. The model/digest,
+sampling and seed are pinned; ToolOutput adds chat formatting and a tool schema
+through the compatibility endpoint. Historical answers are not fresh interleaved
+controls. These targeted states, one seed and three orders cannot establish a
+general library effect or optimality. Repeat agreement supports the observed
+presentation sensitivity without proving universal determinism.
+
+For example, decision 2's compound and single forecasts both report population
+49, fountain coverage 49 and zero food/culture/prosperity, with treasury 7499
+versus 7516. Waiting forecasts population 45 and treasury 7566. Which plan is
+chosen changes with presentation; no reason for the choice is verified. These
+are historical native predictions, not new delivered outcomes, and differences
+in future capacity prevent declaring global dominance from named endpoints alone.
+
+Evidence:
+`runs/planner-input-probes/2026-11-23/20261123T145332.122978Z_tooloutput-order_d6cf7852/`.
+The independent audit verifies all raw/typed outputs, complete usage/finish
+telemetry, dynamic schemas, pinned reference/helper/source snapshots, actual
+request bodies and byte-identical repeated controls. Original model/default
+identity is unchanged and the temporary alias is confirmed removed. There are
+zero game ticks, executed choices, proposal calls, saves or screenshots.
+
+Input counts are 5816 or 6002 tokens; every completion is 28 tokens. Worker wall
+times, including imports, range 46.1..67.0 seconds and total 401.3 seconds; whole
+probe time is 424.9 seconds. Cache/runtime differences and the changed protocol
+prevent attributing latency differences to Pydantic AI. Eight synthetic scheduled
+calls plus three separate rejection checks pass before inference; no production
+code or dependency changed, and no new broad training-suite result is claimed.
+See [the committed follow-up protocol](superpowers/plans/2026-11-23-tooloutput-order-followup.md).
+
+ToolOutput provides usable schema validation on this run. Selection reliability
+and strategic improvement remain unmet gates. The next native planning experiment
+should measure broader root previews or appropriate service/rating horizons as
+separate questions, retaining presentation sensitivity as an unresolved selector
+property and requiring delivered native progress before policy promotion.
+
+## Previous Spike: Pydantic AI ToolOutput
 
 The user-requested throwaway spike uses Pydantic AI slim 2.71.0, Pydantic 2.14.4,
 OpenAI SDK 3.57.0 and httpx2 2.16.2 in an ignored temporary environment. Its
