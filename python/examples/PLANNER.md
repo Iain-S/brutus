@@ -676,3 +676,9 @@ deadline are fixed. Exact client-side final JSON validation is always required.
 Complete rejected outputs are recorded; transport/deadline failure stops the
 remaining conditions. Metadata/reference/audit failures withdraw verified results.
 This does not change the live planner or reopen the failed capability gate.
+
+The first channel diagnostic stops after two attempts: schema again yields an
+empty final answer, while omitted schema hits the 170-second deadline with no
+received response. Neither repeat runs and neither condition produces an
+accepted answer. Its evidence audit passes, but the incomplete comparison does
+not establish a causal schema effect or a usable thinking profile. See results.

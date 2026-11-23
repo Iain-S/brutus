@@ -1,6 +1,7 @@
 # Campaign Planner Results
 
-Updated: 2026-11-22. Latest model experiment: 2026-11-22.
+Updated: 2026-11-23. Latest model experiment: 2026-11-23.
+Channel-diagnostic source: `4f9682f1`;
 Thinking-check source: `747ae57e`; frozen-order source: `56519054`;
 compound-model source: `03089798`;
 native-preview foundation: `3ce633ac`;
@@ -21,7 +22,52 @@ DNN reinforcement-learning policy. The model is
 **No campaign win or demonstrated fast-win strategy has been achieved.**
 See [remaining work](PLANNER_TODO.md) for the next checkpoint.
 
-## Latest Diagnostic: Thinking Canary Has No Final Answer
+## Latest Diagnostic: Removing Schema Hits The Deadline
+
+The separate channel diagnostic varies only provider `format` presence on frozen
+decision 3. Model/digest, thinking mode, original comparison order, native facts,
+system/prompt, seed, sampling, 8192 context, 1536-token cap and 170-second hard
+deadline remain fixed. Client-side validation still requires exact final-channel
+JSON. The predeclared schedule is schema/omitted/omitted/schema, with transport
+or deadline failure stopping remaining conditions.
+
+Only **two attempts and one received response** occur before the stop:
+
+| Condition | Observed result | Elapsed |
+| --- | --- | --- |
+| Schema present | Complete stop, 19 generated tokens; empty final response, 50 characters of answer-shaped thinking; rejected | 73.5 s |
+| Schema omitted | Process deadline; no saved HTTP response or final body; rejected | 170.0 s |
+
+The repeated controls are **not run**. There are no accepted final answers,
+retries, increased budgets, game actions or new saves. Whole diagnostic time is
+260.3 seconds. No token usage, reasoning content or completion state can be
+inferred for the timed-out request from the absent response. Its counter records
+one attempted call and zero received responses, not proof of no server work.
+
+The schema control reproduces the prior wrong-channel failure, but omitting the
+schema does not establish a usable completion under these bounds. The incomplete
+ABBA experiment cannot establish a causal schema effect or repeatability of the
+omitted-schema condition. Model quality and strategic improvement are unassessed.
+The previous failed capability archive remains unchanged.
+
+Evidence:
+`runs/planner-input-probes/2026-11-23/20261123T072451.276953Z_thinking-channel_2e8774df/`.
+The retained independent audit verifies exact request intervention, committed
+source bytes, original native reference, stable model/default metadata, strict
+raw output and both terminal attempt records. Evidence integrity passes; the
+experiment status is stopped and complete-schedule acceptance remains unset.
+All **214 unittest cases pass**, including five new intervention/lifecycle tests;
+fresh source review finds no material issues. See
+[the diagnostic plan](superpowers/plans/2026-11-23-thinking-channel-diagnostic.md).
+
+This thinking profile is not ready for a balanced selection-quality comparison
+under current operational limits. The next useful direction is a separately
+bounded selection-mechanism comparison using the working instruct profile,
+keeping all native alternatives available and testing consistency rather than
+putting a desired choice first. Larger budgets or another model would be new
+experiments, not repairs or retroactive acceptance of these records.
+
+## Previous Diagnostic: Thinking Canary Has No Final Answer
 
 The bounded installed-profile check stops after **three calls and three HTTP
 responses: two accepted instruct controls and one rejected thinking canary**.

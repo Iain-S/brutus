@@ -1,6 +1,7 @@
 # Campaign Planner Remaining Work
 
-Updated: 2026-11-22. Frozen-order source: `56519054`; compound-model source:
+Updated: 2026-11-23. Channel-diagnostic source: `4f9682f1`;
+frozen-order source: `56519054`; compound-model source:
 `03089798`; preview foundation: `3ce633ac`.
 See [results and evidence](PLANNER_RESULTS.md) before interpreting progress.
 
@@ -71,14 +72,18 @@ general model diagnosis or improved campaign play. See results for the full tabl
   facts. Two instruct controls reproduce, but the thinking final field is empty;
   reject it and stop after three calls. Preserve the failed archive and original
   gates, including the metadata presentation false alarm. No native actions.
-- [ ] Isolate final-channel compatibility in a separate bounded transport
-  diagnostic before evaluating thinking selection reliability. One candidate
-  intervention is removing provider-side `format` while retaining the exact
-  strict client-side final JSON validator and frozen native facts. Predeclare
-  controls and bounds; schema/template interaction is only a hypothesis. Never
-  reinterpret the thinking field as a final answer or retry the failed profile
-  with a larger budget. Only valid final-channel completion can authorize a
-  separately scoped balanced capability comparison.
+- [x] Run a separate bounded channel diagnostic varying only provider `format`.
+  Schema reproduces empty final/wrong-channel output; omission hits the hard
+  deadline. Stop after two attempts/one response, before repeated controls.
+  Evidence integrity passes, but no usable final answer or causal schema result
+  is established. Never reinterpret thinking or retroactively promote failures.
+- [ ] Compare selection mechanisms on the working instruct profile using the
+  same frozen native facts. A bounded pairwise-versus-three-way comparison is an
+  option: predeclare the complete alternative domain, order counterbalances,
+  exact repeats and consistency checks before inference. Test order sensitivity
+  and contradictory preferences without a desired answer or human-weighted
+  score. Do not spend more calls on the unchanged thinking profile; any new
+  model, prompt or budget would need a separately scoped feasibility experiment.
 - [ ] Establish selection reliability with a separately scoped capability or
   selection-mechanism comparison using the same audited native facts, balanced
   presentation and repeated controls. A stronger or reasoning model is an option
