@@ -22,7 +22,85 @@ DNN reinforcement-learning policy. The model is
 **No campaign win or demonstrated fast-win strategy has been achieved.**
 See [remaining work](PLANNER_TODO.md) for the next checkpoint.
 
-## Latest Diagnostic: Removing Schema Hits The Deadline
+## Latest Spike: Pydantic AI ToolOutput
+
+The user-requested throwaway spike uses Pydantic AI slim 2.71.0, Pydantic 2.14.4,
+OpenAI SDK 3.57.0 and httpx2 2.16.2 in an ignored temporary environment. Its
+`pip check` passes; the canonical training environment remains unchanged.
+Four mock HTTP cases accept valid tool arguments and reject thinking-only
+output, an invented candidate and extra fields, with one request each and no
+retry. These are mock checks, not four additional model calls.
+
+The real instruct control **passes**. On frozen decision 3 it returns one
+`select_candidate` tool call with exactly `decision_id=3` and
+`candidate_id=compound`. The raw arguments pass the existing selection validator
+and match Pydantic AI's typed result. Usage is 5816 prompt tokens and 28
+completion tokens; total worker wall time is 128.8 seconds, including imports.
+No thinking text is promoted to an answer. The thinking request then receives
+HTTP 400 before generation: this installed Thinking-2507 model rejects
+`reasoning_effort=medium`. That failed request remains failed.
+
+Initial two-call archive:
+`runs/planner-input-probes/2026-11-23/20261123T083010.246508Z_pydantic-tooloutput_af7ddb97/`.
+Its retained independent audit verifies two requests/two received responses,
+one accepted typed result, unchanged native facts, model identity and alias
+settings. A separate compatibility follow-up omits the unsupported effort field
+and uses the thinking model's default mode, with one request maximum and the
+same 1536-token/170-second limits. Its outcome is recorded below.
+
+The corrected single-call follow-up **times out after 170.0 seconds**, with no
+HTTP receipt or raw response body. The worker is killed; its last in-flight
+record is retained alongside the parent's deadline marker and terminal stopped
+manifest. There is no accepted thinking result, and no evidence of its token use
+or eventual completion. Follow-up archive:
+`runs/planner-input-probes/2026-11-23/20261123T083421.127626Z_pydantic-tooloutput_c4fcfe68/`.
+Its retained independent audit verifies the omitted effort field, exact tool
+schema/native facts, one request/zero responses, deadline and unchanged identity.
+Across the real spike and follow-up there are **three request attempts, two
+received responses, one accepted instruct result, one HTTP 400 and one timeout**.
+There are no automatic retries or further follow-ups.
+
+### Protocol And Interpretation
+
+Pydantic AI exposes exactly one output tool and forbids extra fields. Both the
+agent and SDK have retries disabled, a one-request usage limit, a transport guard
+against second requests and a killable 170-second worker. All native alternatives,
+their original order and the frozen system/prompt are retained. The chat endpoint,
+tool schema and reasoning controls differ from previous generate requests; this
+is protocol feasibility, not an isolated library effect or strategy comparison.
+
+Ollama 0.16.2's compatibility endpoint cannot set context, top_k or min_p per
+request. Unique temporary aliases reuse the exact installed weight blobs and
+templates with only num_ctx=8192, top_k=20 and min_p=0 overrides. The instruct
+request uses effort=none. The server does not enforce the client's tool-choice
+request; returned arguments are validated independently. Do not claim schema
+compliance is guaranteed by the decoder. Pydantic AI's successful typed result
+shows a usable integration path for instruct, not improved strategic judgment
+or reliable thinking-model completion.
+
+All temporary aliases are confirmed absent afterward through `/api/tags`, and
+the original model digests remain unchanged. The throwaway cleanup code logs a
+JSON parse error for successful empty-body DELETE responses; the independent
+tag check verifies actual removal. A separate earlier setup record has zero
+inference attempts: the initial alias guard rejected the expected parent-model
+metadata before a local regression corrected that check. Neither setup nor
+cleanup quirks are model-output failures or grounds to rewrite failed records.
+
+Recommendation: Pydantic AI is a plausible replacement for handwritten typed
+output plumbing on the working instruct profile. Before integration, compare
+that protocol on balanced frozen presentations and repeated controls while
+preserving raw audit evidence. This single successful call cannot establish
+selection reliability, a latency improvement, or improved native strategy. Do
+not migrate the live planner or treat the thinking problem as fixed from this
+spike. The existing validation already prevented malformed output from executing.
+
+The throwaway runner `runs/pydantic_tooloutput_spike.py`, copied source/hashes,
+dependency versions, original pinned native reference, wire requests, raw
+responses and Pydantic messages/results remain local. No production command or
+training dependency is changed. No game actions or saves are produced. See
+[the spike plan](superpowers/plans/2026-11-23-pydantic-tooloutput-spike.md).
+
+## Previous Diagnostic: Removing Schema Hits The Deadline
 
 The separate channel diagnostic varies only provider `format` presence on frozen
 decision 3. Model/digest, thinking mode, original comparison order, native facts,

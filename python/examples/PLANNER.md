@@ -682,3 +682,12 @@ empty final answer, while omitted schema hits the 170-second deadline with no
 received response. Neither repeat runs and neither condition produces an
 accepted answer. Its evidence audit passes, but the incomplete comparison does
 not establish a causal schema effect or a usable thinking profile. See results.
+
+The later user-requested Pydantic AI ToolOutput spike is documented in
+`docs/superpowers/plans/2026-11-23-pydantic-tooloutput-spike.md`. It uses an ignored
+temporary environment and throwaway runner, not a new planner dependency or
+production command. One instruct call returns exact schema-valid tool arguments;
+thinking receives an unsupported-effort HTTP 400, then a separately recorded
+default-mode follow-up times out. Raw evidence and independent audits remain in
+the linked local archives. All temporary model aliases are removed. A broader
+typed-output migration or selection-quality improvement is not established.

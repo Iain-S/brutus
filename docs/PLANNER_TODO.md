@@ -77,9 +77,15 @@ general model diagnosis or improved campaign play. See results for the full tabl
   deadline. Stop after two attempts/one response, before repeated controls.
   Evidence integrity passes, but no usable final answer or causal schema result
   is established. Never reinterpret thinking or retroactively promote failures.
+- [x] Try Pydantic AI ToolOutput in an isolated throwaway environment. The
+  instruct control returns one exact schema-valid compound tool call. Thinking
+  effort=medium is rejected before generation; a separately recorded default-mode
+  follow-up times out. Three attempts/two responses, no automatic retries or
+  native actions; temporary aliases removed and original environment preserved.
 - [ ] Compare selection mechanisms on the working instruct profile using the
-  same frozen native facts. A bounded pairwise-versus-three-way comparison is an
-  option: predeclare the complete alternative domain, order counterbalances,
+  same frozen native facts. Pydantic AI ToolOutput is now a feasible candidate
+  for comparison with ID-only selection; pairwise selection is another option.
+  Predeclare the complete alternative domain, order counterbalances,
   exact repeats and consistency checks before inference. Test order sensitivity
   and contradictory preferences without a desired answer or human-weighted
   score. Do not spend more calls on the unchanged thinking profile; any new

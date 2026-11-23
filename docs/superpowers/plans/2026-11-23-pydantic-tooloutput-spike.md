@@ -45,8 +45,8 @@ before inference. Independently audit the actual requests/results afterward.
 - [x] Install isolated dependencies, inspect actual installed interfaces.
 - [x] Prepare throwaway runner and verify captured outbound request/validation
   with mock HTTP only. No native environment and no model calls in dry runs.
-- [ ] Execute at most two real attempts; preserve all failures and raw evidence.
-- [ ] Record independently checked result and integration recommendation;
+- [x] Execute at most two real attempts; preserve all failures and raw evidence.
+- [x] Record independently checked result and integration recommendation;
   commit/push documentation only, preserving unrelated staged files.
 
 Official references:
@@ -71,3 +71,56 @@ Request reasoning_effort=none for instruct and medium for thinking through the
 supported compatibility field; this is not a boolean-think ablation. Tool choice
 is requested by the client, but this old server's request struct does not enforce
 it. Record actual returned tool calls rather than presume constrained generation.
+
+The first setup archive, ending `082858.856983Z_pydantic-tooloutput_f679380c`,
+stops before any inference: the identity guard had not accounted for an alias's
+expected `details.parent_model`. Its new alias is deleted and failed metadata
+record retained. A local regression accepts that exact expected parent and
+rejects changed quantization metadata. The corrected guard still requires the
+same weight blob/template/other details and only the three declared parameter
+overrides. This is a setup correction, not an inference retry.
+
+The two-call spike completes the instruct control but stops at the thinking
+request's HTTP 400: this installed model rejects reasoning_effort=medium before
+generation. Preserve that completed failed request and its counters. A separate
+single-call compatibility follow-up omits reasoning_effort and uses the installed
+Thinking-2507 model's default (its template always opens thinking). This is an
+explicit configuration correction, not an automatic retry or continuation of
+the old gate. Keep 1536 tokens, 170 seconds, exact native facts, schema, aliases,
+sampling and no retries. No further follow-up after that attempt in this spike.
+
+## Outcome
+
+Two-call archive:
+`runs/planner-input-probes/2026-11-23/20261123T083010.246508Z_pydantic-tooloutput_af7ddb97/`.
+Instruct returns compound through one select_candidate tool with exactly the
+required arguments: 5816 prompt tokens, 28 completion tokens, tool_calls finish,
+128.8 seconds worker wall time including imports. Raw arguments, strict existing
+selection validation and Pydantic AI's typed result match. Thinking receives the
+recorded HTTP 400 before generation. Both receipts are preserved.
+
+Single default-mode follow-up:
+`runs/planner-input-probes/2026-11-23/20261123T083421.127626Z_pydantic-tooloutput_c4fcfe68/`.
+The actual request omits reasoning_effort. It reaches the hard 170.0-second
+deadline without a response; the parent deadline marker and stopped manifest
+retain the killed worker's in-flight evidence. Zero accepted thinking results,
+no evidence of its token count or eventual completion, and no further calls.
+
+Independent audits retain code/JSON per archive and verify copied source hashes,
+native reference, actual wire schemas/settings, original weight blobs/templates,
+alias defaults, raw tool result, request/receipt counts and deadline. Aggregate:
+three requests, two responses, one accepted instruct result, one HTTP 400, one
+timeout, no automatic retries or native actions. No causal quality/latency claim.
+
+Cleanup note: successful DELETE replies have empty bodies; the spike's JSON
+loader logs an error after deletion. Independent `/api/tags` evidence confirms
+all temporary aliases absent and original digests intact. The setup-failure
+archive also has no remaining alias. Temporary-environment `pip check` passes;
+the canonical interpreter still has no Pydantic AI installation. No training
+dependencies or live planner code changed, so the existing 214-test result is
+historical, not a new suite run for this docs/throwaway spike.
+
+Recommend evaluating instruct ToolOutput against ID-only selection on balanced
+frozen states before any migration. Typed output works on one real call; thinking
+feasibility and strategic improvement remain unestablished. Runner/environment
+and generated evidence stay ignored; documentation is committed/pushed.
