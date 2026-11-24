@@ -1,6 +1,7 @@
 # Campaign Planner Remaining Work
 
-Updated: 2026-11-23. Channel-diagnostic source: `4f9682f1`;
+Updated: 2026-11-24. Native root/horizon protocol: `132dcbbd`;
+channel-diagnostic source: `4f9682f1`;
 frozen-order source: `56519054`; compound-model source:
 `03089798`; preview foundation: `3ce633ac`.
 See [results and evidence](PLANNER_RESULTS.md) before interpreting progress.
@@ -93,19 +94,25 @@ general model diagnosis or improved campaign play. See results for the full tabl
   presentation and repeated controls. A stronger or reasoning model is an option
   to evaluate, not an established requirement. Do not merely put a desired answer
   first or introduce a human-ranked strategy score.
-- [ ] Choose a controlled root-search/breadth or horizon experiment after
-  accounting for presentation sensitivity. Keep root proposal, endpoint selection
-  reliability and delivered campaign progress as separate questions. The
-  ToolOutput follow-up documents sensitivity; a new native experiment can
-  measure additional root forecasts or service/rating horizons without treating
-  that as a solved selector gate. Keep legal choices available and require
-  delivered native multi-goal progress before promotion. Do not spend more calls
-  on the unchanged thinking profile; any new model, prompt or budget would need
-  a separately scoped feasibility experiment.
-- [ ] Distinguish worker/transport-dependent food timing from annual rating
-  updates when choosing native horizons. The current eight-month prefix has no
-  farm and no annual ratings update; longer waiting alone does not establish
-  food-production competence.
+- [x] Measure complete existing root-menu forecasts at monthly horizons from
+  the verified 6400-tick base. All 20 legal macros plus their idle continuations
+  are covered (wait is one of the 20), through 9600 ticks each. Every rollback
+  and all 240 monthly checkpoints pass independent primitive replay. No new model
+  choice, delivered policy progress, rule change or winning sequence is imposed.
+- [x] Distinguish food/staffing timing from annual rating updates empirically.
+  Food-macro workers first appear at month 3, fed residents at month 5 (monthly
+  samples), and 57 residents have food by year end. Short 800/1600 forecasts miss
+  that food delivery; school/library/theater culture gains are visible by month
+  1. The wait control also gains annual prosperity 5/peace 2, so those ratings
+  alone do not establish construction value.
+- [ ] Run a bounded model-selection experiment with a compact, complete set
+  of equal-time native root forecasts and delayed food outcomes. Keep native
+  goal/service/finance facts and all legal choices available without a weighted
+  score or prescribed build order. Check model input headroom and presentation
+  controls, then verify any actual choice against its forecast and independent
+  replay. Treat selector stability, forecast reliability and delivered multi-goal
+  progress separately. Do not spend more calls on the unchanged thinking
+  profile; any new model, prompt or budget needs a separately scoped experiment.
 - [ ] Require demonstrable delivered multi-goal progress before promoting the
   compound policy or extending it unchanged toward a whole-campaign attempt.
 

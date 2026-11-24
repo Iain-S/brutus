@@ -1,6 +1,7 @@
 # Campaign Planner Results
 
-Updated: 2026-11-23. Latest model experiment: 2026-11-23.
+Updated: 2026-11-24. Latest native diagnostic: 2026-11-24;
+latest model experiment: 2026-11-23.
 Channel-diagnostic source: `4f9682f1`;
 Thinking-check source: `747ae57e`; frozen-order source: `56519054`;
 compound-model source: `03089798`;
@@ -22,7 +23,106 @@ DNN reinforcement-learning policy. The model is
 **No campaign win or demonstrated fast-win strategy has been achieved.**
 See [remaining work](PLANNER_TODO.md) for the next checkpoint.
 
-## Latest Follow-up: ToolOutput Choices Change With Presentation
+## Latest Native Diagnostic: Food Benefits Need Months, Culture Is Visible Early
+
+From the verified compound run's 6400-tick end state, all **20 legal roots in the
+existing radius-14 macro menu** are simulated once, followed only by idling for
+9600 additional ticks (one native year). Every branch uses the same base and
+equal charged time, including macro construction. Twelve monthly checkpoints
+retain all scalar observations, forecasts, six raw diagnostics and map hashes.
+No model selects or executes a policy in this diagnostic.
+
+All 20 branches complete; every snapshot restores the exact base. A separate
+replay resets and replays the original prefix for each branch, then follows
+only its recorded primitives without speculative candidate generation. **All
+20 replays and 240 monthly checkpoints match**, including primitive messages,
+rewards, terminal flags, maps and all six diagnostics. The DLL hash is identical
+to the historical verified run. The administrative episode cap is raised from
+8000 to 20000 to accommodate 6400+9600 ticks; native rules are unchanged.
+
+### Food And Housing Timing
+
+The existing `establish_wheat_supply` macro takes 50 primitive ticks. Its
+counterfactual continuation shows:
+
+| Additional Ticks | Native Months | Population | Farm Workers | Residents With Food | Maximum House Level |
+| --- | --- | --- | --- | --- | --- |
+| 800 | 1 | 49 | 0 | 0 | 1 |
+| 1600 | 2 | 73 | 0 | 0 | 1 |
+| 2400 | 3 | 95 | 6 | 0 | 1 |
+| 4000 | 5 | 95 | 6 | 28 | 2 |
+| 4800 | 6 | 103 | 6 | 36 | 2 |
+| 9600 | 12 | 103 | 6 | 57 | 2 |
+
+Food delivery is first **observed at the month-5 sample**, after zero at samples
+1..4. Monthly resolution does not establish the exact first delivery tick or
+exclude transient changes between samples. At year end the granary holds 100
+food units and markets 328. This demonstrates that the existing food macro can
+support delivery and house evolution in native simulation without additional
+construction. It does not show that the model would choose it, or that this
+one-root continuation is a winning policy.
+
+The old 800/1600-tick forecasts would show no fed residents for this branch,
+although the 1600-tick population increase is already visible. A longer horizon
+adds meaningful food evidence here. Standalone `add_wheat_farm` is unavailable
+at the base (no connected footprint); the composed food macro performs its
+existing connection/worker-housing/storage/market steps legally. No new tool or
+human-specified winning sequence is introduced.
+
+### Breadth And Equal-Time Tradeoffs
+
+School, library and theater roots reach native culture 15, 20 and 25 respectively
+by the first 800-tick checkpoint, retaining those values through the year. Their
+benefits were visible within the existing short horizon at this base; longer
+waiting is not necessary to expose every neglected cultural option.
+
+Selected year-end endpoints are shown for explanation; `monthly.csv` and
+`primary-horizons.csv` retain **every** root, not a ranked shortlist:
+
+| Root Macro Then Idle | Population | Residents With Food | Culture | House Level | Fountain Residents | Treasury |
+| --- | --- | --- | --- | --- | --- | --- |
+| Wait control | 42 | 0 | 0 | 1 | 42 | 7308 |
+| Expand housing | 89 | 0 | 0 | 1 | 62 | 7085 |
+| Establish wheat supply | 103 | 57 | 0 | 2 | 34 | 6503 |
+| Add school | 42 | 0 | 15 | 1 | 28 | 7258 |
+| Add library | 42 | 0 | 20 | 1 | 28 | 7233 |
+| Add theater | 42 | 0 | 25 | 1 | 42 | 7258 |
+
+Food/population gains carry treasury and water-coverage tradeoffs; no weighted
+strategy score or global dominance claim is made. The wait control itself reaches
+prosperity 5 and peace 2 at the first annual rollover, observed four months after
+the base; annual gains alone are not evidence of a useful selected construction.
+Its favor falls to 48. The modest-gift branch ends at favor 51, funded from
+personal savings. No branch wins Tarraco. A bridge-only root has no food when
+followed only by idling; this does not establish its value with a later farm.
+
+### Evidence And Next Experiment
+
+Archive:
+`runs/tarraco/2026-11-24/20261124T112429.900813Z_root-horizons_c39b0324/`.
+It retains the pinned source log/diagnostics, root menu and unavailable reasons,
+runner/helper snapshots, 20 primitive traces, monthly diagnostics, real final
+branch saves and manual-review notes. `independent-replay/audit.json` and retained
+replay source document all checks. `independent-audit.json` summarizes integrity;
+`root-horizons.png`/`.svg` plot selected trajectories, while the CSVs cover all
+240 monthly rows and 80 primary-horizon rows. The plot is a scientific summary,
+not a real-asset game screenshot; in-game screenshot review remains pending.
+
+Enumeration takes 54.8 seconds and independent replay 75.9 seconds. The branches
+contain 192000 speculative ticks; replay checks 320000 ticks including reset
+prefixes. There are **zero new model calls and zero delivered policy ticks**.
+No production code or training dependency changes. These native replay checks
+are new evidence; no new broad unittest-suite result is claimed. See
+[the diagnostic protocol](superpowers/plans/2026-11-24-native-root-horizons.md).
+
+Next, test whether supplying the model a compact, complete set of equal-time
+root forecasts, including the delayed food outcomes, changes its actual choices
+and delivered service/rating progress. Keep all legal choices, context headroom,
+presentation controls and per-step legality/replay gates. The current result
+establishes useful forecast information and horizon differences; selector
+reliability and whole-policy improvement remain unresolved.
+
+## Previous Follow-up: ToolOutput Choices Change With Presentation
 
 The instruct ToolOutput follow-up completes **eight accepted calls/eight received
 responses**, with no retry, timeout, malformed tool arguments or native action.

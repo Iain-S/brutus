@@ -698,3 +698,14 @@ states; five of six balanced choices match the historical ID-only subset. It
 tests three cyclic orders, not all six permutations, and delivers no new native
 outcomes. The runner remains ignored experimental code. See
 `docs/superpowers/plans/2026-11-23-tooloutput-order-followup.md` and the results.
+
+The later native root/horizon diagnostic enumerates all 20 legal macros in the
+existing bounded menu from the verified 6400-tick base. Each root is followed
+only by idle steps through 9600 ticks, with monthly diagnostics and exact base
+rollback. Independent reset/primitive replay matches all branches and 240 monthly
+checkpoints. Food delivery first appears at the month-5 sample for the existing
+wheat-supply macro; cultural roots show gains by month 1. These are counterfactual
+forecasts, not new policy execution. The ignored diagnostic/replay scripts, real
+branch saves, all-root CSVs and plots are linked from
+`docs/superpowers/plans/2026-11-24-native-root-horizons.md` and the results. Existing
+planner defaults and the compound helper's 8000-tick budget bound stay unchanged.
