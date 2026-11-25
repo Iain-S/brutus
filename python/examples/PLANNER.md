@@ -721,3 +721,13 @@ general selector stability, adaptive policy performance or a campaign win.
 Ignored experiment code/evidence and next-step limits are documented in
 `docs/superpowers/plans/2026-11-25-complete-root-forecast-selection.md` and results.
 Existing planner defaults and training dependencies remain unchanged.
+
+The bounded receding pilot prepares 34 legal roots from that actual state and
+independently replays all six-month forecast branches. Lossless shared-wait
+encoding keeps every declared forecast field. Its first real reply omits the
+required decision_id, so strict Pydantic validation stops the run after one call
+and no new policy action. The failed error record and unchanged 16000-tick city
+both pass independent evidence/replay checks; adaptive success is not established.
+See `docs/superpowers/plans/2026-11-25-receding-root-forecast-pilot.md`. A proposed
+candidate-only schema would be a separately scoped host-bound protocol, not a
+repair or acceptance of that failed response.

@@ -1,6 +1,7 @@
 # Campaign Planner Remaining Work
 
-Updated: 2026-11-25. Complete-root selection protocol: `ca6926ba`;
+Updated: 2026-11-25. Receding-pilot protocol: `e298e441`;
+complete-root selection protocol: `ca6926ba`;
 native root/horizon protocol: `132dcbbd`;
 channel-diagnostic source: `4f9682f1`;
 frozen-order source: `56519054`; compound-model source:
@@ -115,8 +116,20 @@ general model diagnosis or improved campaign play. See results for the full tabl
   checkpoints match forecasts; the full 16000-tick trace independently replays.
   Final population 103, fed residents 57, house level 2, treasury 6503 and fountain
   coverage 34, compared with native wait's 42/0/1/7308/42. No campaign win.
-- [ ] Test bounded repeated decisions from the new actual state, regenerating
-  complete native root forecasts and verifying every successor. Separate decision
+- [x] Prepare all 34 legal roots at the new actual state with six-month forecasts;
+  verify exact rollback, all 204 monthly checkpoints by independent primitive
+  replay, and lossless sparse encoding of all declared forecast fields.
+- [x] Attempt the bounded receding pilot. First response has a legal candidate
+  but omits required decision_id; reject and stop after one request/response,
+  without retries, execution or altered budgets. Error status remains. Full
+  16000-tick actual trace and six diagnostics independently replay unchanged.
+- [ ] Test a separately specified candidate-only output contract, binding
+  decision/request/native-state identity in the host. Preserve the rejected
+  two-field response; do not salvage it. Require strict schema/domain validation,
+  order/repeat controls, headroom/deadline limits and native delivery/replay gates.
+- [ ] Demonstrate bounded repeated decisions from the new actual state,
+  regenerating complete native forecasts and verifying each successor. The
+  failed pilot has zero new decisions and does not establish this gate. Separate decision
   cadence from preview horizon; the one-year idle delivery check is not an
   established efficient control policy. Recheck context headroom as the domain
   grows, keep every legal choice, and report food/service/finance tradeoffs and

@@ -60,11 +60,11 @@ valid exploratory result does not establish global selector stability or a win.
 - [x] Prepare first state's complete native forecasts without model calls or
   new policy actions. Verify round-trip sparse encoding and dry-run A/B/A plus
   rejection/gating checks, inspect full wire requests and dependency versions.
-- [ ] Commit protocol before inference; run at most three decisions/nine calls
+- [x] Commit protocol before inference; run at most three decisions/nine calls
   with every predeclared gate and complete per-case native branch replay.
-- [ ] Audit all requests, schemas, decoded native outcomes, counters, rollbacks,
+- [x] Audit all requests, schemas, decoded native outcomes, counters, rollbacks,
   forecast/delivery matches, alias cleanup and independent final trace replay.
-- [ ] Record endpoints/tradeoffs/limits and useful next work; commit/push docs
+- [x] Record endpoints/tradeoffs/limits and useful next work; commit/push docs
   only, preserving unrelated BRUTUS.md and staged model files.
 
 ## Ledger
@@ -99,3 +99,36 @@ Current-state forecast data and replay reports are hashed before model calls and
 rechecked before delivery. Preserve started-attempt records with unknown counters
 if a worker dies before verifiable terminal evidence; retain partial primitive
 execution in logs/saves on failure. The existing production planner is unchanged.
+
+## Failed Outcome
+
+Protocol commit `e298e441`; actual pilot:
+`runs/tarraco/2026-11-25/20261125T162817.497333Z_receding-root-pilot_6845521d/`.
+The first original-order response has a complete tool_calls finish, safe 6044
+prompt tokens and 27 completion tokens. It returns only candidate_id, omitting
+the transmitted schema's required decision_id=5. The candidate name is in the
+legal domain, but the answer is invalid. Pydantic AI rejects it with zero retries
+permitted. One request/one received response, 64.1-second worker wall time,
+neither deadline nor token cap exhausted. No B/A-repeat or later decision calls.
+
+The pilot stops exactly at that gate, with zero new policy ticks/decisions and
+preserved error status. Its 78.2-second run includes prefix reconstruction and
+temporary alias setup/removal. Independent audit decodes all prompt values,
+checks the emitted schema/argument omission, receipt/counter evidence, forecast
+inventory, source hashes and model identity. It verifies a **failed** record,
+explicitly pilot_passed=false; no output or strategy gate is promoted.
+
+Full actual-trace replay:
+`runs/tarraco/2026-11-25/20261125T163245.071332Z_receding-outcome-replay_47b4344c/`.
+All 16000 primitive results, six diagnostics and base map/state match in 3.7
+seconds. Replay retains source_experiment_status=error and source_pilot_passed=false.
+Population 103, food coverage 57, housing level 2 and treasury 6503 are unchanged.
+Final saves/diagnostics remain available; no new plot or screenshot is necessary
+for a zero-action continuation.
+
+The preparation, prompt validation and strict rejection checks pass. Adaptive
+decision performance, new-state order stability and further goal progress remain
+unassessed. No retry, output salvage, prompt repair, re-encoding, budget increase
+or production integration follows. Next useful scope is a new candidate-only
+output contract with host-owned decision/request/state identity and all current
+validation/freshness gates; this failed two-field record remains unchanged.

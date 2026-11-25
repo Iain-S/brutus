@@ -1,6 +1,7 @@
 # Campaign Planner Results
 
 Updated: 2026-11-25. Latest native delivery and model experiment: 2026-11-25.
+Receding-pilot protocol: `e298e441`;
 Complete-root selection protocol: `ca6926ba`;
 Channel-diagnostic source: `4f9682f1`;
 Thinking-check source: `747ae57e`; frozen-order source: `56519054`;
@@ -23,7 +24,81 @@ DNN reinforcement-learning policy. The model is
 **No campaign win or demonstrated fast-win strategy has been achieved.**
 See [remaining work](PLANNER_TODO.md) for the next checkpoint.
 
-## Latest Model Result: Food Supply Chosen And Delivered
+## Latest Pilot: Larger State Previews Pass, Required Output Field Is Missing
+
+The next actual city state has **34 legal roots**. Their 4800-tick previews,
+sampled monthly, all restore the exact base and pass independent reset/prefix
+replay: 34 branches and 204 monthly checkpoints. No candidates are ranked or
+dropped. A sparse prompt stores common wait outcomes once and named absolute
+overrides per root; declared field aliases map back to full native names.
+Independent decoding recovers all 2346 native values per model table (34 roots,
+three horizons, 23 forecast/peace/labor/capacity fields).
+
+The bounded pilot planned up to three successive 800-tick decisions, each gated
+by original/reversed/original model calls and an exact repeat. It **stops at its
+first real call**. The complete raw response has one correctly named output tool
+and a legal candidate argument, but omits required `decision_id=5`:
+
+```json
+{"candidate_id":"add_actor_colony_district_1"}
+```
+
+The transmitted schema requires both decision_id and candidate_id. Pydantic AI
+rejects the response with `UnexpectedModelBehavior: Exceeded maximum output
+retries (0)`. This means zero output retries were permitted, not that another
+request occurred. Independent receipts verify **one request/one response**.
+The candidate is never accepted, executed or graded as a valid policy decision.
+No reversed-order or repeat call is run; stability and repeated decision-making
+remain unassessed.
+
+The response finishes with `tool_calls`, using 6044 prompt tokens and 27 output
+tokens in 64.1 seconds including imports. Context headroom passes, and neither
+the 256-token cap nor the 170-second deadline is exhausted. No cause for the
+omission is established; changed state, domain and encoding are not isolated
+causal interventions. The strict output gate works as intended, while schema
+compliance by the model is not guaranteed.
+
+### Preserved State And Evidence
+
+Prepared native archive:
+`runs/tarraco/2026-11-25/20261125T162026.256169Z_receding-root-prepare_ae1ddd2a/`.
+It retains the complete root menu, primitive forecast traces, monthly diagnostics
+and independent replay report. Replay takes 141.0 seconds. A/B/A mocked HTTP
+requests pass schema/full-wire checks and byte-identical A repetition. Raw
+rejection checks cover invented candidates, float IDs, extra fields, length
+finishes, unsafe context and thinking-only output. Preparation makes no model
+calls or new policy actions.
+
+Failed actual pilot:
+`runs/tarraco/2026-11-25/20261125T162817.497333Z_receding-root-pilot_6845521d/`.
+Its `independent-pilot-audit.json` verifies the failed record, full native prompt
+decoding, source/forecast inventory hashes, transmitted schema, raw arguments,
+receipt counters and unchanged model/default identity. The temporary alias is
+removed. The pilot retains **error status**, with `pilot_passed=false`; passing
+evidence integrity does not promote its output or strategy gates.
+
+Independent actual-trace replay:
+`runs/tarraco/2026-11-25/20261125T163245.071332Z_receding-outcome-replay_47b4344c/`.
+All 16000 primitive results, six final diagnostic payloads and the base map/state
+match. The replay explicitly records that its source experiment failed. There
+are **zero new policy ticks and zero completed new decisions**. Population 103,
+fed residents 57, housing level 2 and treasury 6503 remain exactly the previously
+verified state. Final save/diagnostics are retained; no new screenshot is claimed.
+
+No failed response is repaired, retried, re-encoded or given a larger budget.
+No production code, training dependency or historical artifact changes; no new
+broad training-test result is claimed. See
+[the failed pilot protocol](superpowers/plans/2026-11-25-receding-root-forecast-pilot.md).
+
+Next, separately test a candidate-only output schema with decision identity owned
+by the host. Bind the accepted candidate to the exact request hash, decision
+context and native state fingerprint before execution. This removes a redundant
+metadata echo from a new protocol without filling missing fields in this failed
+response. Keep strict candidate-domain validation, order/repeat checks, deadlines
+and native forecast/replay gates. The old pilot remains failed; no next action
+is authorized merely from the unaccepted candidate above.
+
+## Previous Model Result: Food Supply Chosen And Delivered
 
 With all 20 legal roots and their compact native forecasts available, the pinned
 instruct model selects **`establish_wheat_supply` in all eight calls**. Short
