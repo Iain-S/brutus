@@ -709,3 +709,15 @@ forecasts, not new policy execution. The ignored diagnostic/replay scripts, real
 branch saves, all-root CSVs and plots are linked from
 `docs/superpowers/plans/2026-11-24-native-root-horizons.md` and the results. Existing
 planner defaults and the compound helper's 8000-tick budget bound stay unchanged.
+
+The subsequent complete-root selection experiment exposes all 20 roots and
+compact native outcomes to the instruct ToolOutput model. Eight short/long and
+original/reverse-order calls, including exact repeats, all select wheat supply.
+Its predeclared unique-choice gate authorizes one actual macro plus fixed idle:
+9600 new ticks deliver population 103, food coverage 57 and level-2 housing,
+with monthly forecast matches and independent full-trace replay. Short and long
+profiles choose identically, so this does not establish a horizon advantage,
+general selector stability, adaptive policy performance or a campaign win.
+Ignored experiment code/evidence and next-step limits are documented in
+`docs/superpowers/plans/2026-11-25-complete-root-forecast-selection.md` and results.
+Existing planner defaults and training dependencies remain unchanged.

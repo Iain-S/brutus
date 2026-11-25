@@ -1,7 +1,7 @@
 # Campaign Planner Results
 
-Updated: 2026-11-24. Latest native diagnostic: 2026-11-24;
-latest model experiment: 2026-11-23.
+Updated: 2026-11-25. Latest native delivery and model experiment: 2026-11-25.
+Complete-root selection protocol: `ca6926ba`;
 Channel-diagnostic source: `4f9682f1`;
 Thinking-check source: `747ae57e`; frozen-order source: `56519054`;
 compound-model source: `03089798`;
@@ -23,7 +23,104 @@ DNN reinforcement-learning policy. The model is
 **No campaign win or demonstrated fast-win strategy has been achieved.**
 See [remaining work](PLANNER_TODO.md) for the next checkpoint.
 
-## Latest Native Diagnostic: Food Benefits Need Months, Culture Is Visible Early
+## Latest Model Result: Food Supply Chosen And Delivered
+
+With all 20 legal roots and their compact native forecasts available, the pinned
+instruct model selects **`establish_wheat_supply` in all eight calls**. Short
+forecasts expose 800/1600 ticks; long forecasts add 4800/9600. Each profile uses
+original and reversed row/tool-enum orders with exact ABBA repeats, interleaved
+across profiles. All four repeated controls agree, and both profiles choose the
+same root in both orders. Every call passes strict ToolOutput, raw argument,
+identity, receipt, deadline and context-headroom checks without retries.
+
+| Profile | Original Order | Reversed Order | Both Exact Repeats |
+| --- | --- | --- | --- |
+| 800/1600-tick outcomes | Wheat supply | Wheat supply | Agree |
+| Same plus 4800/9600 outcomes | Wheat supply | Wheat supply | Agree |
+
+The compact tables retain all roots and every recorded forecast metric except
+redundant ticks/status, plus native peace. All values are bound to the audited
+native archive; no desired root, weighted score or winning sequence is supplied.
+Raw diagnostics and geometry remain archived, rather than all being fed to the
+model. This is one state and two extreme orders, not all 20 positions or a general
+solution to the earlier presentation failures. Those historical failures remain.
+
+**Adding late outcomes does not change the observed choice here.** This does not
+show that longer horizons are generally irrelevant, or isolate breadth against
+the old narrow compound selection: state, domain and prompt protocol also differ
+from those old decisions. No reasoning behind the ID-only tool result is verified.
+
+### Delivered Native Continuation
+
+The predeclared gate requires eight accepted calls, matching exact repeats and
+one unique long-profile choice across orders. It passes. The native executor
+replays the original 6400-tick prefix, regenerates the complete legal root menu
+and checks its actions against the forecast, then executes the selected macro
+once followed by the fixed idle continuation. No later builds are selected or
+inferred. This delivers **9600 new ticks**, with a 16000-tick full trace.
+
+Every primitive action/message/reward/terminal flag and all twelve monthly
+scalar/forecast/six-diagnostic/map checkpoints match the selected prediction.
+A separate reset replay of the entire actual trace also matches all 16000
+messages/rewards and all six final diagnostics.
+
+| Endpoint | Starting Base | Delivered Selection | Equal-Time Native Wait Control |
+| --- | --- | --- | --- |
+| Population | 49 | 103 | 42 |
+| Residents with food | 0 | 57 | 0 |
+| Maximum occupied house level | 1 | 2 | 1 |
+| Fountain residents | 49 | 34 | 42 |
+| Treasury | 7458 | 6503 | 7308 |
+| Culture | 0 | 0 | 0 |
+| Prosperity | 0 | 5 | 5 |
+| Peace | 0 | 2 | 2 |
+| Favor | 50 | 48 | 48 |
+
+Food is first observed at the month-5 sample; by year end there are six farm
+workers, 100 granary food units and 328 market food units. This is actual delivery
+of a model-selected food/housing continuation, with explicit finance and water
+tradeoffs. The wait control is a previously replay-verified counterfactual, not
+a second executed model policy. Annual prosperity/peace gains also occur under
+wait, so they are not action-specific improvement. No campaign victory or
+reliable adaptive whole-policy strategy is demonstrated.
+
+### Evidence And Next Step
+
+Selection archive:
+`runs/planner-input-probes/2026-11-25/20261125T111348.987952Z_root-selection_5863d69d/`.
+Its independent audit verifies every table cell, source inventory, full outbound
+request/schema, raw/typed answer, telemetry, counters, exact repeat body and
+model/default identity. The temporary alias is removed. Prompt counts are 3954
+(short) and 5900 (long), completions 31 tokens. Calls take 17.3..50.6 seconds
+including worker imports, 322.8 seconds total; whole selection takes 331.7
+seconds. Cache/runtime effects prevent a general latency conclusion.
+
+Actual native run:
+`runs/tarraco/2026-11-25/20261125T112004.055833Z_root-forecast-model_788e63c6/`.
+Independent replay:
+`runs/tarraco/2026-11-25/20261125T112044.328953Z_replay_b43ec0b3/`.
+The native execution and replay take 10.5 and 4.1 seconds respectively, with no
+additional model calls. The actual run contains full primitive trace, twelve
+monthly diagnostics/maps, real `final.sav`, six final payloads, selection evidence
+and `independent-delivery-audit.json` with retained audit source. Plot/CSV files
+`delivered-vs-wait.*` compare delivered samples with the native wait control.
+The plot is not a real-asset screenshot; in-game screenshot review remains pending.
+
+Eight mock scheduled requests, separate invalid/extra/thinking-output rejection
+cases and strict typed-ID checks pass before inference. The mock gate refuses
+native execution. No production code or training dependency changes, and no new
+broad unittest-suite result is claimed. See
+[the experiment protocol](superpowers/plans/2026-11-25-complete-root-forecast-selection.md).
+
+Next, regenerate complete native forecasts at the newly reached state and test
+bounded repeated decision-making. Keep the actual decision interval distinct
+from the long preview horizon: this one-year idle continuation validates delayed
+effects, but does not establish an efficient decision cadence. Recheck context
+headroom as the legal domain grows, preserve every legal choice, and continue
+separating selector stability, forecast delivery, service/finance tradeoffs and
+native victory progress.
+
+## Previous Native Diagnostic: Food Benefits Need Months, Culture Is Visible Early
 
 From the verified compound run's 6400-tick end state, all **20 legal roots in the
 existing radius-14 macro menu** are simulated once, followed only by idling for

@@ -65,11 +65,11 @@ wait-control differences without declaring a policy win or global optimality.
 - [x] Dry-run all eight HTTP conditions, inspect every emitted request, check
   short/long intervention, exact repeats and rejection of invalid/extra/thinking
   output. Check prompt size and installed requirements. Commit protocol first.
-- [ ] Run at most eight calls; independently audit model identity, actual wire
+- [x] Run at most eight calls; independently audit model identity, actual wire
   inputs/settings, schema/raw/typed result, telemetry/counters and cleanup.
-- [ ] Apply the conditional execution gate exactly; if it passes, verify native
+- [x] Apply the conditional execution gate exactly; if it passes, verify native
   forecast delivery and independent replay. Otherwise preserve the failed gate.
-- [ ] Record result and useful next step; commit/push docs, preserve unrelated
+- [x] Record result and useful next step; commit/push docs, preserve unrelated
   BRUTUS.md and staged model assets. Generated evidence remains ignored.
 
 ## Limits
@@ -98,3 +98,42 @@ request each and no retry; strict argument checks also reject a floating-point
 decision ID. Independent audit validates every table cell and schema, all 20
 roots, exact repeats, and short/long equality after removing the added horizons.
 Mock execution never authorizes native delivery. No production code changed.
+
+## Outcome
+
+Protocol commit `ca6926ba`; selection archive:
+`runs/planner-input-probes/2026-11-25/20261125T111348.987952Z_root-selection_5863d69d/`.
+All eight calls/receipts are accepted and select establish_wheat_supply. All
+four exact repeat pairs agree; both profiles and both orders agree. Actual
+prompt counts are 3954/5900 and every completion 31 tokens, with safe headroom.
+Worker wall time including imports totals 322.8 seconds (17.3..50.6 per call);
+whole selection 331.7 seconds. No retries, fallback, timeout or repaired output.
+Independent audit verifies every source/table/request cell and raw/typed result,
+model/default identity, counters and exact body repeats. Alias removal passes.
+
+The unique long-profile gate passes without voting or selecting a favorable
+answer. Ignored `runs/deliver_complete_root_selection.py` refuses the mock gate,
+then for this real result regenerates all 20 legal roots and checks exact action
+plans before executing the selected macro plus idle. Actual run:
+`runs/tarraco/2026-11-25/20261125T112004.055833Z_root-forecast-model_788e63c6/`.
+All delivered primitive results and twelve monthly native payloads/maps match
+the chosen counterfactual. Independent full-trace replay:
+`runs/tarraco/2026-11-25/20261125T112044.328953Z_replay_b43ec0b3/`.
+All 16000 trace ticks and six final diagnostics match. New delivered ticks are
+9600; there are no additional model calls during execution/replay.
+
+Final population 103, fed residents 57, occupied house level 2, farm workers 6,
+granary 100 and market 328 food units. Treasury 6503 and fountain residents 34
+show tradeoffs against wait's 7308 and 42. Culture remains 0; prosperity 5,
+peace 2 and favor 48 match the idle control. No win or adaptive policy result.
+Native execution takes 10.5 seconds; full replay 4.1 seconds. Retained aggregate
+audit code/JSON checks selection, delivery, every monthly match, final diagnostics
+and replay; scientific PNG/SVG and CSV are generated and visually inspected.
+
+The short profile also chooses this root, so no benefit from adding the long
+outcomes is established for this choice. This single-state/two-order success
+does not invalidate earlier presentation sensitivity or isolate breadth against
+the old narrow protocol. Next is bounded repeated decisions on the new actual
+state, with complete regenerated forecasts, explicit context headroom and a
+decision cadence separate from long-horizon previews. Historical archives stay
+unchanged; no production integration or dependency migration follows yet.

@@ -1,6 +1,7 @@
 # Campaign Planner Remaining Work
 
-Updated: 2026-11-24. Native root/horizon protocol: `132dcbbd`;
+Updated: 2026-11-25. Complete-root selection protocol: `ca6926ba`;
+native root/horizon protocol: `132dcbbd`;
 channel-diagnostic source: `4f9682f1`;
 frozen-order source: `56519054`; compound-model source:
 `03089798`; preview foundation: `3ce633ac`.
@@ -105,14 +106,23 @@ general model diagnosis or improved campaign play. See results for the full tabl
   that food delivery; school/library/theater culture gains are visible by month
   1. The wait control also gains annual prosperity 5/peace 2, so those ratings
   alone do not establish construction value.
-- [ ] Run a bounded model-selection experiment with a compact, complete set
-  of equal-time native root forecasts and delayed food outcomes. Keep native
-  goal/service/finance facts and all legal choices available without a weighted
-  score or prescribed build order. Check model input headroom and presentation
-  controls, then verify any actual choice against its forecast and independent
-  replay. Treat selector stability, forecast reliability and delivered multi-goal
-  progress separately. Do not spend more calls on the unchanged thinking
-  profile; any new model, prompt or budget needs a separately scoped experiment.
+- [x] Test complete root forecasts in short/long profiles with original/reverse
+  orders and exact ABBA repeats: eight valid calls all choose wheat supply.
+  Added late outcomes do not change the choice on this state. Earlier order
+  failures and broader selection reliability remain unresolved.
+- [x] Apply the predeclared unique-choice gate, regenerate native legality and
+  deliver one selected macro plus the fixed idle continuation. All twelve monthly
+  checkpoints match forecasts; the full 16000-tick trace independently replays.
+  Final population 103, fed residents 57, house level 2, treasury 6503 and fountain
+  coverage 34, compared with native wait's 42/0/1/7308/42. No campaign win.
+- [ ] Test bounded repeated decisions from the new actual state, regenerating
+  complete native root forecasts and verifying every successor. Separate decision
+  cadence from preview horizon; the one-year idle delivery check is not an
+  established efficient control policy. Recheck context headroom as the domain
+  grows, keep every legal choice, and report food/service/finance tradeoffs and
+  native goal progress without a weighted score or prescribed sequence.
+  Do not spend more calls on the unchanged thinking profile; any new model,
+  prompt or budget needs a separately scoped experiment.
 - [ ] Require demonstrable delivered multi-goal progress before promoting the
   compound policy or extending it unchanged toward a whole-campaign attempt.
 
