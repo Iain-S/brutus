@@ -1,6 +1,7 @@
 # Campaign Planner Results
 
 Updated: 2026-11-27. Latest native delivery and model experiment: 2026-11-27.
+Row/enum diagnostic protocol: `36251323`;
 Compact-menu protocol: `da32101e`;
 Candidate-only protocol: `b537c37c`; bounded continuation: `e5ff0023`;
 Receding-pilot protocol: `e298e441`;
@@ -26,7 +27,71 @@ DNN reinforcement-learning policy. The model is
 **No campaign win or demonstrated fast-win strategy has been achieved.**
 See [remaining work](PLANNER_TODO.md) for the next checkpoint.
 
-## Latest Pilot: Complete Menu Fits, Selection Changes With Presentation
+## Latest Diagnostic: Both Forecast Rows And Tool Enum Affect Selection
+
+The complete 45-root compact menu is frozen at the verified 16800-tick city.
+A new six-call diagnostic varies forecast-row order independently of the legal
+ID order in the Pydantic output tool's enum. A is original and B its exact
+reversal. System text, facts, candidate names, model weights, serving settings,
+seed and budgets stay fixed. No native environment is created or advanced.
+
+| Forecast-row order | Original tool enum | Reversed tool enum |
+|---|---|---|
+| Original | `add_granary_district_2` | `add_actor_colony_district_2` |
+| Reversed | `house_farm_workers_17` | `expand_housing` |
+
+Actual sequence: AA, BB, AB, BA, BB, AA. **Both exact repeats reproduce** their
+initial selections, with byte-identical request bodies and distinct dispatch
+bindings. All four combinations select different roots. Holding rows fixed and
+reversing only the enum changes the choice; holding the enum fixed and reversing
+only rows also changes it. This observed pattern is **mixed/interaction**, not
+purely row-aligned or enum-aligned. Merely fixing one of these orderings does not
+establish robustness to the other on this matrix.
+
+This tests one state, seed and two order levels; the crossed cells have no
+repeats. It does not establish a general causal model, model reasoning, a
+first/last-item rule, or that Pydantic AI itself causes the effect. Schema validity
+and stable strategic selection remain separate questions.
+
+All **six requests/six responses** pass strict typed/raw output, complete-domain,
+binding, deadline and headroom checks. Each uses **7218 prompt tokens**, below
+the unchanged 7808 allowance; completion counts are 27/23/27/27/23/27. Every call
+finishes within 75 seconds of the 170-second deadline. Independent audit checks
+all 3105 native forecast cells per request plus full macro metadata, exact enum
+orders and equality of every non-order request field. Model identity and alias
+cleanup pass. The archived host fingerprint matches the pinned prior run and is
+explicitly frozen-source identity, not active native freshness.
+
+The choices have different six-month native forecast tradeoffs:
+
+| Root then idle, 4800 ticks | Population | Residents with food | Farm workers | Treasury | Culture |
+|---|---:|---:|---:|---:|---:|
+| Wait | 148 | 75 | 10 | 6126 | 0 |
+| Granary, district 2 | 142 | 71 | 7 | 6022 | 0 |
+| Actor colony, district 2 | 144 | 71 | 10 | 6076 | 0 |
+| Farm-worker housing, farm 17 | 185 | 105 | 10 | 5902 | 0 |
+| Expand housing | 186 | 73 | 10 | 5929 | 0 |
+
+These previously independently replayed forecasts remain counterfactual. They
+are not a weighted ranking or prescribed build order, and do not prove a winning
+strategy or full dominance. No native action is authorized by this diagnostic;
+the actual city remains population 114, food coverage 57, farm workers 10 and
+treasury 6263 at 16800 ticks. No new save or native replay is claimed for this
+no-action study. The existing replay remains the native-state evidence.
+
+Local archive, raw requests/responses, frozen source, independent audit,
+`review-matrix.json`/CSV and supplemental `source-host-audit.json`:
+`runs/planner-input-probes/2026-11-27/20261127T174321.052918Z_row-enum_e8ed8f11/`.
+Three construction/classification/preflight tests pass. Six-call and rejected
+one-call mocked runs independently audit; source review findings are fixed and
+re-reviewed before inference. Temporary environment `pip check` passes. No
+production code or dependency changes. See
+[protocol and verification ledger](superpowers/plans/2026-11-27-row-enum-isolation.md).
+Next priority is a separately scoped selector-capability or mechanism comparison
+on these same facts; more unchanged permutation probes would not demonstrate
+strategic improvement. A stronger model is an option, not an established fix.
+
+## Previous Pilot: Complete Menu Fits, Selection Changes With Presentation
 
 A new lossless encoding restores headroom for the complete **45-root** successor
 menu. Macro keys use a reversible legend; each forecast field stores three

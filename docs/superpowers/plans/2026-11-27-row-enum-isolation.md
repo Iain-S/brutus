@@ -72,10 +72,10 @@ New ignored helpers: `runs/probe_row_enum.py`, `runs/audit_row_enum.py`,
   exact AA/BB request repeats, separate dispatch bindings, crossed-condition
   isolation and non-order request equality.
 - [x] Obtain fresh read-only review, resolve findings and commit before inference.
-- [ ] Run the bounded diagnostic with actual telemetry; independently audit
+- [x] Run the bounded diagnostic with actual telemetry; independently audit
   receipts, source/model identity, all native facts and cleanup. Preserve any
   failed/incomplete record; no native replay is invented for a no-action probe.
-- [ ] Report the matrix, repeat controls and limits; update results/TODO and
+- [x] Report the matrix, repeat controls and limits; update results/TODO and
   commit/push only owned documentation. Preserve BRUTUS.md and staged models.
 
 ## Ledger
@@ -112,3 +112,32 @@ and stopped one-call archive
 All three construction/classification/preflight tests pass. Old mock archives
 remain unchanged as evidence of their earlier source version. No new real
 model requests or native actions yet.
+
+## Actual outcome
+
+Protocol commit before inference: `36251323`.
+Archive:
+`runs/planner-input-probes/2026-11-27/20261127T174321.052918Z_row-enum_e8ed8f11/`.
+All six calls complete and independently audit. AA selects granary district2;
+BB general housing; AB actor colony district2; BA farm-worker housing farm17.
+Final BB and AA reproduce exactly, including request bytes. The predeclared
+classification is mixed_or_interaction: four distinct choices, not a pattern
+aligned only with rows or only with enum. The matrix establishes the observed
+two-factor sensitivity locally, with the stated single-state/seed and unrepeated
+crossed-cell limits; no general model reasoning or policy result is inferred.
+
+Each request uses 7218 prompt tokens; completions 27/23/27/27/23/27. Each worker
+finishes within 75 seconds, with no retries or invalid outputs. Independent
+audit recovers all 3105 native cells and full metadata per table, checks exact
+enum/row interventions and non-order request equality, model identity, archived
+helper hashes and alias cleanup. Supplementary source-host comparison confirms
+the archived fingerprint against the pinned original run record; it still
+does not assert active native freshness. Evidence scripts and review JSON/CSV
+are retained locally; `runs/summarize_row_enum.py` reports forecasts without a
+score. All forecast endpoints remain counterfactual and no new native replay
+is needed or claimed for this no-action diagnostic.
+
+Next priority is separately scoped selector capability or a different selection
+mechanism on the same complete native facts, preserving strict output and
+execution gates. Do not promote any one of these differing answers, choose a
+majority, or spend more calls on the unchanged thinking profile.

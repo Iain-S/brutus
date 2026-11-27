@@ -762,3 +762,15 @@ This restores context headroom for one state, while selection reliability and
 repeated adaptive control remain unresolved. Existing dependencies and planner
 defaults remain unchanged. See
 `docs/superpowers/plans/2026-11-27-compact-complete-menu.md` and the results.
+
+The later frozen-only row/enum diagnostic independently varies forecast rows
+and the output tool's candidate enum. Six calls AA/BB/AB/BA/BB/AA select granary,
+general housing, actor colony, farm-worker housing, general housing and granary.
+Both exact repeats reproduce, while all four crossed combinations differ. Every
+reply passes schema/binding/headroom checks at 7218 prompt tokens. Independent
+audit verifies all native facts, full domains, isolated order interventions and
+model cleanup. This shows sensitivity to both presentation factors on one state
+and seed; crossed cells are not repeated. No native environment/action or new
+save is created, and frozen-source bindings do not claim live native freshness.
+See `docs/superpowers/plans/2026-11-27-row-enum-isolation.md` and results before
+interpreting this as a policy or library-quality result.

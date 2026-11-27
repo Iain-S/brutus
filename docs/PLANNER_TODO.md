@@ -1,6 +1,7 @@
 # Campaign Planner Remaining Work
 
 Updated: 2026-11-27. Candidate-only protocol: `b537c37c`;
+row/enum diagnostic protocol: `36251323`;
 compact-menu protocol: `da32101e`;
 bounded continuation: `e5ff0023`; receding-pilot protocol: `e298e441`;
 complete-root selection protocol: `ca6926ba`;
@@ -102,7 +103,17 @@ general model diagnosis or improved campaign play. See results for the full tabl
   presentation: granary/housing/granary for original/reversed/exact repeat.
   All outputs and context limits pass, but no action is authorized. Use these
   verified full-menu facts for a separate capability/profile comparison before
-  extending the unchanged adaptive controller; row and enum order are not isolated.
+  extending the unchanged adaptive controller. Those jointly reversed calls do
+  not isolate row and enum order; the subsequent diagnostic below does.
+- [x] Separate forecast-row order from tool-schema enum order on the complete
+  frozen 45-root state. Six conditions AA/BB/AB/BA/BB/AA yield granary/general
+  housing/actor colony/farm-worker housing/general housing/granary. Both exact
+  repeats reproduce; all four cells differ. All six outputs and headroom checks
+  pass; independent audit verifies all native facts and only the two intended
+  order changes. No native actions, score, root filtering or majority vote.
+  This is one state/seed with no crossed-cell repeats, not general causal
+  identification. Both presentation factors matter in the observed matrix;
+  avoid another unchanged permutation-only study as the next strategic step.
 - [x] Measure complete existing root-menu forecasts at monthly horizons from
   the verified 6400-tick base. All 20 legal macros plus their idle continuations
   are covered (wait is one of the 20), through 9600 ticks each. Every rollback
