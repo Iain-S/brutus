@@ -1,6 +1,7 @@
 # Campaign Planner Remaining Work
 
-Updated: 2026-11-25. Receding-pilot protocol: `e298e441`;
+Updated: 2026-11-27. Candidate-only protocol: `b537c37c`;
+bounded continuation: `e5ff0023`; receding-pilot protocol: `e298e441`;
 complete-root selection protocol: `ca6926ba`;
 native root/horizon protocol: `132dcbbd`;
 channel-diagnostic source: `4f9682f1`;
@@ -123,13 +124,30 @@ general model diagnosis or improved campaign play. See results for the full tabl
   but omits required decision_id; reject and stop after one request/response,
   without retries, execution or altered budgets. Error status remains. Full
   16000-tick actual trace and six diagnostics independently replay unchanged.
-- [ ] Test a separately specified candidate-only output contract, binding
+- [x] Test a separately specified candidate-only output contract, binding
   decision/request/native-state identity in the host. Preserve the rejected
   two-field response; do not salvage it. Require strict schema/domain validation,
   order/repeat controls, headroom/deadline limits and native delivery/replay gates.
+  Three valid calls agree on worker housing and deliver 800 verified ticks:
+  population 114, farm workers 10, food coverage 57 and treasury 6263. Host-bound
+  requests and full actual replay pass. The original run remains ERROR because
+  of a later path-shadowing bug; its preserved result is one valid partial step.
+- [x] Diagnose/fix the orchestration path overwrite in a copied continuation,
+  with red/green regression, eleven passing offline checks and fresh review.
+  Recheck all 45 successor roots independently before resuming within the
+  original combined three-decision/nine-call bound. The first resumed response
+  exceeds prompt headroom (8126 > 7808); reject without action or retry. Both
+  failed records remain failed and the unchanged actual trace independently replays.
+- [ ] Resolve complete-menu context growth in a separately specified experiment.
+  First prove lossless smaller input encoding or validate a larger context with
+  actual tokenizer/usage evidence. Preserve every legal root, forecast field,
+  strict output/binding gates and reserved headroom. Do not rerun the unchanged
+  45-root request or treat approximate/mock token counts as real headroom proof.
 - [ ] Demonstrate bounded repeated decisions from the new actual state,
   regenerating complete native forecasts and verifying each successor. The
-  failed pilot has zero new decisions and does not establish this gate. Separate decision
+  two-field pilot has zero new decisions; candidate-only delivers one before an
+  orchestration error, and its continuation hits the context gate. Repeated
+  adaptive control remains unestablished. Separate decision
   cadence from preview horizon; the one-year idle delivery check is not an
   established efficient control policy. Recheck context headroom as the domain
   grows, keep every legal choice, and report food/service/finance tradeoffs and

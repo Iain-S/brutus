@@ -1,6 +1,7 @@
 # Campaign Planner Results
 
-Updated: 2026-11-25. Latest native delivery and model experiment: 2026-11-25.
+Updated: 2026-11-27. Latest native delivery and model experiment: 2026-11-27.
+Candidate-only protocol: `b537c37c`; bounded continuation: `e5ff0023`;
 Receding-pilot protocol: `e298e441`;
 Complete-root selection protocol: `ca6926ba`;
 Channel-diagnostic source: `4f9682f1`;
@@ -24,7 +25,86 @@ DNN reinforcement-learning policy. The model is
 **No campaign win or demonstrated fast-win strategy has been achieved.**
 See [remaining work](PLANNER_TODO.md) for the next checkpoint.
 
-## Latest Pilot: Larger State Previews Pass, Required Output Field Is Missing
+## Latest Pilot: Worker Housing Delivered, Growing Menu Exceeds Context Limit
+
+A separately specified **candidate-only** ToolOutput contract succeeds for one
+actual decision. The host binds decision identity, native fingerprint, base,
+prefix and forecast inventory to each outbound request and dispatch; the model
+returns only candidate_id. This does not repair or accept the previous failed
+two-field response. Strict raw/schema/domain validation and native freshness
+checks remain required, with zero SDK/output retries.
+
+All three original/reversed/original calls on the complete 34-root menu select
+`house_farm_workers_17`. Each uses 6034 prompt/27 completion tokens. Exact repeated
+request bytes, distinct host dispatch bindings and unchanged model identity pass.
+The selected macro plus idle delivers 800 ticks, exactly matching its native
+forecast at every primitive step and the monthly checkpoint.
+
+| Native endpoint | Base, 16000 ticks | Wait, 16800 ticks | Delivered housing, 16800 ticks |
+|---|---:|---:|---:|
+| Population | 103 | 96 | 114 |
+| Farm workers | 6 | 6 | 10 |
+| Residents with food | 57 | 57 | 57 |
+| Residents with fountain | 34 | 50 | 50 |
+| Treasury | 6503 | 6485 | 6263 |
+| Culture | 0 | 0 | 0 |
+
+Wait is an independently replayed equal-time counterfactual. Housing gains 18
+residents and four farm workers relative to wait, at 222 additional denarii.
+Fountain coverage also improves under wait, so its gain is not attributed to
+construction. House level 2, prosperity 5, peace 2 and favor 48 are unchanged.
+This is a delivered staffing/population result, without new food coverage,
+culture or a campaign win.
+
+The original pilot remains **ERROR** after that valid first step. An introduced
+Python variable-shadowing bug replaced the game-data path with a request dict
+before the next replay subprocess. Original code and failed artifacts are
+preserved. A copied continuation fixes the binding; the regression fails on the
+old code and all eleven offline checks pass in the temporary model environment.
+Independent full 16800-tick replay verifies the partial city, its new checkpoint
+and all six diagnostics. Fresh read-only review finds no material issues.
+
+All **45** legal roots at the successor state pass independent six-month replay,
+including 270 monthly checkpoints. A separate continuation retains only the
+original pilot's two remaining decisions/six remaining calls. Its first reply
+uses **8126 prompt + 23 completion tokens** in 63.2 seconds. The 8192-token context
+allows at most **7808 prompt tokens** after reserving 256 output plus 128 safety
+tokens. Although the complete tool arguments contain a legal candidate, strict
+telemetry validation rejects the response. No reverse/repeat call or new action
+runs; the continuation also remains **ERROR**. No context limit is relaxed and
+no output is salvaged. The unchanged 16800-tick trace and all six diagnostics
+again independently replay.
+
+Across both runs: four requests/four responses, one accepted decision and 800
+new delivered ticks. The one-field contract is usable on this first state;
+universal compliance, repeated adaptive control and a winning policy remain
+unestablished. Complete-menu context growth is the immediate engineering limit.
+A future experiment should first prove a lossless smaller encoding or separately
+validate a larger context, before spending more live calls. Root filtering and
+human-ranked strategy scores are not substitutes for that gate.
+
+### Local Evidence
+
+- Original partial pilot, actual save and audit:
+  `runs/tarraco/2026-11-27/20261127T095922.321453Z_candidate-only-pilot_74f24163/`.
+- Full partial-outcome replay:
+  `runs/tarraco/2026-11-27/20261127T101007.612375Z_candidate-only-outcome-replay_833dfdd8/`.
+- Rechecked 45-root forecasts:
+  `runs/tarraco/2026-11-27/20261127T101053.712627Z_candidate-replay-recheck_8ec44024/`.
+- Context-limited continuation, raw receipts, audit and `progress-comparison.json`:
+  `runs/tarraco/2026-11-27/20261127T101941.040711Z_candidate-only-continuation_c33f799d/`.
+- Final full-trace replay:
+  `runs/tarraco/2026-11-27/20261127T102141.387678Z_candidate-only-outcome-replay_b3742207/`.
+
+Ignored generated artifacts retain real native saves and six diagnostics;
+no production dependency or normal planner change is introduced. Mock audits
+recover all 2346/3105 native cells per 34/45-root table, respectively. Mock token
+usage is synthetic; actual usage above establishes the context failure.
+Protocols and validation details:
+[candidate-only pilot](superpowers/plans/2026-11-27-candidate-only-receding-pilot.md),
+[bounded continuation](superpowers/plans/2026-11-27-candidate-only-continuation.md).
+
+## Previous Pilot: Larger State Previews Pass, Required Output Field Is Missing
 
 The next actual city state has **34 legal roots**. Their 4800-tick previews,
 sampled monthly, all restore the exact base and pass independent reset/prefix

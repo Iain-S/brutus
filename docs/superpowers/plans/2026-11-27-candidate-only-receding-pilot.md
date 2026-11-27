@@ -55,9 +55,9 @@ sequence, production dependency or normal planner behavior changes.
 - [x] Obtain a fresh read-only code review under the requesting-code-review
   skill; resolve material findings with regression checks. Commit this protocol
   before inference. No repeated approval is needed for autonomous continuation.
-- [ ] Execute the bounded pilot and preserve all failures/partial traces; audit
+- [x] Execute the bounded pilot and preserve all failures/partial traces; audit
   schema, receipts, native bindings, model identity, forecast/delivery and cleanup.
-- [ ] Independently replay actual native trace, retain real saves/six diagnostics,
+- [x] Independently replay actual native trace, retain real saves/six diagnostics,
   report outcomes/tradeoffs/limits and commit/push docs. Preserve unrelated
   BRUTUS.md and the user's staged models; generated artifacts stay ignored.
 
@@ -91,3 +91,21 @@ schema/request/binding. Installed dependency `pip check` and compilation pass.
 Fresh read-only code review reports no material findings. It checks schema,
 host/dispatch/request identity, native fingerprint/base, agreement and delivery
 gates. Independent actual trace replay remains required after any real action.
+
+The real run at
+`runs/tarraco/2026-11-27/20261127T095922.321453Z_candidate-only-pilot_74f24163/`
+delivers one verified 800-tick worker-housing decision after all three calls
+agree. Population 114, farm workers 10, food coverage 57 and treasury 6263.
+The original run remains ERROR: a local request dictionary overwrites the native
+game-data path before the next replay subprocess. Original sources/artifacts
+remain unchanged. Full 16800-tick replay, the delivered monthly checkpoint and
+all six diagnostics pass independently.
+
+The separately committed
+[bounded continuation](2026-11-27-candidate-only-continuation.md) fixes that
+orchestration bug in a copy and retains only two decisions/six calls. All 45
+successor forecasts independently replay, but its first real response exceeds
+context headroom and executes nothing. Combined totals are four requests/four
+responses, one accepted decision and 800 delivered ticks. Both original and
+continuation records remain ERROR. See results for equal-time native tradeoffs;
+repeated adaptive control and a campaign win are not established.

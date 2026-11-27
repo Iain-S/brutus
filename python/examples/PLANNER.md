@@ -731,3 +731,21 @@ both pass independent evidence/replay checks; adaptive success is not establishe
 See `docs/superpowers/plans/2026-11-25-receding-root-forecast-pilot.md`. A proposed
 candidate-only schema would be a separately scoped host-bound protocol, not a
 repair or acceptance of that failed response.
+
+That separate candidate-only experiment now delivers one model-selected worker
+housing macro after three agreeing original/reversed/original calls. Native
+population reaches 114 and farm staffing 10 at 16800 ticks; food coverage stays
+57. Exact delivery and independent full replay pass. The host owns decision
+identity and binds native state, forecasts and outbound requests independently
+of the one-field model reply. The prior two-field failure stays rejected.
+
+The original candidate-only run remains ERROR after a request variable overwrites
+the game-data path for the next replay subprocess. A copied, regression-tested
+continuation fixes that bug and independently rechecks all 45 successor roots.
+It retains only two decisions/six calls from the original budget, then stops at
+its first real reply: 8126 prompt tokens exceed the 7808 allowance for the fixed
+8192 context and 256+128 reservation. Legal tool arguments are rejected without
+execution or retry. The actual 16800-tick trace replays unchanged. Repeated
+adaptive control remains unestablished; complete-menu context growth needs a
+separate protocol before further live inference. See results and
+`docs/superpowers/plans/2026-11-27-candidate-only-continuation.md`.

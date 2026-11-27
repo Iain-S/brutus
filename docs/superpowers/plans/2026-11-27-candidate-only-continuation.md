@@ -51,5 +51,26 @@ schema and host bindings. Mock usage is synthetic and does not establish real
 
 ## Outcome
 
-Pending the bounded continuation. This is an experimental runner, not a
-production dependency migration or evidence of a campaign win.
+The continuation is preserved at
+`runs/tarraco/2026-11-27/20261127T101941.040711Z_candidate-only-continuation_c33f799d/`.
+It stops with ERROR at its first call: actual usage is 8126 prompt and 23
+completion tokens, exceeding the unchanged 7808 prompt allowance. The raw reply
+has a legal one-field candidate and tool_calls finish, but is rejected by the
+headroom gate. No reverse/repeat call or actual interval is delivered.
+
+Independent protocol audit passes, preserving experiment failure. Model
+identity is unchanged and the temporary alias is removed. Full 16800-tick replay
+and all six final diagnostics pass in
+`runs/tarraco/2026-11-27/20261127T102141.387678Z_candidate-only-outcome-replay_b3742207/`.
+Combined with the original partial run: four calls/four responses, one accepted
+decision and 800 new ticks. The original three-decision/nine-call bound is not
+exceeded. Eleven offline checks pass using the dedicated temporary model
+interpreter; an initial invocation in the native environment fails at setup
+because that environment intentionally lacks the OpenAI SDK, then the correct
+environment passes without code changes.
+
+The one-field contract permits one actual decision with equivalent host binding,
+but repeated adaptive performance is unestablished. The next experiment needs
+lossless smaller complete-menu inputs or separately validated larger context.
+This is an experimental runner, not a production dependency migration or
+evidence of a campaign win.
