@@ -1,6 +1,7 @@
 # Campaign Planner Results
 
 Updated: 2026-11-27. Latest native delivery and model experiment: 2026-11-27.
+Compact-menu protocol: `da32101e`;
 Candidate-only protocol: `b537c37c`; bounded continuation: `e5ff0023`;
 Receding-pilot protocol: `e298e441`;
 Complete-root selection protocol: `ca6926ba`;
@@ -25,7 +26,75 @@ DNN reinforcement-learning policy. The model is
 **No campaign win or demonstrated fast-win strategy has been achieved.**
 See [remaining work](PLANNER_TODO.md) for the next checkpoint.
 
-## Latest Pilot: Worker Housing Delivered, Growing Menu Exceeds Context Limit
+## Latest Pilot: Complete Menu Fits, Selection Changes With Presentation
+
+A new lossless encoding restores headroom for the complete **45-root** successor
+menu. Macro keys use a reversible legend; each forecast field stores three
+absolute values, with null inheriting the corresponding wait value. Independent
+decoding recovers the entire prior input and all 3105 native forecast values per
+request, checked directly against the independently replayed branches. Every
+root, macro attribute, goal, calendar and unavailable reason is retained.
+
+The user prompt shrinks from 19636 to 15640 characters (20.4%). Actual prompt
+usage falls from the previous encoding's **8126 to 7218 tokens** (11.2%), below
+the unchanged **7808** allowance. All three new calls use 7218 prompt tokens and
+pass strict typed/raw output, legal-domain, request/host binding, deadline and
+headroom checks. Completion lengths are 27/23/27 tokens; no retries occur.
+
+| Presentation | Valid selection |
+|---|---|
+| Original | `add_granary_district_2` |
+| Reversed | `expand_housing` |
+| Exact original repeat | `add_granary_district_2` |
+
+The original request reproduces byte-for-byte, with a distinct dispatch binding.
+Presentation changes the choice, while row and schema-enum order change together;
+their effects are not isolated. The **agreement gate fails**: no majority vote,
+fallback or actual action is allowed. The record is `finished` with
+`selection_disagreement`, and independent audit reports **pilot_passed=false**.
+All three calls are new; no prior rejected answer is reused.
+
+The independently replayed six-month forecasts provide a useful review comparison:
+
+| Root then idle, 4800 ticks | Population | Residents with food | Farm workers | Treasury | Culture |
+|---|---:|---:|---:|---:|---:|
+| Wait | 148 | 75 | 10 | 6126 | 0 |
+| Selected granary | 142 | 71 | 7 | 6022 | 0 |
+| Selected housing | 186 | 73 | 10 | 5929 | 0 |
+
+These are counterfactual forecasts, not delivered outcomes. Granary has weaker
+endpoints than wait on the displayed fields; this is not a full dominance proof
+or an inference about the model's reasoning. Housing trades population growth
+for lower treasury and slightly less food coverage. No weighted score, prescribed
+sequence or root filtering is introduced.
+
+The actual city remains at **16800 ticks, population 114, food coverage 57,
+farm workers 10 and treasury 6263**. Independent full primitive replay and all six
+diagnostics match; model identity is unchanged and the temporary alias is removed.
+No repeated adaptive-control success or campaign win is established. Headroom is
+verified for this state only. Selection reliability is the next checkpoint.
+
+Local evidence:
+
+- New pilot, raw receipts, frozen source, audit, actual save/six diagnostics and
+  `progress-comparison.json`:
+  `runs/tarraco/2026-11-27/20261127T122823.764332Z_compact-menu-pilot_c8346456/`.
+- Full actual replay:
+  `runs/tarraco/2026-11-27/20261127T123156.827077Z_candidate-only-outcome-replay_b3444457/`.
+- Original/compact tables and offline equality/size measurements:
+  `runs/compact-menu-preflight/20261127T122454.687736Z/`.
+- Mock 34/45-root typed controls:
+  `runs/compact-menu-validation/20261127T122339.420281Z/` and
+  `runs/compact-menu-validation/20261127T122345.133032Z/`.
+
+Four codec tests, eleven protocol tests and one rejected-response integration
+test covering three malformed cases pass. Tests first expose missing encoding
+and the inherited rejected-body parsing crash. Fresh review's archive and
+rejection-report findings are fixed and re-reviewed before inference. Temporary
+environment `pip check` passes. No production code/dependency change. See
+[protocol and ledger](superpowers/plans/2026-11-27-compact-complete-menu.md).
+
+## Previous Pilot: Worker Housing Delivered, Growing Menu Exceeds Context Limit
 
 A separately specified **candidate-only** ToolOutput contract succeeds for one
 actual decision. The host binds decision identity, native fingerprint, base,

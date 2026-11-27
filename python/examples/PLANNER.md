@@ -749,3 +749,16 @@ execution or retry. The actual 16800-tick trace replays unchanged. Repeated
 adaptive control remains unestablished; complete-menu context growth needs a
 separate protocol before further live inference. See results and
 `docs/superpowers/plans/2026-11-27-candidate-only-continuation.md`.
+
+The separate compact-menu experiment aliases macro keys and transposes sparse
+forecast overrides into three-value series, retaining every original fact.
+Independent decoding and native checks cover all 45 roots/3105 forecast values
+per request. Real prompt usage falls from 8126 to 7218 tokens, clearing the
+unchanged 7808 allowance. Three valid original/reversed/exact-repeat calls select
+granary/housing/granary, so the agreement gate stops execution with zero new
+ticks. The recorded run is finished with selection_disagreement and
+pilot_passed=false; full actual replay and six diagnostics pass unchanged.
+This restores context headroom for one state, while selection reliability and
+repeated adaptive control remain unresolved. Existing dependencies and planner
+defaults remain unchanged. See
+`docs/superpowers/plans/2026-11-27-compact-complete-menu.md` and the results.

@@ -1,6 +1,7 @@
 # Campaign Planner Remaining Work
 
 Updated: 2026-11-27. Candidate-only protocol: `b537c37c`;
+compact-menu protocol: `da32101e`;
 bounded continuation: `e5ff0023`; receding-pilot protocol: `e298e441`;
 complete-root selection protocol: `ca6926ba`;
 native root/horizon protocol: `132dcbbd`;
@@ -97,6 +98,11 @@ general model diagnosis or improved campaign play. See results for the full tabl
   presentation and repeated controls. A stronger or reasoning model is an option
   to evaluate, not an established requirement. Do not merely put a desired answer
   first or introduce a human-ranked strategy score.
+  The later complete 45-root compact-menu control again changes choice with
+  presentation: granary/housing/granary for original/reversed/exact repeat.
+  All outputs and context limits pass, but no action is authorized. Use these
+  verified full-menu facts for a separate capability/profile comparison before
+  extending the unchanged adaptive controller; row and enum order are not isolated.
 - [x] Measure complete existing root-menu forecasts at monthly horizons from
   the verified 6400-tick base. All 20 legal macros plus their idle continuations
   are covered (wait is one of the 20), through 9600 ticks each. Every rollback
@@ -138,17 +144,24 @@ general model diagnosis or improved campaign play. See results for the full tabl
   original combined three-decision/nine-call bound. The first resumed response
   exceeds prompt headroom (8126 > 7808); reject without action or retry. Both
   failed records remain failed and the unchanged actual trace independently replays.
-- [ ] Resolve complete-menu context growth in a separately specified experiment.
-  First prove lossless smaller input encoding or validate a larger context with
-  actual tokenizer/usage evidence. Preserve every legal root, forecast field,
-  strict output/binding gates and reserved headroom. Do not rerun the unchanged
-  45-root request or treat approximate/mock token counts as real headroom proof.
+- [x] Restore complete-menu context headroom on the verified 45-root state with
+  separately specified lossless encoding. All facts and 3105 forecast values
+  per table are preserved. Actual prompt usage falls 8126 -> 7218 tokens, below
+  unchanged 7808 allowance; all three output/binding/headroom checks pass.
+  Choices disagree with presentation, so execution stops with zero new ticks;
+  audit records pilot_passed=false and the unchanged 16800-tick trace replays.
+- [ ] Recheck complete-menu context headroom on every future successor state.
+  If another menu exceeds the limit, first prove further lossless compression or
+  validate a larger context with actual usage evidence. Preserve every legal
+  root, forecast field, strict output/binding gate and reserved headroom. Do not
+  rerun known oversized requests or treat mock counts as real headroom proof.
 - [ ] Demonstrate bounded repeated decisions from the new actual state,
   regenerating complete native forecasts and verifying each successor. The
   two-field pilot has zero new decisions; candidate-only delivers one before an
   orchestration error, and its continuation hits the context gate. Repeated
-  adaptive control remains unestablished. Separate decision
-  cadence from preview horizon; the one-year idle delivery check is not an
+  adaptive control remains unestablished. The compact encoding clears context
+  on 45 roots but fails selection agreement, delivering no additional decision.
+  Separate decision cadence from preview horizon; the one-year idle delivery check is not an
   established efficient control policy. Recheck context headroom as the domain
   grows, keep every legal choice, and report food/service/finance tradeoffs and
   native goal progress without a weighted score or prescribed sequence.

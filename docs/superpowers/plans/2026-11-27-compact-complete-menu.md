@@ -67,14 +67,14 @@ Only prompt encoding and its decoding instructions change. This is a new
 experiment, not a retry or promotion of the previous context-limited record.
 
 - [x] Mock full-domain typed A/B/A HTTP and audit requests/bindings/decoded facts.
-- [ ] Run at most three new 800-tick decisions, nine model calls total, IDs 6–8;
+- [x] Run at most three new 800-tick decisions, nine model calls total, IDs 6–8;
   independent full-root six-month previews at every successor. Require three
   valid agreeing A/B/A selections and exact repeat bytes before each delivery.
   Stop on any failure/disagreement; no fallback, replayed answer or repair.
-- [ ] Keep model weights/versions, seed 20261122, temperature .7, top_p .8,
+- [x] Keep model weights/versions, seed 20261122, temperature .7, top_p .8,
   top_k 20, min_p 0, num_ctx 8192, max_tokens 256, effort none, 170-second deadline
   and 256+128 reservation. Actual prompt usage must be <=7808 per accepted call.
-- [ ] Independently audit experiment receipts/model cleanup and replay the full
+- [x] Independently audit experiment receipts/model cleanup and replay the full
   actual trace with six diagnostics. Compare equal-time wait endpoints without
   scores. Report partial failures and no win honestly; commit/push own docs only.
 
@@ -114,3 +114,34 @@ material issues. All gates are ready for the separately bounded experiment.
 
 Old partial and context-limited runs remain unchanged. Production planner and
 dependencies remain unchanged.
+
+## Actual outcome
+
+Protocol commit before inference: `da32101e`.
+Run: `runs/tarraco/2026-11-27/20261127T122823.764332Z_compact-menu-pilot_c8346456/`.
+Three requests/three complete responses; original/reversed/exact-repeat select
+`add_granary_district_2`, `expand_housing`, `add_granary_district_2`.
+All typed/raw output, host/request binding, domain, identity and telemetry checks
+pass. Actual prompt usage is 7218 for every call, down from 8126 in the prior
+encoding; completion counts are 27/23/27. Each call completes within 170 seconds.
+Original request bytes repeat exactly, with distinct dispatch bindings.
+
+The choices disagree, so the protocol stops after three of nine allowed calls,
+with zero new decisions/ticks. No later state or call is attempted. Record status
+is finished, stop_reason selection_disagreement, independent pilot_passed=false.
+Headroom passes for this state only; adaptive control does not pass. Row and
+schema-enum order change together, so their separate effects are not isolated.
+
+Independent evidence audit verifies all three transmitted tables against native
+forecasts/full metadata and the archived old payload builder. Model identity and
+alias cleanup pass. Full actual 16800-tick primitive replay and six diagnostics
+match in
+`runs/tarraco/2026-11-27/20261127T123156.827077Z_candidate-only-outcome-replay_b3444457/`.
+The city remains population 114, food coverage 57, farm workers 10, treasury 6263,
+culture 0, prosperity 5, peace 2, favor 48 and max house level 2, without a win.
+
+`runs/summarize_compact_menu.py` writes review JSON/CSV without a score. The
+results document compares wait/granary/housing at 4800 forecast ticks; those
+independently replayed endpoints remain counterfactual, never actual delivery.
+Next priority is separately scoped selection reliability on the full native
+facts, preserving the failed agreement gate and all previous failed records.
