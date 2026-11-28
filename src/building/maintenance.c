@@ -29,6 +29,16 @@
 
 static int fire_spread_direction = 0;
 
+int building_maintenance_fire_direction(void)
+{
+    return fire_spread_direction;
+}
+
+void building_maintenance_restore_fire_direction(int direction)
+{
+    fire_spread_direction = direction;
+}
+
 void building_maintenance_update_fire_direction(void)
 {
     fire_spread_direction = random_byte() & 7;

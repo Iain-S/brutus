@@ -11,7 +11,7 @@
 #define MAX_LINE 100
 #define MAX_MAPPINGS HOTKEY_MAX_ITEMS * 2
 
-static const char *INI_FILENAME = "julius-hotkeys.ini";
+static char ini_filename[FILE_NAME_MAX] = "julius-hotkeys.ini";
 
 // Keep this in the same order as the actions in hotkey_config.h
 static const char *ini_keys[] = {
@@ -239,7 +239,7 @@ static void add_mapping(int hotkey_id, const char *value)
 static void load_file(void)
 {
     hotkey_config_clear();
-    FILE *fp = file_open(INI_FILENAME, "rt");
+    FILE *fp = file_open(ini_filename, "rt");
     if (!fp) {
         return;
     }
@@ -286,9 +286,9 @@ void hotkey_config_load(void)
 void hotkey_config_save(void)
 {
     hotkey_install_mapping(data.mappings, data.num_mappings);
-    FILE *fp = file_open(INI_FILENAME, "wt");
+    FILE *fp = file_open(ini_filename, "wt");
     if (!fp) {
-        log_error("Unable to write hotkey configuration file", INI_FILENAME, 0);
+        log_error("Unable to write hotkey configuration file", ini_filename, 0);
         return;
     }
     for (int i = 0; i < data.num_mappings; i++) {
@@ -296,4 +296,13 @@ void hotkey_config_save(void)
         fprintf(fp, "%s=%s\n", ini_keys[data.mappings[i].action], key_name);
     }
     file_close(fp);
+}
+
+void hotkey_config_set_file_path(const char *path)
+{
+    if (!path || !*path) {
+        return;
+    }
+    strncpy(ini_filename, path, FILE_NAME_MAX - 1);
+    ini_filename[FILE_NAME_MAX - 1] = 0;
 }

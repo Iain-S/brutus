@@ -40,7 +40,7 @@ static int check_evolve_desirability(building *house)
     return status;
 }
 
-static int has_required_goods_and_services(building *house, int for_upgrade, house_demands *demands)
+static int has_required_goods_and_services(const building *house, int for_upgrade, house_demands *demands)
 {
     int level = house->subtype.house_level;
     if (for_upgrade) {
@@ -163,6 +163,20 @@ static int has_required_goods_and_services(building *house, int for_upgrade, hou
         return 0;
     }
     return 1;
+}
+
+int building_house_goods_services_pass(const building *house, int for_upgrade)
+{
+    if (!house || house->state != BUILDING_STATE_IN_USE || !building_is_house(house->type)) {
+        return -1;
+    }
+    int level = house->subtype.house_level;
+    if (level < HOUSE_SMALL_TENT || level > HOUSE_LUXURY_PALACE ||
+        (for_upgrade && level == HOUSE_LUXURY_PALACE)) {
+        return -1;
+    }
+    house_demands demands = {0};
+    return has_required_goods_and_services(house, for_upgrade, &demands);
 }
 
 static int check_requirements(building *house, house_demands *demands)
