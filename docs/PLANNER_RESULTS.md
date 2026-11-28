@@ -1,6 +1,7 @@
 # Campaign Planner Results
 
-Updated: 2026-11-27. Latest native delivery and model experiment: 2026-11-27.
+Updated: 2026-11-28. Latest native delivery: 2026-11-27; model experiment: 2026-11-28.
+Temperature-profile protocol: `b5100ee5`;
 Row/enum diagnostic protocol: `36251323`;
 Compact-menu protocol: `da32101e`;
 Candidate-only protocol: `b537c37c`; bounded continuation: `e5ff0023`;
@@ -27,7 +28,70 @@ DNN reinforcement-learning policy. The model is
 **No campaign win or demonstrated fast-win strategy has been achieved.**
 See [remaining work](PLANNER_TODO.md) for the next checkpoint.
 
-## Latest Diagnostic: Both Forecast Rows And Tool Enum Affect Selection
+## Latest Profile Comparison: Temperature Zero Does Not Restore Stability
+
+A new bounded study changes the instruct model's sampling temperature from .7
+to 0 on the same complete 45-root native facts, weights, seed, system text and
+serving/output limits. Six temperature-zero calls cover the four row/enum
+combinations plus exact AA/BB repeats. Fresh .7 AA and BB controls bracket them.
+No model download, package installation or production-default change is made.
+
+| Rows/enum | Previous .7 choice | Temperature 0 choice |
+|---|---|---|
+| AA | Granary, district 2 | Granary, district 2 |
+| BB | Expand housing | Expand housing |
+| AB | Actor colony, district 2 | Temple, district 2 |
+| BA | Farm-worker housing, farm 17 | Farm-worker housing, farm 17 |
+
+Both zero-temperature exact repeats reproduce. Both fresh .7 controls reproduce
+their prior AA/BB choices. **All four zero-temperature cells still differ**;
+the predeclared classification remains mixed_or_interaction. Changing decoding
+temperature alters one crossed choice but does not clear presentation-consistency
+on this state. The .7 crossed cells in the table are historical, not rerun here;
+this is one state/seed with unrepeated crossed cells and temporal profile limits.
+It does not establish general model determinism or prove a particular internal
+reasoning mechanism. Timing is not a controlled profile comparison either.
+
+All **eight requests/eight responses** pass exact typed/raw schema, root-domain,
+host/request binding, deadline and headroom checks. Each uses **7218 prompt
+tokens**, below unchanged 7808; completion counts are 27/27/23/26/27/23/27/23.
+Independent audit checks 3105 native cells per table, full metadata and that only
+temperature and the declared row/enum orders vary. Model identity, direct helper
+hashes and alias cleanup pass. The result record is finished and its evidence
+verified, while **gate_ready=false** and **native_delivery_authorized=false**.
+
+The conditional 800-tick delivery is never attempted. No native environment,
+new native save or replay is created for this study. The actual city remains
+population 114, food coverage 57, farm workers 10 and treasury 6263 at 16800 ticks.
+The prepared delivery helper is reviewed and its log-before-validation failure
+path regression-tested; that is not a claim that actual delivery ran. A unique
+choice, native policy improvement and a campaign win remain unestablished.
+
+Local source/raw receipts/audit and `review-profile.json`/CSV:
+`runs/planner-input-probes/2026-11-28/20261128T152244.203644Z_temperature_061655e2/`.
+Five focused tests pass. Positive eight-call and rejected one-call mocks
+independently audit; even a consistent positive mock cannot authorize native
+delivery. Review's result-key and native-prefix logging findings are fixed and
+re-reviewed before inference. Temporary environment pip check passes. See
+[protocol and ledger](superpowers/plans/2026-11-28-temperature-profile.md).
+
+### Offline Next-Mechanism Feasibility
+
+A separate **offline-only** Pydantic check emits a string field without a
+provider-facing enum while retaining strict dynamic Literal validation against
+all 45 legal IDs in the host. All 45 IDs validate; seven invalid/missing/extra/type
+or duplicate-key cases reject using the existing raw duplicate-key gate.
+This preserves host acceptance requirements while removing the provider's ordered
+enum list, leaving all candidates in the input. It changes a provider constraint
+and therefore needs its own wire/behavior experiment; it does not establish
+selection quality or prove Pydantic AI will transmit that schema unchanged.
+No live model calls or native actions are made by this feasibility check.
+Archive: `runs/enum-free-schema-spike/20261128T153140.722925Z/`.
+The next useful checkpoint is an independently audited emitted-tool-schema test
+followed by a separately bounded selection-mechanism comparison, not another
+unchanged temperature or presentation-only probe.
+
+## Previous Diagnostic: Both Forecast Rows And Tool Enum Affect Selection
 
 The complete 45-root compact menu is frozen at the verified 16800-tick city.
 A new six-call diagnostic varies forecast-row order independently of the legal

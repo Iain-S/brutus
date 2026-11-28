@@ -774,3 +774,19 @@ and seed; crossed cells are not repeated. No native environment/action or new
 save is created, and frozen-source bindings do not claim live native freshness.
 See `docs/superpowers/plans/2026-11-27-row-enum-isolation.md` and results before
 interpreting this as a policy or library-quality result.
+
+The subsequent temperature-profile experiment changes only sampling temperature
+alongside declared presentation conditions. Eight valid calls include fresh .7
+AA/BB controls and six temperature-zero conditions with two exact repeats.
+Controls/repeats reproduce, but four distinct zero-temperature choices remain;
+one crossed choice changes actor colony to temple. All prompts use 7218 tokens,
+with unchanged 7808 allowance. Independent evidence audit passes, while the
+conditional native-delivery gate fails; no environment/action/save is created.
+The actual 16800-tick city stays unchanged. See
+`docs/superpowers/plans/2026-11-28-temperature-profile.md`.
+
+A separate Pydantic-only feasibility check can omit the ordered provider enum
+while retaining strict Literal validation of all 45 IDs in the host, plus the
+existing raw duplicate-key and extra-field gates. All 45 legal cases pass and
+seven invalid cases reject. Actual Pydantic AI wire behavior and model selection
+remain untested for that mechanism; it is not a new planner command/dependency.

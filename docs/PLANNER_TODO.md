@@ -1,6 +1,7 @@
 # Campaign Planner Remaining Work
 
-Updated: 2026-11-27. Candidate-only protocol: `b537c37c`;
+Updated: 2026-11-28. Temperature-profile protocol: `b5100ee5`;
+candidate-only protocol: `b537c37c`;
 row/enum diagnostic protocol: `36251323`;
 compact-menu protocol: `da32101e`;
 bounded continuation: `e5ff0023`; receding-pilot protocol: `e298e441`;
@@ -114,6 +115,22 @@ general model diagnosis or improved campaign play. See results for the full tabl
   This is one state/seed with no crossed-cell repeats, not general causal
   identification. Both presentation factors matter in the observed matrix;
   avoid another unchanged permutation-only study as the next strategic step.
+- [x] Compare a separately scoped temperature-zero profile on the identical
+  complete facts. Eight valid calls include fresh .7 AA/BB controls, four zero
+  cells and exact zero AA/BB repeats. Both controls/repeats reproduce, but the
+  four zero cells still differ; AB changes actor colony to temple. Independent
+  evidence and headroom pass; native_delivery_authorized=false, no native action.
+  Lower temperature alone does not resolve this state's presentation sensitivity.
+- [x] Check offline enum-free provider-schema feasibility while preserving the
+  strict 45-ID Literal host validator and duplicate-key/extra-field gates. All 45
+  legal IDs pass and seven invalid cases reject. No actual SDK wire, model
+  selection or native outcome is claimed from this Pydantic-only check.
+- [ ] Test the enum-free output mechanism separately: first inspect actual
+  emitted Pydantic AI tool schemas and prove all invalid-ID/type/key cases still
+  reject without retry or execution. Then compare balanced presentations and
+  baseline controls on the complete frozen facts. Keep every legal root and all
+  native fields; never weaken final acceptance to obtain a preferred answer.
+  Any native delivery needs its own predeclared complete evidence/stability gate.
 - [x] Measure complete existing root-menu forecasts at monthly horizons from
   the verified 6400-tick base. All 20 legal macros plus their idle continuations
   are covered (wait is one of the 20), through 9600 ticks each. Every rollback

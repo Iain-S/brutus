@@ -88,9 +88,9 @@ just the client settings. Validate rejected malformed evidence without acceptanc
   remains an explicitly unverified zero-call record. No mock authorizes delivery.
 - [x] Obtain fresh read-only review, resolve findings and commit protocol before
   inference. Preserve baseline sources and experiments.
-- [ ] Run the bounded profile comparison, independently audit and report matrix,
+- [x] Run the bounded profile comparison, independently audit and report matrix,
   controls and limits. Execute/replay the one interval only if every gate passes.
-- [ ] Update results/TODO/example docs, commit/push own documentation and verify
+- [x] Update results/TODO/example docs, commit/push own documentation and verify
   upstream equality while preserving unrelated work.
 
 ## Ledger
@@ -130,3 +130,33 @@ filled condition, retry or native authorization:
 Compilation and temporary-model-environment pip check pass. Old intermediate
 mocks remain preserved as their earlier source versions. All real work remains
 bounded by this protocol.
+
+## Actual outcome
+
+Protocol committed before inference as `b5100ee5`. Archive:
+`runs/planner-input-probes/2026-11-28/20261128T152244.203644Z_temperature_061655e2/`.
+Eight requests/eight complete responses, all valid, no retries. Sequence:
+.7 AA granary; 0 AA granary; 0 BB expand housing; 0 AB temple; 0 BA farm-worker housing;
+0 BB expand housing repeat; 0 AA granary repeat; .7 BB expand housing.
+Both exact zero-profile repeats reproduce and both .7 controls match the pinned
+prior audit. Zero classification is mixed_or_interaction, unique_choice=null,
+gate_ready=false. Independent native_delivery_authorized=false; no delivery
+helper, native environment, actual save or new native replay is invoked.
+
+All prompts use 7218 tokens, below 7808; completions 27/27/23/26/27/23/27/23. All
+workers finish within 76 seconds of 170. Independent audit verifies every table,
+raw wire temperature, only declared request interventions, complete domains,
+source/model identity and alias cleanup. Review-profile JSON/CSV is retained.
+The .7 crossed conditions are historical and are not repeated in this study;
+do not turn the one changed AB answer into a strategic-improvement claim.
+The prepared native helper's trace-logging regression passes, but no actual
+delivery validation is claimed because the profile gate fails.
+
+A separate offline-only next-mechanism spike uses Pydantic WithJsonSchema to
+omit the provider-facing enum while keeping the dynamic Literal host validator.
+All 45 legal IDs validate and seven malformed/type/extra/missing/duplicate cases
+reject with the existing raw guard. Archive:
+`runs/enum-free-schema-spike/20261128T153140.722925Z/`.
+No real model/SDK transport/native call is made in that spike. Actual emitted
+Pydantic AI wire schema and selection behavior require a separate protocol;
+provider constraints change while final host acceptance must remain strict.
